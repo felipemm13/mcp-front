@@ -22,6 +22,7 @@ const AnalizeSession = () => {
   const currentStimulus = useRef(0);
   const selectedRowIndex = useRef(null);
   const selectedPlayID = useRef(null);
+  const [currentPlaySelected, setCurrentPlaySelected] = useState(null);
 
   const initialData = Array.from({ length: 20 }, (_, index) => ({
     sequence: index + 1,
@@ -655,7 +656,7 @@ const AnalizeSession = () => {
                       key={index}
                       onClick={() => handleRowClick(index, row.playID)}
                     >
-                      <td className="table-cell">{row.sequence}</td>
+                      <td className="table-cell" >{row.sequence}</td>
                       <td className="table-cell">{row.playID}</td>
                       <td className="table-cell">
                         <input

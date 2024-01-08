@@ -103,8 +103,6 @@ const FootballSessionView = ({ view }) => {
       document
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("stopRecord"));
-      //console.log(stimulusTimeSequence.current);
-      //stimulusTimeSequence.current.pop();
       var link = document.createElement("a");
       imageSequences.current.forEach((image, index) => {
         link.href = image;
@@ -117,7 +115,7 @@ const FootballSessionView = ({ view }) => {
         imageSequences: imageSequences.current,
         stimulusTime: stimulusTimeSequence.current,
       };
-      console.log(infoSession.current);
+      //console.log(infoSession.current);
       document.getElementById("SaveCaptureVideo").removeAttribute("disabled");
       document.getElementById("OpenAnalizerView").removeAttribute("disabled");
     }
@@ -198,19 +196,15 @@ const FootballSessionView = ({ view }) => {
         opacity: 0,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       },
-      to: [
-        ...ballAnimationMoves,
-        {
-          x: containerWidth.current * 0.5,
-          y: containerHeight.current * 0.5,
-          opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
-        },
-      ],
+      to: [ballAnimationMoves],
       config: {
         duration: infoSession.current.secondsForPlayTransition.current * 1000,
       },
-      onResolve: () => handleFinishAnimation(),
+      onResolve: () =>
+        setTimeout(
+          () => handleFinishAnimation(),
+          infoSession.current.secondsToNextPlay.current * 1000
+        ),
       onStart: () => {
         if (view === "coach") {
           if (
@@ -239,6 +233,9 @@ const FootballSessionView = ({ view }) => {
   const handleDiscriminativeAnimation = () => {
     let colors = [];
     let positions = [];
+    let indexSequence = 0;
+    stimulusTimeSequence.current = [];
+    imageSequences.current = [];
     setShowAnimation("discriminative");
     setNumberOfDistractors(infoSession.current.numOfDistractors.current + 1);
     let distractorsMoves = [[], [], [], [], [], [], [], []];
@@ -329,15 +326,7 @@ const FootballSessionView = ({ view }) => {
           opacity: 0,
           delay: infoSession.current.secondsToNextPlay.current * 1000,
         },
-        to: [
-          ...distractorsMoves[i],
-          {
-            cx: containerWidth.current * 0.5,
-            cy: containerHeight.current * 0.5,
-            opacity: 0,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
-          },
-        ],
+        to: [distractorsMoves[i]],
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
@@ -345,11 +334,25 @@ const FootballSessionView = ({ view }) => {
           if (i === 0) {
             let color = distractorsMoves[i][sequenceIndex++].fill;
             imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+            if (
+              indexSequence < infoSession.current.sequenceOfPlays.current.length
+            ) {
+              stimulusTimeSequence.current.push(new Date().getTime() - time);
+              setTimeout(() => {
+                htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+                  imageSequences.current.push(dataUrl);
+                });
+              }, [infoSession.current.secondsForPlayTransition.current * 1000]);
+              indexSequence++;
+            }
           }
         },
         onResolve: () => {
           if (i === 0) {
-            handleFinishAnimation();
+            setTimeout(
+              () => handleFinishAnimation(),
+              infoSession.current.secondsToNextPlay.current * 1000
+            );
           }
         },
       };
@@ -359,6 +362,7 @@ const FootballSessionView = ({ view }) => {
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("startRecord"));
     }
+    let time = new Date().getTime();
     apiDiscriminativeAnimation.start();
   };
 
@@ -517,7 +521,11 @@ const FootballSessionView = ({ view }) => {
       config: {
         duration: infoSession.current.secondsForPlayTransition.current * 1000,
       },
-      onResolve: () => handleFinishAnimation(),
+      onResolve: () =>
+        setTimeout(
+          () => handleFinishAnimation(),
+          infoSession.current.secondsToNextPlay.current * 1000
+        ),
       onStart: () => {
         imgRef.current.src = `assets/teams/team-${
           playerTeams[teamIndex++]
@@ -530,10 +538,6 @@ const FootballSessionView = ({ view }) => {
             setTimeout(() => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                 imageSequences.current.push(dataUrl);
-                //var link = document.createElement("a");
-                //link.download = "image.jpeg";
-                //link.href = dataUrl;
-                //link.click();
               });
             }, [infoSession.current.secondsForPlayTransition.current * 1000]);
             sequenceIndex++;

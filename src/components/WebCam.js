@@ -57,9 +57,12 @@ const WebCam = (props) => {
     setDeviceId(e.target.value);
   };
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((mediaDevices) => {
-      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
-    });
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then((mediaDevices) => {
+        setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
+      });
+    }
+
     document
       .getElementById("webcamContainer")
       .addEventListener("startRecord", handleStartCaptureClick);
@@ -86,12 +89,10 @@ const WebCam = (props) => {
       props.infoSession.playerSelected
     ) {
       document.getElementById("StartCaptureVideo").removeAttribute("disabled");
-      
     } else {
       document
         .getElementById("StartCaptureVideo")
         .setAttribute("disabled", "true");
-
     }
   }, [props.showWindowPortal, cameraIsAvailable, props.infoSession]);
   return (
