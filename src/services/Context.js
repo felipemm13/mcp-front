@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Connect from "../connection/Connect";
 
 const Context = React.createContext();
@@ -33,10 +33,10 @@ const ProviderContext = ({ children }) => {
   const preloadImage = (src) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.onload = function () {
+      img.onload = () => {
         resolve(img);
       };
-      img.onerror = img.onabort = function () {
+      img.onerror = img.onabort = () => {
         reject(src);
       };
       img.src = src;

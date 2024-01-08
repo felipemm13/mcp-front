@@ -64,6 +64,14 @@ const FootballSession = () => {
 
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
+    const hasConsecutiveDuplicates = (arr)=> {
+      for (var i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          return true;
+        }
+      }
+      return false;
+    }
     if (typeOfSession.current === "applied") {
       sequenceGenerated = n_rand(
         playsFromDb.current.length,
@@ -76,7 +84,7 @@ const FootballSession = () => {
         for (var i = 0; i < 3; i++) {
           sequenceGenerated.push(Math.floor(Math.random() * 9) + 1);
         }
-      } while (sequenceGenerated.includes(5));
+      } while (sequenceGenerated.includes(5) || hasConsecutiveDuplicates(sequenceGenerated));
     }
 
     sequenceOfPlays.current = sequenceGenerated;
