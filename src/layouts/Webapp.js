@@ -2,42 +2,49 @@ import { useContext, useEffect, useState } from "react";
 import "../styles/Webapp.css";
 import Menu from "./Menu";
 import { useRef } from "react";
-import authService from "../services/authService";
 import { Context } from "../services/Context";
 import Routes from "../connection/path";
-import Connect from "../connection/Connect";
-import axios from "axios";
+import Swal from "sweetalert2";
 
 const Webapp = () => {
+  const { userContext, CrudApi } = useContext(Context);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const email = useRef(null);
   const password = useRef(null);
-  const Crud = new Connect();
   const loginUser = async () => {
     setLoading(true);
-    
-    /*
-    await Crud.post(Routes.userRoutes.LOGINUSER, {
+
+    await CrudApi.post(Routes.userRoutes.LOGINUSER, {
       email: email.current,
       password: password.current,
     })
       .then((res, req) => {
         if (res.status === 200) {
-          console.log(res);
+          userContext.current = res.data.data;
+          setUser(res.data.data);
         }
       })
-      .catch((res) => console.log(res));
-      */
-
-    await authService.loginUser(email.current, password.current, setUser);
+      .catch((error) => {
+        console.log(error.response, error.response.status);
+        if (error.response.status === 402) {
+          Swal.fire({
+            title: "Error",
+            text: "Correo o contraseña incorrectos!",
+            icon: "error",
+            showCloseButton: true,
+            timer: 1500,
+          });
+          setLoading(false);
+        }
+      });
   };
 
   useEffect(() => {
     setUser(null);
     setLoading(true);
     setTimeout(() => {
-      setUser(authService.getCurrentUser);
+      setUser(userContext);
       setLoading(false);
     }, 500);
   }, []);
@@ -59,7 +66,7 @@ const Webapp = () => {
           </div>
           <div className="loginContainer">
             <label htmlFor="email" className="label">
-              Email
+              Correo
             </label>
             <input
               id="email"
@@ -69,7 +76,7 @@ const Webapp = () => {
               onChange={(e) => (email.current = e.target.value)}
             ></input>
             <label htmlFor="password" className="label">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
@@ -78,7 +85,7 @@ const Webapp = () => {
               placeholder="Password"
               onChange={(e) => (password.current = e.target.value)}
             ></input>
-            <button className="changePassword">Change password</button>
+            <button className="changePassword">Cambiar Contraseña</button>
             {loading ? (
               <svg
                 width="40"
@@ -101,9 +108,9 @@ const Webapp = () => {
             ) : (
               <div className="loginButtons">
                 <button className="button" onClick={() => loginUser()}>
-                  Login
+                  Ingresar
                 </button>
-                <button className="button">Register</button>
+                <button className="button">Registrarse</button>
               </div>
             )}
           </div>

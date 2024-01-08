@@ -571,27 +571,10 @@ const FootballSessionView = ({ view }) => {
       .setAttribute("disabled", "true");
   };
 
-  const preLoadImages = () => {
-    const img = new Image();
-    img.src = "assets/reactions/reaction-black.jpg";
-    img.src = "assets/reactions/reaction-blue.jpg";
-    img.src = "assets/reactions/reaction-brown.jpg";
-    img.src = "assets/reactions/reaction-gray.jpg";
-    img.src = "assets/reactions/reaction-green.jpg";
-    img.src = "assets/reactions/reaction-red.jpg";
-    img.src = "assets/reactions/reaction-white.jpg";
-    img.src = "assets/reactions/reaction-yellow.jpg";
-    img.src = "assets/teams/team-red.jpg";
-    img.src = "assets/teams/team-yellow.jpg";
-    img.src = "assets/player-zone.png";
-  };
-
   useEffect(() => {
-    //console.log(infoSession.current);
     document
       .getElementById("StartCaptureVideo")
       .addEventListener("click", handleStartSesion);
-    preLoadImages();
   }, []);
 
   return (
