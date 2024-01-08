@@ -55,3 +55,15 @@ const sessionsRoutes = {
     PUTSESSIONS: "sessions/:sessionId",
     DELETESESSIONS: "sessions/:sessionId"
 };
+
+const Routes ={
+    userRoutes,
+    figCoordRoutes,
+    homographyRoutes,
+    playersRoutes,
+    playsRoutes,
+    sessionMovesRoutes,
+    sessionAnalyticsRoutes,
+    sessionsRoutes
+}
+export default Routes;
