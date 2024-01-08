@@ -1,0 +1,343 @@
+.calibrationModal {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Modal Content/Box */
+.calibrationModalContent {
+    background-color: #1a1a1a;
+    color: #fff;
+    margin: 1.5% auto;
+    padding: 1.5em;
+    border: 1px solid #88888818;
+    border-radius: 0.5em;
+    height: 85%;
+    width: 80%;
+}
+
+/* The Close Button */
+.calibrationModalClose {
+    color: #aaa;
+    float: right;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.calibrationModalClose:hover,
+.calibrationModalClose:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.calibrationModalTitle {
+    font-weight: 500;
+    margin :0;
+    padding: 0 0 0.1em 0;
+    font-size: 1.75em;
+    border-bottom: 1px solid #fff;
+}
+
+.calibrationModalContainer {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calibrationModalImage {
+    width: 60%;
+    height: 95%;
+    display: flex;
+}
+
+.calibrationModalActions {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    height: 95%;
+    padding: 0 1em;
+}
+
+.calibrationModalQuestion {
+    margin: 0 0.15em 0.15em 0.15em;
+}
+
+.calibrationModalButtonsActions {
+    padding: 0.5em;
+    display: flex;
+    justify-content: center;
+    gap: 5em;
+}
+
+.calibrationModalButtonYes {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.calibrationModalButtonYes:hover {
+    cursor: pointer;
+    background-color: rgb(40, 167, 69, 0.75);
+}
+
+.calibrationModalButtonYes:active {
+    background-color: #28a745;
+}
+
+.calibrationModalButtonNo {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.calibrationModalButtonNo:hover {
+    background-color: rgb(220, 53, 69, 0.75);
+    cursor: pointer;
+}
+
+.calibrationModalButtonNo:active {
+    background-color: #dc3545;
+}
+
+.calibrationModalButtonsManual {
+    display: flex;
+    width: 100%;
+    height: 12%;
+    gap: 0.5em;
+}
+
+.calibrationModalButtonCancel {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    color: #fff;
+    width: 20%;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.calibrationModalButtonCancel:hover {
+    background-color: rgb(220, 53, 69, 0.75);
+    cursor: pointer;
+}
+
+.calibrationModalButtonCancel:active {
+    background-color: #dc3545;
+}
+
+.calibrationModalButtonPrevMark {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    width: 20%;
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.calibrationModalButtonPrevMark:hover {
+    background-color: rgb(255, 193, 7, 0.75);
+    cursor: pointer;
+}
+
+.calibrationModalButtonPrevMark:active {
+    background-color: #ffc107;
+}
+
+.calibrationModalButtonPrevMark:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    cursor: default;
+}
+
+.calibrationModalButtonNextMark {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    width: 20%;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+}
+
+.calibrationModalButtonNextMark:hover {
+    background-color: rgb(23, 162, 184, 0.75);
+    cursor: pointer;
+}
+
+.calibrationModalButtonNextMark:active {
+    background-color: #17a2b8;
+}
+
+.calibrationModalButtonNextMark:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    cursor: default;
+}
+
+.calibrationModalButtonTryCalibration {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    width: 40%;
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.calibrationModalButtonTryCalibration:hover {
+    background-color: rgb(40, 167, 69, 0.75);
+    cursor: pointer;
+}
+
+.calibrationModalButtonTryCalibration:active {
+    background-color: #28a745;
+}
+
+.calibrationModalButtonTryCalibration:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    cursor: default;
+}
+.draggable:hover{
+    cursor: pointer;
+}
+
+.spinner_V8m1 {
+    transform-origin: center;
+    animation: spinner_zKoa 2s linear infinite
+}
+
+.spinner_V8m1 circle {
+    stroke-linecap: round;
+    animation: spinner_YpZS 1.5s ease-in-out infinite
+}
+
+@keyframes spinner_zKoa {
+    100% {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes spinner_YpZS {
+    0% {
+        stroke-dasharray: 0 150;
+        stroke-dashoffset: 0
+    }
+
+    47.5% {
+        stroke-dasharray: 42 150;
+        stroke-dashoffset: -16
+    }
+
+    95%,
+    100% {
+        stroke-dasharray: 42 150;
+        stroke-dashoffset: -59
+    }
+}
+
+.spinner_b2T7 {
+    animation: spinner_xe7Q .8s linear infinite
+}
+
+.spinner_YRVV {
+    animation-delay: -.65s
+}
+
+.spinner_c9oY {
+    animation-delay: -.5s
+}
+
+@keyframes spinner_xe7Q {
+
+    93.75%,
+    100% {
+        r: 3px
+    }
+
+    46.875% {
+        r: .2px
+    }
+}

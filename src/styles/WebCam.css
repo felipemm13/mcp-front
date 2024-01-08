@@ -1,0 +1,137 @@
+.WebcamContainer {
+    margin-top: 0.5em;
+    border: 5px solid #000;
+    display: flex;
+    min-height: 70%;
+    max-height: 80%;
+    height: auto;
+    min-width: 35%;
+    max-width: 40%;
+    width: auto;
+    padding: 0;
+}
+
+.WebcamVideo {
+    display: inline-flex;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.WebcamSlot {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.WebcamSlot> :nth-child(1) {
+    height: 65%;
+    width: 65%;
+    fill: #fff;
+}
+
+.WebcamButtons {
+    width: 50%;
+    height: 85%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.5rem 0.5rem;   
+}
+
+.turnCameraButtons {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    fill: #fff;
+    color: #fff;
+}
+.webcamConnectButton{
+    display: flex;
+    flex-direction: column;
+    width: calc(50% - 1em);
+    background-color: #6c757d;
+    border: none;
+    outline: none;
+    color: #fff;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 500;
+    justify-content: center;
+    align-items: center;
+}
+.webcamConnectButton svg{
+    height: 35%;
+    width: 35%;
+}
+.webcamConnectButton:hover:enabled{
+    cursor: pointer;
+    background-color: rgb(108, 117, 125, 0.75);
+}.webcamConnectButton:disabled {
+    opacity: .65;
+}
+.webcamDissconnectButton{
+    display: flex;
+    flex-direction: column;
+    width: calc(50% - 1em);
+    background-color: #6c757d;
+    border: none;
+    outline: none;
+    color: #fff;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 500;
+    justify-content: center;
+    align-items: center;
+}
+.webcamDissconnectButton svg{
+    height: 35%;
+    width: 35%;
+}
+.webcamDissconnectButton:hover:enabled{
+    cursor: pointer;
+    background-color: rgb(108, 117, 125, 0.75);
+}
+
+.webcamDissconnectButton:disabled {
+    opacity: .65;
+}
+
+.WebcamLabel {
+    color: #fff;
+    width: calc(100% - 1em);
+    margin:  0.5em 0;
+}
+.webcamCalibrationButton{
+    display: flex;
+    flex-direction:row;
+    width: calc(100% - 1em);
+    background-color: #6c757d;
+    border: none;
+    outline: none;
+    color: #fff;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 500;
+    justify-content: center;
+    align-items: center;
+    fill: #fff;
+}
+.webcamCalibrationButton svg{
+    height: 10%;
+    width: 10%;
+    margin: 0.5em;
+}
+.webcamCalibrationButton:hover:enabled{
+    cursor: pointer;
+    background-color: rgb(108, 117, 125, 0.75);
+}
+.webcamCalibrationButton:disabled{
+    opacity: .65;
+}
