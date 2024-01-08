@@ -2,7 +2,8 @@ const  userRoutes ={
     GETUSER: "user/:userId?",
     POSTUSER: "user",
     PUTUSER:"user/:userId",
-    DELETEUSER: "user/:userId"
+    DELETEUSER: "user/:userId",
+    LOGINUSER:"login"
 
 }
 

@@ -4,14 +4,32 @@ import Menu from "./Menu";
 import { useRef } from "react";
 import authService from "../services/authService";
 import { Context } from "../services/Context";
+import Routes from "../connection/path";
+import Connect from "../connection/Connect";
+import axios from "axios";
 
 const Webapp = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const email = useRef(null);
   const password = useRef(null);
+  const Crud = new Connect();
   const loginUser = async () => {
     setLoading(true);
+    
+    /*
+    await Crud.post(Routes.userRoutes.LOGINUSER, {
+      email: email.current,
+      password: password.current,
+    })
+      .then((res, req) => {
+        if (res.status === 200) {
+          console.log(res);
+        }
+      })
+      .catch((res) => console.log(res));
+      */
+
     await authService.loginUser(email.current, password.current, setUser);
   };
 

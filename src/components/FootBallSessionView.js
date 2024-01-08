@@ -194,7 +194,6 @@ const FootballSessionView = ({ view }) => {
         x: containerWidth.current * 0.5,
         y: containerHeight.current * 0.5,
         opacity: 0,
-        delay: infoSession.current.secondsToNextPlay.current * 1000,
       },
       to: [ballAnimationMoves],
       config: {

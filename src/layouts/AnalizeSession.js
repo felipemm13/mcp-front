@@ -1,12 +1,12 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "../styles/AnalizeSession.css";
 import { useParams } from "react-router-dom";
 import { Context } from "../services/Context";
 
 const AnalizeSession = () => {
+  const { videoCurrentSession, infoSession, currentFPS } = useContext(Context);
   const session = useParams().session;
-  const FPS = 29.95;
-  const { videoCurrentSession, infoSession } = useContext(Context);
+  const FPS = currentFPS.current;
   const [videoSession, setVideoSession] = useState(null);
   const [videoState, setVideoState] = useState("Play");
   const [videoStepFrames, setVideoStepFrames] = useState({
@@ -20,7 +20,7 @@ const AnalizeSession = () => {
   const currentPlay = useRef(null);
   const prevPlay = useRef(null);
   const currentStimulus = useRef(0);
-  const selectedRowIndex = useRef(null);
+  const selectedRowIndex = useRef(0);
   const selectedPlayID = useRef(null);
   const [currentPlaySelected, setCurrentPlaySelected] = useState(null);
 
@@ -102,13 +102,52 @@ const AnalizeSession = () => {
   useEffect(() => {
     if (videosPlayersRef.current.length) {
       if (currentFrame > 0) {
+        console.log(
+          Math.round(videosPlayersRef.current[2].currentTime * 1000),
+          infoSession.current.stimulusTime[currentStimulus.current],
+          currentStimulus.current
+        );
+        if (
+          Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
+            infoSession.current.stimulusTime[currentStimulus.current] 
+        ) {
+          currentStimulus.current =
+            currentStimulus.current + 1 <=
+            infoSession.current.stimulusTime.length - 1
+              ? currentStimulus.current + 1
+              : currentStimulus.current;
+          currentPlay.current.src =
+            infoSession.current.imageSequences[currentStimulus.current];
+          prevPlay.current.src =
+            infoSession.current.imageSequences[
+              currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
+            ];
+        
+        }
+        if (
+          Math.round(videosPlayersRef.current[2].currentTime * 1000) <
+            infoSession.current.stimulusTime[currentStimulus.current] &&
+          currentStimulus.current > 0 &&
+          Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
+            infoSession.current.stimulusTime[currentStimulus.current - 1]
+        ) {
+          currentStimulus.current -= 1;
+          currentPlay.current.src =
+            infoSession.current.imageSequences[currentStimulus.current];
+          prevPlay.current.src =
+            infoSession.current.imageSequences[
+              currentStimulus.current - 1 > 0
+                ? currentStimulus.current - 1
+                : 0
+            ];
+        }
         if (videoState === "Play") {
           videosPlayersRef.current[0].currentTime = (currentFrame - 2) / FPS;
           videosPlayersRef.current[1].currentTime = (currentFrame - 1) / FPS;
           videosPlayersRef.current[2].currentTime = currentFrame / FPS;
           videosPlayersRef.current[3].currentTime = (currentFrame + 1) / FPS;
           videosPlayersRef.current[4].currentTime = (currentFrame + 2) / FPS;
-          // cambio de jugada
+
           setCurrentTime(videosPlayersRef.current[2].currentTime);
         }
       } else {
@@ -135,10 +174,97 @@ const AnalizeSession = () => {
       //selectedRow.style.background = "#1a1a1a";
       selectedRowIndex.current = null;
       selectedPlayID.current = null;
+      document.getElementById("AddTakeoffMark").disabled = true;
+      document.getElementById("AddArrivalMark").disabled = true;
     } else {
       selectedRow.style.background = "rgb(0, 0, 0, 0.75)";
       selectedRowIndex.current = index;
       selectedPlayID.current = playID;
+      document.getElementById("AddTakeoffMark").disabled = false;
+      document.getElementById("AddArrivalMark").disabled = false;
+    }
+  };
+
+  const AddTakeoffMark = () => {
+    if (
+      document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
+    ) {
+      document.getElementById(
+        `RowSequenceTakeoff${selectedRowIndex.current}`
+      ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
+      document.getElementById(
+        `RowSequenceVisuMotor${selectedRowIndex.current}`
+      ).innerHTML =
+        document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
+          .innerHTML -
+        document.getElementById(`RowSequenceStimul${selectedRowIndex.current}`)
+          .innerHTML;
+      if (
+        document.getElementById(
+          `RowSequenceVisuMotor${selectedRowIndex.current}`
+        ).innerHTML > 0 &&
+        document.getElementById(`RowSequenceMotor${selectedRowIndex.current}`)
+          .innerHTML > 0
+      ) {
+        document.getElementById(
+          `RowSequenceCognitiveMotor${selectedRowIndex.current}`
+        ).innerHTML =
+          parseInt(
+            document.getElementById(
+              `RowSequenceMotor${selectedRowIndex.current}`
+            ).innerHTML
+          ) +
+          parseInt(
+            document.getElementById(
+              `RowSequenceVisuMotor${selectedRowIndex.current}`
+            ).innerHTML
+          );
+      }
+    }
+  };
+
+  const AddArrivalMark = () => {
+    if (
+      document.getElementById(`RowSequenceArrival${selectedRowIndex.current}`)
+    ) {
+      document.getElementById(
+        `RowSequenceArrival${selectedRowIndex.current}`
+      ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
+      if (
+        document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
+          .innerHTML > 0
+      ) {
+        document.getElementById(
+          `RowSequenceMotor${selectedRowIndex.current}`
+        ).innerHTML =
+          document.getElementById(
+            `RowSequenceArrival${selectedRowIndex.current}`
+          ).innerHTML -
+          document.getElementById(
+            `RowSequenceTakeoff${selectedRowIndex.current}`
+          ).innerHTML;
+      }
+      if (
+        document.getElementById(
+          `RowSequenceVisuMotor${selectedRowIndex.current}`
+        ).innerHTML > 0 &&
+        document.getElementById(`RowSequenceMotor${selectedRowIndex.current}`)
+          .innerHTML > 0
+      ) {
+        document.getElementById(
+          `RowSequenceCognitiveMotor${selectedRowIndex.current}`
+        ).innerHTML =
+          parseInt(
+            document.getElementById(
+              `RowSequenceMotor${selectedRowIndex.current}`
+            ).innerHTML
+          ) +
+          parseInt(
+            document.getElementById(
+              `RowSequenceVisuMotor${selectedRowIndex.current}`
+            ).innerHTML
+          );
+      }
     }
   };
 
@@ -309,21 +435,6 @@ const AnalizeSession = () => {
               src={videoSession}
               disablePictureInPicture
               onTimeUpdate={(e) => {
-                //console.log(Math.round(e.target.currentTime*1000),infoSession.current.stimulusTime[currentStimulus.current])
-                if (
-                  Math.round(e.target.currentTime * 1000) >=
-                  infoSession.current.stimulusTime[currentStimulus.current]
-                ) {
-                  currentPlay.current.src =
-                    infoSession.current.imageSequences[currentStimulus.current];
-                  prevPlay.current.src =
-                    infoSession.current.imageSequences[
-                      currentStimulus.current - 1 > 0
-                        ? currentStimulus.current - 1
-                        : 0
-                    ];
-                  currentStimulus.current = currentStimulus.current + 1;
-                }
                 setCurrentFrame(Math.round(e.target.currentTime * FPS));
               }}
             />
@@ -652,25 +763,31 @@ const AnalizeSession = () => {
                   {tableData.map((row, index) => (
                     <tr
                       id={`RowSequenceIndex${index}`}
-                      className="table-row"
+                      style={
+                        index === 0 ? { background: "rgb(0, 0, 0, 0.75)" } : {}
+                      }
                       key={index}
                       onClick={() => handleRowClick(index, row.playID)}
                     >
-                      <td className="table-cell" >{row.sequence}</td>
-                      <td className="table-cell">{row.playID}</td>
-                      <td className="table-cell">
+                      <td id={`RowSequenceSequence${index}`}>{row.sequence}</td>
+                      <td id={`RowSequencePlayId${index}`}>{row.playID}</td>
+                      <td>
                         <input
                           type="checkbox"
                           checked={row.error}
                           onChange={() => handleCheckboxChange(index)}
                         />
                       </td>
-                      <td className="table-cell">{row.estimulo}</td>
-                      <td className="table-cell">{row.takeoff}</td>
-                      <td className="table-cell">{row.arrival}</td>
-                      <td className="table-cell">{row.visuMotor}</td>
-                      <td className="table-cell">{row.motor}</td>
-                      <td className="table-cell">{row.cognitiveMotor}</td>
+                      <td id={`RowSequenceStimul${index}`}>{row.estimulo}</td>
+                      <td id={`RowSequenceTakeoff${index}`}>{row.takeoff}</td>
+                      <td id={`RowSequenceArrival${index}`}>{row.arrival}</td>
+                      <td id={`RowSequenceVisuMotor${index}`}>
+                        {row.visuMotor}
+                      </td>
+                      <td id={`RowSequenceMotor${index}`}>{row.motor}</td>
+                      <td id={`RowSequenceCognitiveMotor${index}`}>
+                        {row.cognitiveMotor}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -682,24 +799,25 @@ const AnalizeSession = () => {
           <div
             style={{
               display: "flex",
-              width: "100%",
               gap: "0.5em",
               padding: "0 0.5em",
             }}
           >
-            <div style={{width:'100%'}}>
-              <p style={{margin:'0',textAlign:'center'}}>Jugada Anterior</p>
+            <div style={{ width: "100%" }}>
+              <p style={{ margin: "0", textAlign: "center" }}>
+                Jugada Anterior
+              </p>
               <img
-              style={{width:'100%'}}
+                style={{ width: "100%" }}
                 className="AnalizeSessionCurrentPlayImg"
                 ref={prevPlay}
                 src=""
               />
             </div>
-            <div style={{width:'100%'}}>
-              <p style={{margin:'0',textAlign:'center'}}>Jugada Actual</p>
+            <div style={{ width: "100%" }}>
+              <p style={{ margin: "0", textAlign: "center" }}>Jugada Actual</p>
               <img
-              style={{width:'100%'}}
+                style={{ width: "100%" }}
                 className="AnalizeSessionCurrentPlayImg"
                 ref={currentPlay}
                 src=""
@@ -726,7 +844,11 @@ const AnalizeSession = () => {
       <div className="AnalizeSessionMarksControlContainer">
         <div className="AnalizeSessionMarksControlButtons">
           <div>
-            <button className="AnalizeSessionMarksControlButton">
+            <button
+              className="AnalizeSessionMarksControlButton"
+              id="AddTakeoffMark"
+              onClick={AddTakeoffMark}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="18"
@@ -737,7 +859,11 @@ const AnalizeSession = () => {
               </svg>
               Añadir Marca Takeoff
             </button>
-            <button className="AnalizeSessionMarksControlButton">
+            <button
+              className="AnalizeSessionMarksControlButton"
+              id="AddArrivalMark"
+              onClick={AddArrivalMark}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="18"
@@ -801,7 +927,50 @@ const AnalizeSession = () => {
             </button>
           </div>
         </div>
-        <div className="AnalizeSessionMarksControlMetrics"></div>
+        <div className="AnalizeSessionMarksControlMetrics">
+        <table className="AnalizeSessionMarksControlMetricsTable">
+              <thead>
+                <tr>
+                  <th className="table-header">Metricas</th>
+                  <th className="table-header">Total</th>
+                  <th className="table-header">Promedio</th>
+                  <th className="table-header">Estímulo</th>
+                  <th className="table-header">Desviacion Estandar</th>
+                  <th className="table-header">Correcto{'[%]'}</th>
+                  <th className="table-header">Incorrecto{'[%]'}</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr className="table-row">
+                  <td >Visu-Motor Reaccion {'[ms]'}</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                </tr>
+                <tr className="table-row">
+                <td >Motor Reaccion {'[ms]'}</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                </tr>
+                <tr className="table-row">
+                <td >Tiempo Respuesta {'[ms]'}</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                  <td >0</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
       </div>
     </div>
   );

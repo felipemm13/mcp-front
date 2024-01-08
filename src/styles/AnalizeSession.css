@@ -5,29 +5,26 @@
     color: #fff;
     height: 100vh;
     width: 100vw;
-
 }
 
 .AnalizeSessionVideoContainer {
     display: flex;
     flex-direction: row;
-    height: 45%;
+    height: 40%;
     width: 100%;
-
 }
 
 .AnalizeSessionMarksContainer {
     display: flex;
     flex-direction: row;
-    height: 40%;
+    height: 35%;
     width: 100%;
-    border-bottom: 0.1em solid #fff;
 }
 
 .AnalizeSessionMarksControlContainer {
     display: flex;
-    flex-direction: column;
-    height: 15%;
+    flex-direction: row;
+    height: 25%;
     width: 100%;
 }
 
@@ -40,7 +37,7 @@
     flex-direction: column;
     align-items: start;
     justify-content: start;
-    gap: 1em;
+    gap: 0.5em;
     width: 35%;
 }
 
@@ -182,12 +179,13 @@
 .AnalizeSessionCurrentPlay {
     display: flex;
     flex-direction: column;
-    width: 37.5%;
+    width: 40%;
+    padding:0 0.5em;
 }
 
 /* Estilos CSS para la tabla */
 .table-container {
-    max-height: 40vh;
+    max-height: 35vh;
     /* Altura máxima para mostrar el scroll */
     overflow-y: auto;
     /* Agrega scroll vertical al tbody */
@@ -258,20 +256,22 @@
     overflow: hidden;
 }
 
-.AnalizeSessionMarksControlButtons{
+.AnalizeSessionMarksControlButtons {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
     width: 40%;
+    padding: 0.5em;
 }
-.AnalizeSessionMarksControlButtons div{
+
+.AnalizeSessionMarksControlButtons div {
     display: flex;
     flex-direction: row;
     gap: 0.5em;
     width: 100%;
 }
 
-.AnalizeSessionMarksControlButton{
+.AnalizeSessionMarksControlButton {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -303,10 +303,46 @@
     overflow: hidden;
 }
 
-.AnalizeSessionMarksControlButton:hover{
-    background-color: rgb(218, 37, 153,0.75);
+.AnalizeSessionMarksControlButton:hover:enabled {
+    background-color: rgb(218, 37, 153, 0.75);
     cursor: pointer;
 }
-.AnalizeSessionMarksControlButton:active{
+
+.AnalizeSessionMarksControlButton:disabled {
+    background-color: #6c757d;
+    cursor: default;
+}
+
+.AnalizeSessionMarksControlButton:active:enabled {
     background-color: rgb(218, 37, 153);
+}
+
+.AnalizeSessionMarksControlMetrics {
+    width: 59%;
+    padding: 0.5em
+}
+
+.AnalizeSessionMarksControlMetricsTable {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: none;
+    color: white;
+    table-layout: fixed;
+    text-align: center;
+}
+
+.AnalizeSessionMarksControlMetricsTable th,
+.AnalizeSessionMarksControlMetricsTable td {
+    border: 0.5px solid white;
+    line-height: 1em;
+    font-size: 0.95em;
+}
+
+.AnalizeSessionMarksControlMetricsTable th {
+
+    background-color: rgb(0, 0, 0, 0.75);
+}
+
+.AnalizeSessionMarksControlMetricsTable .table-row {
+    background-color: #1a1a1a;
 }

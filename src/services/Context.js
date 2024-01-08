@@ -6,6 +6,7 @@ const ProviderContext = ({ children }) => {
   const userContext = useRef(null);
   const videoCurrentSession = useRef(null);
   const infoSession = useRef({});
+  const currentFPS = useRef(null)
 
   return (
     <Context.Provider
@@ -13,6 +14,7 @@ const ProviderContext = ({ children }) => {
         userContext,
         videoCurrentSession,
         infoSession,
+        currentFPS
       }}
     >
       {children}

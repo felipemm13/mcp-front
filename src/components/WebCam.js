@@ -8,7 +8,7 @@ const WebCam = (props) => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recorderVideo = useRef([]);
-  const { videoCurrentSession } = useContext(Context);
+  const { videoCurrentSession,currentFPS } = useContext(Context);
   const [devices, setDevices] = useState([]); //list of cameras
 
   const [cameraState, setCameraState] = useState(false);
@@ -20,6 +20,7 @@ const WebCam = (props) => {
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
     });
+    
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
       handleDataAvailable
@@ -35,6 +36,7 @@ const WebCam = (props) => {
     }
   };
   const handleStopCaptureClick = () => {
+    currentFPS.current = mediaRecorderRef.current.stream.getVideoTracks()[0].getSettings().frameRate;
     mediaRecorderRef.current.stop();
   };
 
@@ -113,7 +115,7 @@ const WebCam = (props) => {
               deviceId: deviceId,
               width: { min: 640, ideal: 1920, max: 1920 },
               height: { min: 400, ideal: 1080 },
-              frameRate: { min: 15, ideal: 60 },
+              frameRate: { min: 15, ideal: 30, max: 60 },
             }}
           />
         ) : (
