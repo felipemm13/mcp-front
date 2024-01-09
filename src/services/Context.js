@@ -25,8 +25,8 @@ const ProviderContext = ({ children }) => {
     "assets/reactions/reaction-red.jpg",
     "assets/reactions/reaction-white.jpg",
     "assets/reactions/reaction-yellow.jpg",
-    "assets/teams/team-red.jpg",
-    "assets/teams/team-yellow.jpg",
+    "assets/teams/team-Red.jpg",
+    "assets/teams/team-Yellow.jpg",
     "assets/player-zone.png",
   ];
 

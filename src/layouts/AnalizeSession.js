@@ -109,7 +109,7 @@ const AnalizeSession = () => {
         );
         if (
           Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
-            infoSession.current.stimulusTime[currentStimulus.current] 
+          infoSession.current.stimulusTime[currentStimulus.current]
         ) {
           currentStimulus.current =
             currentStimulus.current + 1 <=
@@ -122,7 +122,6 @@ const AnalizeSession = () => {
             infoSession.current.imageSequences[
               currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
             ];
-        
         }
         if (
           Math.round(videosPlayersRef.current[2].currentTime * 1000) <
@@ -136,9 +135,7 @@ const AnalizeSession = () => {
             infoSession.current.imageSequences[currentStimulus.current];
           prevPlay.current.src =
             infoSession.current.imageSequences[
-              currentStimulus.current - 1 > 0
-                ? currentStimulus.current - 1
-                : 0
+              currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
             ];
         }
         if (videoState === "Play") {
@@ -928,48 +925,46 @@ const AnalizeSession = () => {
           </div>
         </div>
         <div className="AnalizeSessionMarksControlMetrics">
-        <table className="AnalizeSessionMarksControlMetricsTable">
-              <thead>
-                <tr>
-                  <th className="table-header">Metricas</th>
-                  <th className="table-header">Total</th>
-                  <th className="table-header">Promedio</th>
-                  <th className="table-header">Estímulo</th>
-                  <th className="table-header">Desviacion Estandar</th>
-                  <th className="table-header">Correcto{'[%]'}</th>
-                  <th className="table-header">Incorrecto{'[%]'}</th>
-                </tr>
-              </thead>
-              <tbody>
+          <table className="AnalizeSessionMarksControlMetricsTable">
+            <thead>
+              <tr>
+                <th className="table-header">Metricas</th>
+                <th className="table-header">Total</th>
+                <th className="table-header">Promedio</th>
+                <th className="table-header">Desviacion Estandar</th>
+                <th className="table-header">Correcto{"[%]"}</th>
+                <th className="table-header">Incorrecto{"[%]"}</th>
+              </tr>
+            </thead>
+            <tbody>
               <tr className="table-row">
-                  <td >Visu-Motor Reaccion {'[ms]'}</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                </tr>
-                <tr className="table-row">
-                <td >Motor Reaccion {'[ms]'}</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                </tr>
-                <tr className="table-row">
-                <td >Tiempo Respuesta {'[ms]'}</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                  <td >0</td>
-                </tr>
-              </tbody>
-            </table>
+                <td>Visu-Motor Reaccion {"[ms]"}</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr className="table-row">
+                <td>Motor Reaccion {"[ms]"}</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr className="table-row">
+                <td>Tiempo Respuesta {"[ms]"}</td>
+                <td>0</td>
+                <td>0</td>
+
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

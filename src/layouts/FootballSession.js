@@ -23,8 +23,8 @@ const FootballSession = () => {
   const numberOfPlays = useRef(3);
   const isRandomSeed = useRef(true);
   const seed = useRef(Math.floor(Math.random() * (6000 - 1)) + 1);
-  const secondsToNextPlay = useRef(1);
-  const secondsForPlayTransition = useRef(0.25);
+  const secondsToNextPlay = useRef(2);
+  const secondsForPlayTransition = useRef(0.5);
   const playsFromDb = useRef([]);
   const defaultPlays = useRef(0);
   const sequenceOfPlays = useRef([]);
@@ -81,7 +81,7 @@ const FootballSession = () => {
     } else {
       do {
         sequenceGenerated = [];
-        for (var i = 0; i < 3; i++) {
+        for (var i = 0; i < numberOfPlays.current; i++) {
           sequenceGenerated.push(Math.floor(Math.random() * 9) + 1);
         }
       } while (sequenceGenerated.includes(5) || hasConsecutiveDuplicates(sequenceGenerated));
@@ -394,7 +394,6 @@ const FootballSession = () => {
                   id="numberOfPlays"
                   defaultValue={numberOfPlays.current}
                   min="1"
-                  max="7"
                   step="1"
                   onChange={(e) => {
                     numberOfPlays.current = e.target.value;
@@ -438,7 +437,7 @@ const FootballSession = () => {
               <div className="sessionPlaysValues">
                 <label id="secondsToNextPlayLabel" htmlFor="secondsToNextPlay">
                   <b>
-                    <h5>Segundos siguiente jugada</h5>
+                    <h5>Segundos de exhibición</h5>
                   </b>
                 </label>
                 <input

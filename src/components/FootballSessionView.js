@@ -190,20 +190,20 @@ const FootballSessionView = ({ view }) => {
     );
     setShowAnimation("reactive");
     ballAnimationRef.update({
-      from: {
-        x: containerWidth.current * 0.5,
-        y: containerHeight.current * 0.5,
-        opacity: 0,
-      },
-      to: [ballAnimationMoves],
+      from: ballAnimationMoves[0],
+      to: [
+        ...ballAnimationMoves.splice(1, ballAnimationMoves.length - 1),
+        {
+          x: containerWidth.current * 0.5,
+          y: containerHeight.current * 0.5,
+          opacity: 0,
+          delay: infoSession.current.secondsToNextPlay.current * 1000,
+        },
+      ],
       config: {
         duration: infoSession.current.secondsForPlayTransition.current * 1000,
       },
-      onResolve: () =>
-        setTimeout(
-          () => handleFinishAnimation(),
-          infoSession.current.secondsToNextPlay.current * 1000
-        ),
+      onResolve: () => handleFinishAnimation(),
       onStart: () => {
         if (view === "coach") {
           if (
@@ -230,6 +230,7 @@ const FootballSessionView = ({ view }) => {
   };
 
   const handleDiscriminativeAnimation = () => {
+    const seed = new Date().getSeconds();
     let colors = [];
     let positions = [];
     let indexSequence = 0;
@@ -291,7 +292,12 @@ const FootballSessionView = ({ view }) => {
           i <= infoSession.current.numOfDistractors.current;
           i++
         ) {
-          indexColor = Math.floor(Math.random() * (colors.length - 1));
+          indexColor = rand(
+            0,
+            colors.length - 1,
+            seed * (iteracion + 1) * sequence
+          );
+          //indexColor = Math.floor(Math.random() * (colors.length - 1));
           if (i === 0) {
             if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
               indexPosition =
@@ -301,7 +307,11 @@ const FootballSessionView = ({ view }) => {
                 infoSession.current.sequenceOfPlays.current[iteracion] - 1;
             }
           } else {
-            indexPosition = rand(0, positions.length - 1, sequence * 100);
+            indexPosition = rand(
+              0,
+              positions.length - 1,
+              seed * (iteracion + 1) * sequence
+            );
           }
           distractorsMoves[i][iteracion] = {
             cx: positions[indexPosition].cx,
@@ -315,7 +325,6 @@ const FootballSessionView = ({ view }) => {
         }
       }
     );
-
     let sequenceIndex = 0;
     apiDiscriminativeAnimation.update((i) => {
       return {
@@ -323,7 +332,6 @@ const FootballSessionView = ({ view }) => {
           cx: containerWidth.current * 0.5,
           cy: containerHeight.current * 0.5,
           opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
         },
         to: [distractorsMoves[i]],
         config: {

@@ -8,7 +8,7 @@ const WebCam = (props) => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recorderVideo = useRef([]);
-  const { videoCurrentSession,currentFPS } = useContext(Context);
+  const { videoCurrentSession, currentFPS } = useContext(Context);
   const [devices, setDevices] = useState([]); //list of cameras
 
   const [cameraState, setCameraState] = useState(false);
@@ -20,7 +20,7 @@ const WebCam = (props) => {
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
     });
-    
+
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
       handleDataAvailable
@@ -36,33 +36,37 @@ const WebCam = (props) => {
     }
   };
   const handleStopCaptureClick = () => {
-    currentFPS.current = mediaRecorderRef.current.stream.getVideoTracks()[0].getSettings().frameRate;
+    currentFPS.current = mediaRecorderRef.current.stream
+      .getVideoTracks()[0]
+      .getSettings().frameRate;
     mediaRecorderRef.current.stop();
   };
 
   const handleUploadVideo = () => {
-    if (recorderVideo.current.length) {
-      const blob = new Blob(recorderVideo.current, {
-        type: "video/webm",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      a.style = "display: none";
-      a.href = url;
-      a.download = "video.mp4";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    const url = URL.createObjectURL(recorderVideo.current);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    a.href = url;
+    a.download = "video.mp4";
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
   const handleChangeWebCam = (e) => {
     setDeviceId(e.target.value);
   };
   useEffect(() => {
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then((mediaDevices) => {
-        setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
-      });
+    if (navigator.mediaDevices?.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          setDevices(devices.filter(({ kind }) => kind === "videoinput"));
+        })
+        .catch((err) => {
+          console.error(`${err.name}: ${err.message}`);
+        });
+    } else {
+      console.log("Error al cargar dispositivos de video");
     }
 
     document
