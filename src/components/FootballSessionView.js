@@ -107,7 +107,7 @@ const FootballSessionView = ({ view }) => {
       imageSequences.current.forEach((image, index) => {
         link.href = image;
         link.download = "image.jpeg";
-        //link.click();
+        link.click();
       });
       //console.log(stimulusTimeSequence.current)
       infoSession.current = {
@@ -189,6 +189,11 @@ const FootballSessionView = ({ view }) => {
       }
     );
     setShowAnimation("reactive");
+    setTimeout(() => {
+      htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+        imageSequences.current.push(dataUrl);
+      });
+    }, [infoSession.current.secondsToNextPlay.current * 1000]);
     ballAnimationRef.update({
       from: ballAnimationMoves[0],
       to: [
@@ -331,10 +336,19 @@ const FootballSessionView = ({ view }) => {
       let distractorsInitialPosition =
         distractorsMoves[i] && distractorsMoves[i].shift();
       if (i == 0) {
-        console.log(distractorsInitialPosition);
         let color =
           distractorsInitialPosition && distractorsInitialPosition.fill;
         imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+        if (
+          indexSequence < infoSession.current.sequenceOfPlays.current.length
+        ) {
+          setTimeout(() => {
+            htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+              imageSequences.current.push(dataUrl);
+            });
+          }, [infoSession.current.secondsToNextPlay.current * 1000]);
+          indexSequence++;
+        }
       }
       return {
         from: distractorsInitialPosition,
