@@ -207,7 +207,8 @@ const FootballSessionView = ({ view }) => {
       onStart: () => {
         if (view === "coach") {
           if (
-            sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+            sequenceIndex <
+            infoSession.current.sequenceOfPlays.current.length - 1
           ) {
             stimulusTimeSequence.current.push(new Date().getTime() - time);
             setTimeout(() => {
@@ -226,6 +227,7 @@ const FootballSessionView = ({ view }) => {
         .dispatchEvent(new Event("startRecord"));
     }
     let time = new Date().getTime();
+    stimulusTimeSequence.current.push(0);
     ballAnimationRef.start();
   };
 
@@ -297,7 +299,6 @@ const FootballSessionView = ({ view }) => {
             colors.length - 1,
             seed * (iteracion + 1) * sequence
           );
-          //indexColor = Math.floor(Math.random() * (colors.length - 1));
           if (i === 0) {
             if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
               indexPosition =
@@ -327,13 +328,25 @@ const FootballSessionView = ({ view }) => {
     );
     let sequenceIndex = 0;
     apiDiscriminativeAnimation.update((i) => {
+      let distractorsInitialPosition =
+        distractorsMoves[i] && distractorsMoves[i].shift();
+      if (i == 0) {
+        console.log(distractorsInitialPosition);
+        let color =
+          distractorsInitialPosition && distractorsInitialPosition.fill;
+        imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+      }
       return {
-        from: {
-          cx: containerWidth.current * 0.5,
-          cy: containerHeight.current * 0.5,
-          opacity: 0,
-        },
-        to: [distractorsMoves[i]],
+        from: distractorsInitialPosition,
+        to: [
+          distractorsMoves[i],
+          {
+            cx: containerWidth.current * 0.5,
+            cy: containerHeight.current * 0.5,
+            opacity: 0,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          },
+        ],
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
@@ -356,10 +369,7 @@ const FootballSessionView = ({ view }) => {
         },
         onResolve: () => {
           if (i === 0) {
-            setTimeout(
-              () => handleFinishAnimation(),
-              infoSession.current.secondsToNextPlay.current * 1000
-            );
+            handleFinishAnimation();
           }
         },
       };
@@ -370,6 +380,7 @@ const FootballSessionView = ({ view }) => {
         .dispatchEvent(new Event("startRecord"));
     }
     let time = new Date().getTime();
+    stimulusTimeSequence.current.push(0);
     apiDiscriminativeAnimation.start();
   };
 
