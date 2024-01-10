@@ -10,9 +10,10 @@ import authService from "../services/authService";
 import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
+import Routes from "../connection/path";
 
 const FootballSession = () => {
-  const { userContext, infoSession, videoCurrentSession } = useContext(Context);
+  const { userContext, infoSession, videoCurrentSession,CrudApi } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
   const [AnimationSeconds, setAnimationSeconds] = useState(0);
@@ -101,6 +102,12 @@ const FootballSession = () => {
   };
 
   const getPlays = async () => {
+    await CrudApi.get(Routes.playsRoutes.GETPLAYS).then((res) => {
+    console.log(res)
+    }).catch((error) => {
+      console.log(error);
+    });
+
     firebaseService.getPlays("default", false).then((querySnapshot) => {
       defaultPlays.current = querySnapshot.length;
       firebaseService
@@ -112,6 +119,7 @@ const FootballSession = () => {
           let tempPlays = querySnapshot.concat(querySnapshot2);
           if (tempPlays.length) {
             playsFromDb.current = tempPlays;
+            console.log(tempPlays)
             setPlaysFromDbLoaded(false);
           }
         });

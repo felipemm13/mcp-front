@@ -72,7 +72,7 @@ const AnalizeSession = () => {
     );
     //console.log(videosPlayersRef.current);
     if (session === "current" && videoCurrentSession.current) {
-      console.log(infoSession.current);
+      //console.log(infoSession.current);
       //infoSession.current.imageSequences.pop()
       const url = URL.createObjectURL(videoCurrentSession.current);
       getVideoDuration(url);
@@ -100,13 +100,9 @@ const AnalizeSession = () => {
   }, []);
 
   useEffect(() => {
+    console.log(currentFrame,videosPlayersRef.current[2].currentTime);
     if (videosPlayersRef.current.length) {
       if (currentFrame > 0) {
-        console.log(
-          Math.round(videosPlayersRef.current[2].currentTime * 1000),
-          infoSession.current.stimulusTime[currentStimulus.current],
-          currentStimulus.current
-        );
         if (
           Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
           infoSession.current.stimulusTime[currentStimulus.current]
@@ -138,13 +134,13 @@ const AnalizeSession = () => {
               currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
             ];
         }
+        
         if (videoState === "Play") {
           videosPlayersRef.current[0].currentTime = (currentFrame - 2) / FPS;
           videosPlayersRef.current[1].currentTime = (currentFrame - 1) / FPS;
           videosPlayersRef.current[2].currentTime = currentFrame / FPS;
           videosPlayersRef.current[3].currentTime = (currentFrame + 1) / FPS;
           videosPlayersRef.current[4].currentTime = (currentFrame + 2) / FPS;
-
           setCurrentTime(videosPlayersRef.current[2].currentTime);
         }
       } else {
@@ -433,6 +429,7 @@ const AnalizeSession = () => {
               disablePictureInPicture
               onTimeUpdate={(e) => {
                 setCurrentFrame(Math.round(e.target.currentTime * FPS));
+                console.log('eCureentT',e.target.currentTime)
               }}
             />
           </div>

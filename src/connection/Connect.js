@@ -17,7 +17,6 @@ class Connect {
   async post(path, data) {
     try {
       const url = `${this.#baseUrlApi}${path}`;
-      console.log(url, this.#config);
       const response = await axios.post(url, data, this.#config); // Usa la configuración común
 
       return response;

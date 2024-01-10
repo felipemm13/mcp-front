@@ -30,7 +30,7 @@ const playersRoutes ={
 }
 
 const playsRoutes = {
-    GETPLAYS: "plays/:playId?",
+    GETPLAYS: "plays",
     POSTPLAYS: "plays",
     PUTPLAYS: "plays/:playId",
     DELETEPLAYS: "plays/:playId"

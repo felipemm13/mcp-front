@@ -14,7 +14,6 @@ const Webapp = () => {
   const password = useRef(null);
   const loginUser = async () => {
     setLoading(true);
-
     await CrudApi.post(Routes.userRoutes.LOGINUSER, {
       email: email.current,
       password: password.current,
@@ -41,10 +40,9 @@ const Webapp = () => {
   };
 
   useEffect(() => {
-    setUser(null);
     setLoading(true);
     setTimeout(() => {
-      setUser(userContext);
+      setUser(userContext.current ? userContext.current : null);
       setLoading(false);
     }, 500);
   }, []);

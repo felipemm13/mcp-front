@@ -410,12 +410,12 @@ const FootballSessionView = ({ view }) => {
         return play;
       }
     );
+    
     setNumberOfPlayers({
       red: Math.max(...plays.map((play) => play.Red.length)),
       yellow: Math.max(...plays.map((play) => play.Yellow.length)),
     });
 
-    //console.log("Applied");
     let playerTeams = plays.map((play) => play.PlayerTeam);
 
     //Red players
@@ -493,6 +493,7 @@ const FootballSessionView = ({ view }) => {
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
     });
+    
     setShowAnimation("applied");
     //Actualizar animaciones red players
     apiRedPlayersAnimation.update((i) => {
