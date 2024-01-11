@@ -13,7 +13,8 @@ import Swal from "sweetalert2";
 import Routes from "../connection/path";
 
 const FootballSession = () => {
-  const { userContext, infoSession, videoCurrentSession,CrudApi } = useContext(Context);
+  const { userContext, infoSession, videoCurrentSession, CrudApi } =
+    useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
   const [AnimationSeconds, setAnimationSeconds] = useState(0);
@@ -65,14 +66,14 @@ const FootballSession = () => {
 
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
-    const hasConsecutiveDuplicates = (arr)=> {
+    const hasConsecutiveDuplicates = (arr) => {
       for (var i = 0; i < arr.length - 1; i++) {
         if (arr[i] === arr[i + 1]) {
           return true;
         }
       }
       return false;
-    }
+    };
     if (typeOfSession.current === "applied") {
       sequenceGenerated = n_rand(
         playsFromDb.current.length,
@@ -85,7 +86,10 @@ const FootballSession = () => {
         for (var i = 0; i < numberOfPlays.current; i++) {
           sequenceGenerated.push(Math.floor(Math.random() * 9) + 1);
         }
-      } while (sequenceGenerated.includes(5) || hasConsecutiveDuplicates(sequenceGenerated));
+      } while (
+        sequenceGenerated.includes(5) ||
+        hasConsecutiveDuplicates(sequenceGenerated)
+      );
     }
 
     sequenceOfPlays.current = sequenceGenerated;
@@ -102,11 +106,6 @@ const FootballSession = () => {
   };
 
   const getPlays = async () => {
-    await CrudApi.get(Routes.playsRoutes.GETPLAYS).then((res) => {
-    console.log(res)
-    }).catch((error) => {
-      console.log(error);
-    });
 
     firebaseService.getPlays("default", false).then((querySnapshot) => {
       defaultPlays.current = querySnapshot.length;
@@ -119,7 +118,7 @@ const FootballSession = () => {
           let tempPlays = querySnapshot.concat(querySnapshot2);
           if (tempPlays.length) {
             playsFromDb.current = tempPlays;
-            console.log(tempPlays)
+            console.log(tempPlays);
             setPlaysFromDbLoaded(false);
           }
         });

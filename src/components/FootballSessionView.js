@@ -107,7 +107,7 @@ const FootballSessionView = ({ view }) => {
       imageSequences.current.forEach((image, index) => {
         link.href = image;
         link.download = "image.jpeg";
-        link.click();
+        //link.click();
       });
       //console.log(stimulusTimeSequence.current)
       infoSession.current = {
@@ -402,6 +402,7 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     let sequenceIndex = 0;
+
     const plays = infoSession.current.sequenceOfPlays.current.map(
       (sequence) => {
         let play = infoSession.current.playsFromDb.current.find(
@@ -493,7 +494,7 @@ const FootballSessionView = ({ view }) => {
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
     });
-    
+
     setShowAnimation("applied");
     //Actualizar animaciones red players
     apiRedPlayersAnimation.update((i) => {

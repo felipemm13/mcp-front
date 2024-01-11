@@ -22,9 +22,8 @@ const AnalizeSession = () => {
   const currentStimulus = useRef(0);
   const selectedRowIndex = useRef(0);
   const selectedPlayID = useRef(null);
-  const [currentPlaySelected, setCurrentPlaySelected] = useState(null);
 
-  const initialData = Array.from({ length: 20 }, (_, index) => ({
+  const initialData = Array.from({ length: 0 }, (_, index) => ({
     sequence: index + 1,
     playID: index + 1,
     error: false,
@@ -100,7 +99,7 @@ const AnalizeSession = () => {
   }, []);
 
   useEffect(() => {
-    console.log(currentFrame,videosPlayersRef.current[2].currentTime);
+    console.log(currentFrame, videosPlayersRef.current[2].currentTime);
     if (videosPlayersRef.current.length) {
       if (currentFrame > 0) {
         if (
@@ -134,7 +133,7 @@ const AnalizeSession = () => {
               currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
             ];
         }
-        
+
         if (videoState === "Play") {
           videosPlayersRef.current[0].currentTime = (currentFrame - 2) / FPS;
           videosPlayersRef.current[1].currentTime = (currentFrame - 1) / FPS;
@@ -260,6 +259,69 @@ const AnalizeSession = () => {
       }
     }
   };
+
+  const getTotalMetrics = useCallback(
+    (metric) => {
+      let total = 0;
+      console.log(tableData.length);
+      for (let i = 0; i < tableData.length; i++) {
+        total +=
+          document.getElementById(`RowSequence${metric}${i}`) &&
+          parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+      }
+      return total;
+    },
+    [selectedRowIndex.current, currentFrame]
+  );
+
+  const getAverageMetrics = useCallback(
+    (metric) => {
+      let total = 0;
+      let average = 0;
+      if (tableData.length > 0) {
+        for (let i = 0; i < tableData.length; i++) {
+          total += parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+        }
+        average = total / tableData.length;
+        return average;
+      } else {
+        return 0;
+      }
+    },
+    [selectedRowIndex.current, currentFrame]
+  );
+
+  const getStandardDeviationMetrics = useCallback(
+    (metric) => {
+      let total = 0;
+      let average = 0;
+      let standardDeviation = 0;
+      if (tableData.length > 0) {
+        for (let i = 0; i < tableData.length; i++) {
+          total += parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+        }
+        average = total / tableData.length;
+        for (let i = 0; i < tableData.length; i++) {
+          standardDeviation += Math.pow(
+            parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            ) - average,
+            2
+          );
+        }
+        return Math.floor((Math.sqrt(standardDeviation / tableData.length))*100)/100;
+      } else {
+        return 0;
+      }
+    },
+    [selectedRowIndex.current, currentFrame]
+  );
 
   return (
     <div className="AnalizeSessionContainer">
@@ -429,7 +491,7 @@ const AnalizeSession = () => {
               disablePictureInPicture
               onTimeUpdate={(e) => {
                 setCurrentFrame(Math.round(e.target.currentTime * FPS));
-                console.log('eCureentT',e.target.currentTime)
+                console.log("eCureentT", e.target.currentTime);
               }}
             />
           </div>
@@ -936,27 +998,25 @@ const AnalizeSession = () => {
             <tbody>
               <tr className="table-row">
                 <td>Visu-Motor Reaccion {"[ms]"}</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
+                <td>{getTotalMetrics("VisuMotor")}</td>
+                <td>{getAverageMetrics('VisuMotor')}</td>
+                <td>{getStandardDeviationMetrics("VisuMotor")}</td>
                 <td>0</td>
                 <td>0</td>
               </tr>
               <tr className="table-row">
                 <td>Motor Reaccion {"[ms]"}</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-
+                <td>{getTotalMetrics("Motor")}</td>
+                <td>{getAverageMetrics('Motor')}</td>
+                <td>{getStandardDeviationMetrics("Motor")}</td>
                 <td>0</td>
                 <td>0</td>
               </tr>
               <tr className="table-row">
                 <td>Tiempo Respuesta {"[ms]"}</td>
-                <td>0</td>
-                <td>0</td>
-
-                <td>0</td>
+                <td>{getTotalMetrics("CognitiveMotor")}</td>
+                <td>{getAverageMetrics('CognitiveMotor')}</td>
+                <td>{getStandardDeviationMetrics("CognitiveMotor")}</td>
                 <td>0</td>
                 <td>0</td>
               </tr>
