@@ -1,10 +1,12 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "../styles/AnalizeSession.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
 
 const AnalizeSession = () => {
-  const { videoCurrentSession, infoSession, currentFPS } = useContext(Context);
+  const { videoCurrentSession, infoSession, currentFPS, CrudApi } =
+    useContext(Context);
+  const navigate = useNavigate();
   const session = useParams().session;
   const FPS = currentFPS.current;
   const [videoSession, setVideoSession] = useState(null);
@@ -99,7 +101,6 @@ const AnalizeSession = () => {
   }, []);
 
   useEffect(() => {
-    console.log(currentFrame, videosPlayersRef.current[2].currentTime);
     if (videosPlayersRef.current.length) {
       if (currentFrame > 0) {
         if (
@@ -160,16 +161,17 @@ const AnalizeSession = () => {
 
     if (previousSelectedRow) {
       previousSelectedRow.style.background = "#1a1a1a";
+      previousSelectedRow.style.color = "white";
     }
 
     if (selectedRowIndex.current === index) {
-      //selectedRow.style.background = "#1a1a1a";
       selectedRowIndex.current = null;
       selectedPlayID.current = null;
       document.getElementById("AddTakeoffMark").disabled = true;
       document.getElementById("AddArrivalMark").disabled = true;
     } else {
-      selectedRow.style.background = "rgb(0, 0, 0, 0.75)";
+      selectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+      selectedRow.style.color = "black";
       selectedRowIndex.current = index;
       selectedPlayID.current = playID;
       document.getElementById("AddTakeoffMark").disabled = false;
@@ -263,7 +265,6 @@ const AnalizeSession = () => {
   const getTotalMetrics = useCallback(
     (metric) => {
       let total = 0;
-      console.log(tableData.length);
       for (let i = 0; i < tableData.length; i++) {
         total +=
           document.getElementById(`RowSequence${metric}${i}`) &&
@@ -287,7 +288,7 @@ const AnalizeSession = () => {
           );
         }
         average = total / tableData.length;
-        return average;
+        return Math.floor(average);
       } else {
         return 0;
       }
@@ -315,7 +316,10 @@ const AnalizeSession = () => {
             2
           );
         }
-        return Math.floor((Math.sqrt(standardDeviation / tableData.length))*100)/100;
+        return (
+          Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
+          100
+        );
       } else {
         return 0;
       }
@@ -323,8 +327,40 @@ const AnalizeSession = () => {
     [selectedRowIndex.current, currentFrame]
   );
 
+  const SaveAnalizeSession = async () => {
+    const data = {
+      SessionPlay_Number: "",
+      Arrival: "",
+      Cognitive_motor: "",
+      CorrectResponse: "",
+      Error: "",
+      Image_URL: "",
+      Completed: "",
+      Motor: "",
+      Seq_ID: "",
+      Presented_ms: "",
+      Stimulus: "",
+      Takeoff: "",
+    };
+    await CrudApi.post();
+  };
+
   return (
     <div className="AnalizeSessionContainer">
+      <button
+        className="AnalizeSessionBackButton"
+        onClick={() => navigate("/football-session")}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="25"
+          width="25"
+          viewBox="0 0 512 512"
+        >
+          <path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z" />
+        </svg>
+        Volver
+      </button>
       <div className="AnalizeSessionVideoContainer">
         <div className="AnalizeSessionVideoInfoSessionContainer">
           <div className="AnalizeSessionVideoTitle">
@@ -491,7 +527,6 @@ const AnalizeSession = () => {
               disablePictureInPicture
               onTimeUpdate={(e) => {
                 setCurrentFrame(Math.round(e.target.currentTime * FPS));
-                console.log("eCureentT", e.target.currentTime);
               }}
             />
           </div>
@@ -820,7 +855,12 @@ const AnalizeSession = () => {
                     <tr
                       id={`RowSequenceIndex${index}`}
                       style={
-                        index === 0 ? { background: "rgb(0, 0, 0, 0.75)" } : {}
+                        index === 0
+                          ? {
+                              background: "rgb(255, 255, 255, 0.75)",
+                              color: "black",
+                            }
+                          : {}
                       }
                       key={index}
                       onClick={() => handleRowClick(index, row.playID)}
@@ -869,6 +909,14 @@ const AnalizeSession = () => {
                 ref={prevPlay}
                 src=""
               />
+              <div>
+                Tiempo [ms]:{" "}
+                {infoSession.current.stimulusTime[currentStimulus.current - 1]
+                  ? infoSession.current.stimulusTime[
+                      currentStimulus.current - 1
+                    ]
+                  : 0}
+              </div>
             </div>
             <div style={{ width: "100%" }}>
               <p style={{ margin: "0", textAlign: "center" }}>Jugada Actual</p>
@@ -878,21 +926,10 @@ const AnalizeSession = () => {
                 ref={currentPlay}
                 src=""
               />
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: "0.5em" }}>
-            <div>
-              Tiempo [ms]:{" "}
-              {videosPlayersRef.current.length
-                ? Math.round(videosPlayersRef.current[2].currentTime * 1000)
-                : 0}
-            </div>
-            <div>
-              Play ID: {selectedPlayID.current ? selectedPlayID.current : "-"}
-            </div>
-            <div>
-              Cuadro Correcto:{" "}
-              {selectedPlayID.current ? selectedPlayID.current : "-"}
+              <div>
+                Tiempo [ms]:{" "}
+                {infoSession.current.stimulusTime[currentStimulus.current]}
+              </div>
             </div>
           </div>
         </div>
@@ -943,7 +980,10 @@ const AnalizeSession = () => {
             </button>
           </div>
           <div>
-            <button className="AnalizeSessionMarksControlButton">
+            <button
+              className="AnalizeSessionMarksControlButton"
+              onClick={() => SaveAnalizeSession()}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="18"
@@ -999,7 +1039,7 @@ const AnalizeSession = () => {
               <tr className="table-row">
                 <td>Visu-Motor Reaccion {"[ms]"}</td>
                 <td>{getTotalMetrics("VisuMotor")}</td>
-                <td>{getAverageMetrics('VisuMotor')}</td>
+                <td>{getAverageMetrics("VisuMotor")}</td>
                 <td>{getStandardDeviationMetrics("VisuMotor")}</td>
                 <td>0</td>
                 <td>0</td>
@@ -1007,7 +1047,7 @@ const AnalizeSession = () => {
               <tr className="table-row">
                 <td>Motor Reaccion {"[ms]"}</td>
                 <td>{getTotalMetrics("Motor")}</td>
-                <td>{getAverageMetrics('Motor')}</td>
+                <td>{getAverageMetrics("Motor")}</td>
                 <td>{getStandardDeviationMetrics("Motor")}</td>
                 <td>0</td>
                 <td>0</td>
@@ -1015,7 +1055,7 @@ const AnalizeSession = () => {
               <tr className="table-row">
                 <td>Tiempo Respuesta {"[ms]"}</td>
                 <td>{getTotalMetrics("CognitiveMotor")}</td>
-                <td>{getAverageMetrics('CognitiveMotor')}</td>
+                <td>{getAverageMetrics("CognitiveMotor")}</td>
                 <td>{getStandardDeviationMetrics("CognitiveMotor")}</td>
                 <td>0</td>
                 <td>0</td>

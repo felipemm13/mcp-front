@@ -6,17 +6,18 @@ import { useEffect, useState, useRef, useContext } from "react";
 import WindowPortal from "../components/WindowPortal";
 import { n_rand } from "../utility/math_functions";
 import firebaseService from "../services/firebaseService2";
-import authService from "../services/authService";
 import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
 import Routes from "../connection/path";
+import ListSesions from "./ListSesions";
 
 const FootballSession = () => {
   const { userContext, infoSession, videoCurrentSession, CrudApi } =
     useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
+  const [showListSesion, setShowListSesion] = useState(false);
   const [AnimationSeconds, setAnimationSeconds] = useState(0);
   const [AnimationNumberOfPlay, setAnimationNumberOfPlay] = useState(0);
   const [AnimationCaptures, setAnimationCaptures] = useState([]);
@@ -43,7 +44,6 @@ const FootballSession = () => {
   const [formPlayerModalTitle, setFormPlayerModalTitle] = useState("");
 
   useEffect(() => {
-    userContext.current = authService.getCurrentUser();
     listOfPLayers.current = [];
     window.addEventListener("beforeunload", () => {
       setShowWindowPortal(false);
@@ -96,9 +96,11 @@ const FootballSession = () => {
     var strSequence = [];
     for (var number of sequenceGenerated) {
       if (number <= defaultPlays.current) {
-        strSequence.push(parseInt(playsFromDb.current[number - 1].id));
+        //strSequence.push(parseInt(playsFromDb.current[number - 1].id));
+        strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
       } else {
-        strSequence.push("U-" + parseInt(playsFromDb.current[number - 1].id));
+        //strSequence.push("U-" + parseInt(playsFromDb.current[number - 1].id));
+        strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
       }
     }
     document.getElementById("showSessionSequence").value =
@@ -106,7 +108,14 @@ const FootballSession = () => {
   };
 
   const getPlays = async () => {
-
+    await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
+      .then((response) => {
+        defaultPlays.current = response.length;
+        playsFromDb.current = response;
+        setPlaysFromDbLoaded(false);
+      })
+      .catch((error) => console.log(error));
+    /*
     firebaseService.getPlays("default", false).then((querySnapshot) => {
       defaultPlays.current = querySnapshot.length;
       firebaseService
@@ -122,10 +131,13 @@ const FootballSession = () => {
             setPlaysFromDbLoaded(false);
           }
         });
-    });
+    });*/
   };
 
   const getPlayers = async () => {
+    /*await CrudApi.get(Routes.playersRoutes.GETPLAYERS+userContext.current.userId).then((response) => {
+      console.log(response);
+    });*/
     await firebaseService
       .getStudySportGroupByEmail("admin@admin.com", "football")
       .then((querySnapshot) => {
@@ -535,6 +547,14 @@ const FootballSession = () => {
                     infoSession={currentSesionInfo}
                     view={"player"}
                   />
+                </WindowPortal>
+              )}
+              {showListSesion && (
+                <WindowPortal>
+                  <ListSesions
+                    sport={"Football"}
+                    user={"admin@admin.com"}
+                  ></ListSesions>
                 </WindowPortal>
               )}
             </div>

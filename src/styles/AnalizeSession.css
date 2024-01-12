@@ -180,7 +180,7 @@
     display: flex;
     flex-direction: column;
     width: 40%;
-    padding:0 0.5em;
+    padding: 0 0.5em;
 }
 
 /* Estilos CSS para la tabla */
@@ -345,4 +345,39 @@
 
 .AnalizeSessionMarksControlMetricsTable .table-row {
     background-color: #1a1a1a;
+}
+
+.AnalizeSessionBackButton {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: 0px;
+    border: 0px;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    text-decoration: none;
+    font-size: 1rem;
+    line-height: 0.75;
+    text-transform: uppercase;
+    min-width: 64px;
+    padding: 4px;
+    border-radius: 4px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+    width: 100%;
+    color: rgb(255, 255, 255);
+    background-color: rgb(218, 37, 153);
+    gap: 0.5em;
+    fill: #fff;
+}
+
+.AnalizeSessionBackButton:hover {
+    cursor: pointer;
+    background-color: rgb(218, 37, 153, 0.75);
 }

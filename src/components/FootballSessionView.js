@@ -313,11 +313,15 @@ const FootballSessionView = ({ view }) => {
                 infoSession.current.sequenceOfPlays.current[iteracion] - 1;
             }
           } else {
-            indexPosition = rand(
-              0,
-              positions.length - 1,
-              seed * (iteracion + 1) * sequence
-            );
+            if (positions.length - 1 > 0) {
+              indexPosition = rand(
+                0,
+                positions.length - 1,
+                seed * (iteracion + 1) * sequence
+              );
+            } else {
+              indexPosition = 0;
+            }
           }
           distractorsMoves[i][iteracion] = {
             cx: positions[indexPosition].cx,
@@ -406,30 +410,57 @@ const FootballSessionView = ({ view }) => {
     const plays = infoSession.current.sequenceOfPlays.current.map(
       (sequence) => {
         let play = infoSession.current.playsFromDb.current.find(
-          (play) => play.id === sequence.toString()
+          (play) => play.playsId === sequence
         );
         return play;
       }
     );
-    
-    setNumberOfPlayers({
-      red: Math.max(...plays.map((play) => play.Red.length)),
-      yellow: Math.max(...plays.map((play) => play.Yellow.length)),
+    let maxPlayersInPlayRed = 0;
+    let maxPlayersInPlayYellow = 0;
+
+    plays.forEach((play) => {
+      let playersInPlayRed = 0;
+      let playersInPlayYellow = 0;
+
+      play.figureCoordinates.forEach((player) => {
+        if (player.color === "Red") {
+          playersInPlayRed++;
+        } else if (player.color === "Yellow") {
+          playersInPlayYellow++;
+        }
+      });
+
+      // Actualizar el contador máximo para cada equipo
+      maxPlayersInPlayRed = Math.max(maxPlayersInPlayRed, playersInPlayRed);
+      maxPlayersInPlayYellow = Math.max(
+        maxPlayersInPlayYellow,
+        playersInPlayYellow
+      );
     });
 
-    let playerTeams = plays.map((play) => play.PlayerTeam);
+    setNumberOfPlayers({
+      red: maxPlayersInPlayRed,
+      yellow: maxPlayersInPlayYellow,
+    });
+
+    let playerTeams = plays.map((play) => play.Team);
 
     //Red players
     let redPlayersMoves = plays.map((play) => {
-      return play.Red.map((player) => {
-        return {
-          cx: (player.x / 48) * containerWidth.current,
-          cy: (player.y / 48) * containerHeight.current,
-          opacity: 1,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
-        };
+      return play.figureCoordinates.map((player) => {
+        if (player.color === "Red") {
+          return {
+            cx: (player.xCoor / 48) * containerWidth.current,
+            cy: (player.yCoor / 48) * containerHeight.current,
+            opacity: 1,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          };
+        }
       });
     });
+    redPlayersMoves = redPlayersMoves.map((move) =>
+      move.filter((player) => player != undefined)
+    );
 
     let animationRedPlayersMoves = [];
     for (let i = 0; i < apiRedPlayersAnimation.current.length; i++) {
@@ -449,15 +480,20 @@ const FootballSessionView = ({ view }) => {
 
     //Yellow players
     let yellowPlayersMoves = plays.map((play) => {
-      return play.Yellow.map((player) => {
-        return {
-          cx: (player.x / 48) * containerWidth.current,
-          cy: (player.y / 48) * containerHeight.current,
-          opacity: 1,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
-        };
+      return play.figureCoordinates.map((player) => {
+        if (player.color === "Yellow") {
+          return {
+            cx: (player.xCoor / 48) * containerWidth.current,
+            cy: (player.yCoor / 48) * containerHeight.current,
+            opacity: 1,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          };
+        }
       });
     });
+    yellowPlayersMoves = yellowPlayersMoves.map((move) =>
+      move.filter((player) => player != undefined)
+    );
 
     let animationYellowPlayersMoves = [];
     for (let i = 0; i < apiYellowPlayersAnimation.current.length; i++) {
@@ -478,8 +514,8 @@ const FootballSessionView = ({ view }) => {
     //Ideal Player
     let animationIdealPlayerMoves = plays.map((play) => {
       return {
-        cx: (play.PlayerIdealPosition.x / 48) * containerWidth.current,
-        cy: (play.PlayerIdealPosition.y / 48) * containerHeight.current,
+        cx: (play.IdealPositionX / 48) * containerWidth.current,
+        cy: (play.IdealPositionY / 48) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
@@ -488,8 +524,8 @@ const FootballSessionView = ({ view }) => {
     //Ball Animation
     let animationBallMoves = plays.map((play) => {
       return {
-        x: (play.Ball.x / 48) * containerWidth.current,
-        y: (play.Ball.y / 48) * containerHeight.current,
+        x: (play.ballX / 48) * containerWidth.current,
+        y: (play.ballY / 48) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
@@ -499,13 +535,16 @@ const FootballSessionView = ({ view }) => {
     //Actualizar animaciones red players
     apiRedPlayersAnimation.update((i) => {
       return {
-        from: {
-          cx: containerWidth.current * 0.5,
-          cy: containerHeight.current * 0.5,
-          opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
-        },
-        to: animationRedPlayersMoves[i],
+        from: animationRedPlayersMoves[i][0],
+        to: [
+          ...animationRedPlayersMoves[i].slice(1),
+          {
+            cx: containerWidth.current * 0.5,
+            cy: containerHeight.current * 0.5,
+            opacity: 0,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          },
+        ],
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
@@ -515,13 +554,16 @@ const FootballSessionView = ({ view }) => {
     //Actualizar animaciones yellow players
     apiYellowPlayersAnimation.update((i) => {
       return {
-        from: {
-          cx: containerWidth.current * 0.5,
-          cy: containerHeight.current * 0.5,
-          opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
-        },
-        to: animationYellowPlayersMoves[i],
+        from: animationYellowPlayersMoves[i][0],
+        to: [
+          ...animationYellowPlayersMoves[i].slice(1),
+          {
+            cx: containerWidth.current * 0.5,
+            cy: containerHeight.current * 0.5,
+            opacity: 0,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          },
+        ],
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
@@ -530,13 +572,16 @@ const FootballSessionView = ({ view }) => {
 
     //Actualizar animaciones ideal player
     idealPlayerAnimationRef.update({
-      from: {
-        cx: containerWidth.current * 0.5,
-        cy: containerHeight.current * 0.5,
-        opacity: 0,
-        delay: infoSession.current.secondsToNextPlay.current * 1000,
-      },
-      to: animationIdealPlayerMoves,
+      from: animationIdealPlayerMoves[0],
+      to: [
+        ...animationIdealPlayerMoves.slice(1),
+        {
+          cx: containerWidth.current * 0.5,
+          cy: containerHeight.current * 0.5,
+          opacity: 0,
+          delay: infoSession.current.secondsToNextPlay.current * 1000,
+        },
+      ],
       config: {
         duration: infoSession.current.secondsForPlayTransition.current * 1000,
       },
@@ -544,40 +589,59 @@ const FootballSessionView = ({ view }) => {
 
     //Actualizar animaciones ball
     let teamIndex = 0;
-    ballAnimationRef.update({
-      from: {
-        x: containerWidth.current * 0.5,
-        y: containerHeight.current * 0.5,
-        opacity: 0,
-        delay: infoSession.current.secondsToNextPlay.current * 1000,
-      },
-      to: animationBallMoves,
-      config: {
-        duration: infoSession.current.secondsForPlayTransition.current * 1000,
-      },
-      onResolve: () =>
-        setTimeout(
-          () => handleFinishAnimation(),
-          infoSession.current.secondsToNextPlay.current * 1000
-        ),
-      onStart: () => {
-        imgRef.current.src = `assets/teams/team-${
-          playerTeams[teamIndex++]
-        }.jpg`;
-        if (view === "coach") {
-          if (
-            sequenceIndex < infoSession.current.sequenceOfPlays.current.length
-          ) {
-            stimulusTimeSequence.current.push(new Date().getTime() - time);
-            setTimeout(() => {
-              htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
-                imageSequences.current.push(dataUrl);
-              });
-            }, [infoSession.current.secondsForPlayTransition.current * 1000]);
-            sequenceIndex++;
-          }
+    ballAnimationRef.update(() => {
+      imgRef.current.src = `assets/teams/team-${playerTeams[teamIndex++]}.jpg`;
+      if (view === "coach") {
+        if (
+          sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+        ) {
+          setTimeout(() => {
+            htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+              imageSequences.current.push(dataUrl);
+            });
+          }, [infoSession.current.secondsToNextPlay.current * 1000]);
+          sequenceIndex++;
         }
-      },
+      }
+      return {
+        from: animationBallMoves[0],
+        to: [
+          ...animationBallMoves.slice(1),
+          {
+            x: containerWidth.current * 0.5,
+            y: containerHeight.current * 0.5,
+            opacity: 0,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          },
+        ],
+        config: {
+          duration: infoSession.current.secondsForPlayTransition.current * 1000,
+        },
+        onResolve: () => handleFinishAnimation(),
+
+        onStart: () => {
+          if (playerTeams.length > teamIndex) {
+            imgRef.current.src = `assets/teams/team-${
+              playerTeams[teamIndex++]
+            }.jpg`;
+          } else {
+            imgRef.current.src = "assets/player-zone.png";
+          }
+          if (view === "coach") {
+            if (
+              sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+            ) {
+              stimulusTimeSequence.current.push(new Date().getTime() - time);
+              setTimeout(() => {
+                htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+                  imageSequences.current.push(dataUrl);
+                });
+              }, [infoSession.current.secondsForPlayTransition.current * 1000]);
+              sequenceIndex++;
+            }
+          }
+        },
+      };
     });
 
     if (view === "coach") {
@@ -586,6 +650,12 @@ const FootballSessionView = ({ view }) => {
         .dispatchEvent(new Event("startRecord"));
     }
     let time = new Date().getTime();
+    stimulusTimeSequence.current.push(0);
+    setTimeout(() => {
+      htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+        imageSequences.current.push(dataUrl);
+      });
+    }, [infoSession.current.secondsToNextPlay.current * 1000]);
     ballAnimationRef.start();
     idealPlayerAnimationRef.start();
     apiRedPlayersAnimation.start();
@@ -601,6 +671,11 @@ const FootballSessionView = ({ view }) => {
       sessionContainer.current.style.border = "none";
     }
     document.getElementById("SaveCaptureVideo").setAttribute("disabled", true);
+    document.getElementById("SaveCaptureVideo").innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" height="25" width="25" viewBox="0 0 448 512">
+    <path d="M48 96V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V170.5c0-4.2-1.7-8.3-4.7-11.3l33.9-33.9c12 12 18.7 28.3 18.7 45.3V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96C0 60.7 28.7 32 64 32H309.5c17 0 33.3 6.7 45.3 18.7l74.5 74.5-33.9 33.9L320.8 84.7c-.3-.3-.5-.5-.8-.8V184c0 13.3-10.7 24-24 24H104c-13.3 0-24-10.7-24-24V80H64c-8.8 0-16 7.2-16 16zm80-16v80H272V80H128zm32 240a64 64 0 1 1 128 0 64 64 0 1 1 -128 0z" />
+  </svg>
+  Guardar Sesion`;
     document
       .getElementById("OpenAnalizerView")
       .setAttribute("disabled", "true");

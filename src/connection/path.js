@@ -33,7 +33,10 @@ const playsRoutes = {
     GETPLAYS: "plays",
     POSTPLAYS: "plays",
     PUTPLAYS: "plays/:playId",
-    DELETEPLAYS: "plays/:playId"
+    DELETEPLAYS: "plays/:playId",
+    GETPLAYSFIGURES: "plays/:playId/figCoord",
+    GETPLAYFIGCOORD: "play/figCoord",
+
 };
 
 const sessionMovesRoutes = {

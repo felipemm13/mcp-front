@@ -3,12 +3,14 @@ import React, { useState, useRef, useEffect, useContext } from "react";
 import "../styles/WebCam.css";
 import Calibration from "./Calibration";
 import { Context } from "../services/Context";
+import AWS from "aws-sdk";
 
 const WebCam = (props) => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recorderVideo = useRef([]);
-  const { videoCurrentSession, currentFPS } = useContext(Context);
+  const { videoCurrentSession, currentFPS, infoSession, userContext } =
+    useContext(Context);
   const [devices, setDevices] = useState([]); //list of cameras
 
   const [cameraState, setCameraState] = useState(false);
@@ -42,15 +44,58 @@ const WebCam = (props) => {
     mediaRecorderRef.current.stop();
   };
 
-  const handleUploadVideo = () => {
-    const url = URL.createObjectURL(recorderVideo.current);
-    const a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    a.href = url;
-    a.download = "video.mp4";
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const handleUploadVideo = async () => {
+    const currentDate = new Date();
+    const sessionDate =
+      currentDate.getFullYear() +
+      "-" +
+      (currentDate.getMonth() + 1) +
+      "-" +
+      currentDate.getDate() +
+      "/" +
+      currentDate.getHours() +
+      ":" +
+      currentDate.getMinutes() +
+      ":" +
+      currentDate.getSeconds();
+    var file = new File([recorderVideo.current], sessionDate + ".mp4", {
+      type: "video/webm",
+    });
+    console.log(file);
+    const S3_BUCKET = "mcp-wildsense";
+    const REGION = "us-east-2";
+
+    AWS.config.update({
+      accessKeyId: "AKIAT7WTFPDFBSCPIH4P",
+      secretAccessKey: "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",
+    });
+    const s3 = new AWS.S3({
+      params: { Bucket: S3_BUCKET },
+      region: REGION,
+    });
+
+    const params = {
+      ACL: "public-read",
+      Bucket: S3_BUCKET,
+      Key: "videos/" + userContext.current.userId + "/" + file.name,
+      Body: file,
+    };
+
+    var upload = s3
+      .putObject(params)
+      .on("httpUploadProgress", (evt) => {
+        document.getElementById("SaveCaptureVideo").innerText =
+          "Subiendo Video " + parseInt((evt.loaded * 100) / evt.total) + "%";
+      })
+      .promise();
+
+    await upload.then((err, data) => {
+      document.getElementById("SaveCaptureVideo").innerHMTL = `
+        <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512">
+        <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/>
+        </svg>
+        Guardado Exitosamente`;
+    });
   };
   const handleChangeWebCam = (e) => {
     setDeviceId(e.target.value);

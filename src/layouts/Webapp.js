@@ -20,13 +20,14 @@ const Webapp = () => {
     })
       .then((res, req) => {
         if (res.status === 200) {
-          userContext.current = res.data.data;
+          console.log(res.data.data)
           setUser(res.data.data);
         }
       })
       .catch((error) => {
-        console.log(error.response, error.response.status);
-        if (error.response.status === 402) {
+        console.log(error);
+        
+        if (error && error.response.status === 402) {
           Swal.fire({
             title: "Error",
             text: "Correo o contraseña incorrectos!",
@@ -46,6 +47,8 @@ const Webapp = () => {
       setLoading(false);
     }, 500);
   }, []);
+
+  useEffect(()=>{userContext.current = user},[user])
 
   return (
     <>
