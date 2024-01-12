@@ -91,7 +91,7 @@ const WebCam = (props) => {
 
     await upload.then((err, data) => {
       document.getElementById("SaveCaptureVideo").innerText= `
-        Guardado Exitosamente`;
+      Guardado Exitosamente`;
     });
   };
   const handleChangeWebCam = (e) => {

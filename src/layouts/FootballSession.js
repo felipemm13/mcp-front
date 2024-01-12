@@ -10,14 +10,12 @@ import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
 import Routes from "../connection/path";
-import ListSesions from "./ListSesions";
 
 const FootballSession = () => {
   const { userContext, infoSession, videoCurrentSession, CrudApi } =
     useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
-  const [showListSesion, setShowListSesion] = useState(false);
   const [AnimationSeconds, setAnimationSeconds] = useState(0);
   const [AnimationNumberOfPlay, setAnimationNumberOfPlay] = useState(0);
   const [AnimationCaptures, setAnimationCaptures] = useState([]);
@@ -547,14 +545,6 @@ const FootballSession = () => {
                     infoSession={currentSesionInfo}
                     view={"player"}
                   />
-                </WindowPortal>
-              )}
-              {showListSesion && (
-                <WindowPortal>
-                  <ListSesions
-                    sport={"Football"}
-                    user={"admin@admin.com"}
-                  ></ListSesions>
                 </WindowPortal>
               )}
             </div>

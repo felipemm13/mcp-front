@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useCallback, useState, useRef } from "react";
-import "../styles/ListSesions.css";
+import "../styles/OtherSessions.css";
 import firebaseService from "../services/firebaseService2";
 
 const  OtherSessions = (props)=> {
@@ -55,8 +55,8 @@ const  OtherSessions = (props)=> {
   useEffect(async () => {
     // GET SESSION
     if (sessions === "notReady") {
-      firebaseService
-        .getAllSessionFromUser(props.sport, props.user)
+      /*firebaseService
+        .getAllSessionFromUser('Football', 'admin@admin.cl')
         .then((querySnapshot) => {
           if (querySnapshot.length != 0) {
             setTimeout(function () {
@@ -65,7 +65,7 @@ const  OtherSessions = (props)=> {
           } else {
             setItsSesionsNull(true);
           }
-        });
+        });*/
     }
   }, []);
   useEffect(() => {
@@ -89,30 +89,12 @@ const  OtherSessions = (props)=> {
     setActualGroup(groups);
   }, [sessions]);
 
-  useEffect(() => {
-    return () => {
-      props.close();
-    };
-  }, []);
 
   const handleToAnalizeSession = useCallback(() => {
-    props.changeToAnalizePlay(
-      sessions[1][sessionClick].IdSportsPerson,
-      sessions[1][sessionClick].DateTime,
-      false
-    );
   }, [sessions, sessionClick]);
 
   const handleCopyParameters = useCallback(() => {
-    props.getParametersSesion(
-      sessions[1][sessionClick].SessionType,
-      sessions[1][sessionClick].NumDistractors,
-      sessions[1][sessionClick].NumPlays,
-      sessions[1][sessionClick].RandomSeed,
-      sessions[1][sessionClick].Seed,
-      sessions[1][sessionClick].TimeBetweenPlays_ms,
-      sessions[1][sessionClick].TransitionTime_ms
-    );
+
   }, [sessions, sessionClick]);
 
   const handleChangeSessionTypeFiter = useCallback((e) => {
