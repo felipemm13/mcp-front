@@ -110,6 +110,7 @@ const FootballSession = () => {
       .then((response) => {
         defaultPlays.current = response.length;
         playsFromDb.current = response;
+        //console.log(response);
         setPlaysFromDbLoaded(false);
       })
       .catch((error) => console.log(error));
@@ -133,41 +134,55 @@ const FootballSession = () => {
   };
 
   const getPlayers = async () => {
-    /*await CrudApi.get(Routes.playersRoutes.GETPLAYERS+userContext.current.userId).then((response) => {
-      console.log(response);
-    });*/
-    await firebaseService
-      .getStudySportGroupByEmail("admin@admin.com", "football")
-      .then((querySnapshot) => {
-        idsStudySportsGroups.current = querySnapshot;
+    await CrudApi.get(`user/${userContext.current.userId}/players`)
+      .then((response) => {
+        setPlayersList(response.Players);
       })
       .catch((error) => {
         console.log(error);
       });
-    if (idsStudySportsGroups.current.length > 0) {
-      for (const id of idsStudySportsGroups.current) {
-        await firebaseService
-          .getSportsPersonByIdGroup(id[0])
-          .then((querySnapshot2) => {
-            for (const person of querySnapshot2) {
-              listOfPLayers.current = [...listOfPLayers.current, person];
-            }
-          });
-      }
-      setPlayersList(listOfPLayers.current);
-    } else {
-      console.log("no hay grupos");
-    }
   };
 
   const handleEditPlayer = (idPlayer) => {
+    idPlayer = parseInt(idPlayer);
     if (idPlayer) {
-      currentPlayer.current = listOfPLayers.current.filter(
-        (player) => player[0] === idPlayer
-      );
+      currentPlayer.current = playersList.filter(
+        (player) => player.playerId == idPlayer
+      )[0];
+      console.log(currentPlayer.current);
     }
     setFormPlayerModalTitle("Editar Jugador");
     setFormPlayerModal(true);
+  };
+
+  const handleDeletePlayer = async (idPlayer) => {
+    idPlayer = parseInt(idPlayer);
+    if (idPlayer) {
+      Swal.fire({
+        title: "¿Seguro que deseas eliminar al jugador?",
+        text: "No podrás revertir esta acción!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Eliminar!",
+        cancelButtonText: "Cancelar!",
+        reverseButtons: true,
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await CrudApi.delete(`player/${idPlayer}`).then((response) => {
+            if (response) {
+              Swal.fire({
+                title: "Jugador eliminado",
+                text: "El jugador fue eliminado correctamente",
+                icon: "success",
+                showCloseButton: true,
+                timer: 2000,
+              });
+              getPlayers();
+            }
+          });
+        }
+      });
+    }
   };
 
   const openAnalizerView = () => {
@@ -186,6 +201,7 @@ const FootballSession = () => {
 
   useEffect(() => {
     infoSession.current = { ...infoSession.current, ...currentSesionInfo };
+    console.log(infoSession.current);
   }, [currentSesionInfo]);
 
   return (
@@ -211,14 +227,6 @@ const FootballSession = () => {
               infoSession={currentSesionInfo}
               view={"coach"}
             />
-          </div>
-          <div className="sessionActualInfo">
-            <div className="sessionActualInfoCounter">
-              Segundos: {AnimationSeconds}
-            </div>
-            <div className="sessionActualInfoGame">
-              Jugada: {AnimationNumberOfPlay}
-            </div>
           </div>
           <div className="actionsButtons">
             <div className="videoActionsButtons">
@@ -272,6 +280,7 @@ const FootballSession = () => {
               <button
                 className="buttonActionsVideo"
                 onClick={() => navigate("/other-sessions")}
+                disabled
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -520,7 +529,6 @@ const FootballSession = () => {
                       numOfDistractors: numOfDistractors,
                       playsFromDb: playsFromDb,
                       sequenceOfPlays: sequenceOfPlays,
-                      AnimationCaptures: AnimationCaptures,
                     });
                   }
                   setShowWindowPortal(!showWindowPortal);
@@ -581,14 +589,12 @@ const FootballSession = () => {
                     </option>
                   )}
                   {playersList.map((player, key) => (
-                    <option value={player[0]} key={key}>
-                      {player[1].Name +
+                    <option value={player.playerId} key={key}>
+                      {player.Name +
                         " " +
-                        player[1].Surname +
+                        player.Surname +
                         " - " +
-                        idsStudySportsGroups.current.filter(
-                          (grupos) => grupos[0] === player[1].IdGroup
-                        )[0][1].Descritpion}
+                        player.SportGroup}
                     </option>
                   ))}
                 </select>
@@ -608,7 +614,18 @@ const FootballSession = () => {
                       <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM232 344V280H168c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H280v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
                     </svg>
                   </button>
-                  <button>
+                  <button
+                    onClick={() =>
+                      handleDeletePlayer(
+                        currentSesionInfo
+                          ? currentSesionInfo.playerSelected
+                          : null
+                      )
+                    }
+                    disabled={
+                      !currentSesionInfo || !currentSesionInfo.playerSelected
+                    }
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       height="25"
@@ -650,6 +667,7 @@ const FootballSession = () => {
           setOpenModal={setFormPlayerModal}
           title={formPlayerModalTitle}
           player={currentPlayer.current}
+          updatePlayers={getPlayers}
         />
       )}
     </>

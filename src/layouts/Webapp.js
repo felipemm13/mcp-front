@@ -20,7 +20,6 @@ const Webapp = () => {
     })
       .then((res, req) => {
         if (res.status === 200) {
-          console.log(res.data.data)
           setUser(res.data.data);
         }
       })

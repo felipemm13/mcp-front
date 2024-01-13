@@ -14,6 +14,7 @@ import { Context } from "../services/Context";
 const FootballSessionView = ({ view }) => {
   const { infoSession } = useContext(Context);
   const imgRef = useRef(null);
+  const teamRef = useRef(null);
   const finalMessageAnimationRef = useSpringRef(null);
   const ballAnimationRef = useSpringRef(null);
   const idealPlayerAnimationRef = useSpringRef(null);
@@ -299,11 +300,15 @@ const FootballSessionView = ({ view }) => {
           i <= infoSession.current.numOfDistractors.current;
           i++
         ) {
-          indexColor = rand(
-            0,
-            colors.length - 1,
-            seed * (iteracion + 1) * sequence
-          );
+          if (colors.length - 1 > 0) {
+            indexColor = rand(
+              0,
+              colors.length - 1,
+              seed * (iteracion + 1) * sequence
+            );
+          } else {
+            indexColor = 0;
+          }
           if (i === 0) {
             if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
               indexPosition =
@@ -342,7 +347,8 @@ const FootballSessionView = ({ view }) => {
       if (i == 0) {
         let color =
           distractorsInitialPosition && distractorsInitialPosition.fill;
-        imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+        teamRef.current.style.fill = color;
+        //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
         if (
           indexSequence < infoSession.current.sequenceOfPlays.current.length
         ) {
@@ -371,7 +377,8 @@ const FootballSessionView = ({ view }) => {
         onStart: () => {
           if (i === 0) {
             let color = distractorsMoves[i][sequenceIndex++].fill;
-            imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+            //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+            teamRef.current.style.fill = color;
             if (
               indexSequence < infoSession.current.sequenceOfPlays.current.length
             ) {
@@ -471,7 +478,7 @@ const FootballSessionView = ({ view }) => {
           } else {
             return {
               opacity: 0,
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: 0,
             };
           }
         })
@@ -504,7 +511,7 @@ const FootballSessionView = ({ view }) => {
           } else {
             return {
               opacity: 0,
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: 0,
             };
           }
         })
@@ -590,7 +597,8 @@ const FootballSessionView = ({ view }) => {
     //Actualizar animaciones ball
     let teamIndex = 0;
     ballAnimationRef.update(() => {
-      imgRef.current.src = `assets/teams/team-${playerTeams[teamIndex++]}.jpg`;
+      teamRef.current.style.fill =
+        playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
       if (view === "coach") {
         if (
           sequenceIndex < infoSession.current.sequenceOfPlays.current.length
@@ -621,11 +629,8 @@ const FootballSessionView = ({ view }) => {
 
         onStart: () => {
           if (playerTeams.length > teamIndex) {
-            imgRef.current.src = `assets/teams/team-${
-              playerTeams[teamIndex++]
-            }.jpg`;
-          } else {
-            imgRef.current.src = "assets/player-zone.png";
+            teamRef.current.style.fill =
+              playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
           }
           if (view === "coach") {
             if (
@@ -664,7 +669,6 @@ const FootballSessionView = ({ view }) => {
 
   const handleStartSesion = () => {
     setCount(3);
-    imgRef.current.src = "assets/player-zone.png";
     setShowFinalMessage(false);
     setShowAnimation("");
     if (sessionContainer.current.style) {
@@ -701,8 +705,6 @@ const FootballSessionView = ({ view }) => {
         alt="playerZone"
         ref={imgRef}
         src="assets/player-zone.png"
-        //width="1920px"
-        //height="720px"
         style={{
           height: "100%",
           width: "100%",
@@ -736,7 +738,19 @@ const FootballSessionView = ({ view }) => {
           </animated.div>
         )}
       </div>
-
+      <div className="containerTeam" ref={teamRef}>
+        {(showAnimation === "discriminative" ||
+          showAnimation === "applied") && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height={view === "player" ? "14vmin" : "10vmin"}
+            width={view === "player" ? "14vmin" : "10vmin"}
+            viewBox="0 0 512 512"
+          >
+            <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" />
+          </svg>
+        )}
+      </div>
       <div id="containerAnimation" className="containerAnimation">
         {showAnimation === "reactive" && (
           <animated.div
@@ -772,6 +786,7 @@ const FootballSessionView = ({ view }) => {
             </svg>
           </animated.div>
         )}
+
         {showAnimation === "discriminative" && (
           <svg
             width="100%"

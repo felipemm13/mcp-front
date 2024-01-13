@@ -179,13 +179,13 @@
   overflow: hidden;
 }
 .sessionGenerateSequence:disabled{
-  background-color: #6c757d;
+  background-color: rgb(108, 117, 125,0.75);
   cursor: default;
 }
 .sessionGenerateSequence:hover:enabled{
   background-color: rgb(218, 37, 153,0.75);
 }
-.sessionGenerateSequence:active{
+.sessionGenerateSequence:active:enabled{
   background-color: rgb(218, 37, 153);
 }
 .sessionOpenPlayerWindow{
@@ -221,13 +221,13 @@
   fill: #fff;
 }
 .sessionOpenPlayerWindow:disabled{
-  background-color: #6c757d;
+  background-color: rgb(108, 117, 125,0.75);
   cursor: default;
 }
 .sessionOpenPlayerWindow:hover:enabled{
   background-color: rgb(218, 37, 153,0.75);
 }
-.sessionOpenPlayerWindow:active{
+.sessionOpenPlayerWindow:active:enabled{
   background-color: rgb(218, 37, 153);
 }
 .sessionRandomSeed{
@@ -268,6 +268,7 @@ justify-content: center;
   display:flex;
   justify-content: space-between;
   gap: 2em;
+  padding: 1em 0;
 }
 .videoActionsButtons{
   width:100%;
@@ -276,7 +277,7 @@ justify-content: center;
   gap:1em
 }
 .buttonActionsVideo{
-  background-color: rgb(108, 117, 125);
+  background-color: rgb(218, 37, 153);
     color: rgb(255, 255, 255);
     border-color: rgb(108, 117, 125);
     display:flex;
@@ -298,14 +299,14 @@ justify-content: center;
   fill:#fff
 }
 .buttonActionsVideo:hover:enabled{
-  background-color: rgb(108, 117, 125,0.75);
+  background-color: rgb(218, 37, 153,0.75);
   cursor: pointer;
 }
-.buttonActionsVideo:active{
-  background-color: rgb(108, 117, 125);
+.buttonActionsVideo:active:enabled{
+  background-color: rgb(218, 37, 153);
 }
 .buttonActionsVideo:disabled{
-  opacity: .65;
+  background-color: rgb(108, 117, 125,0.75);
   cursor: default;
 }
 .sessionPlayer{
@@ -337,7 +338,7 @@ height:2em;
   fill:rgb(218, 37, 153);
 }
 .sessionPlayerConfigButtons button:disabled{
-  fill: rgb(108, 117, 125);
+  fill: rgb(108, 117, 125,0.75);
   cursor: default;
 }
 .sessionPlayerConfigButtons button{

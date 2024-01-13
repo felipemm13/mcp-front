@@ -141,7 +141,7 @@ const AnalizeSession = () => {
           videosPlayersRef.current[2].currentTime = currentFrame / FPS;
           videosPlayersRef.current[3].currentTime = (currentFrame + 1) / FPS;
           videosPlayersRef.current[4].currentTime = (currentFrame + 2) / FPS;
-          setCurrentTime(videosPlayersRef.current[2].currentTime);
+          //setCurrentTime(videosPlayersRef.current[2].currentTime);
         }
       } else {
         videosPlayersRef.current[0].currentTime = 0;

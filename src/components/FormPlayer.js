@@ -1,20 +1,22 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "../styles/FormPlayer.css";
+import { Context } from "../services/Context";
 
-const FormPlayer = ({ setOpenModal, title, player }) => {
+const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
+  const { userContext, CrudApi } = useContext(Context);
   const typeForm = title.split(" ")[0];
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
   const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState("default");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [institution, setInstitution] = useState("");
   const [category, setCategory] = useState("");
   const [experience, setExperience] = useState("");
   const [position, setPosition] = useState("");
-  const [limb, setLimb] = useState("");
+  const [limb, setLimb] = useState("default");
 
   // Función para verificar si todos los campos están completos
   const areFieldsComplete = () => {
@@ -33,29 +35,47 @@ const FormPlayer = ({ setOpenModal, title, player }) => {
       limb !== ""
     );
   };
-  const handleSubmit = (event) => {
+
+  useEffect(() => console.log(limb), [limb]);
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = {
-      name,
-      lastName,
-      age,
-      dob,
-      gender,
-      height,
-      weight,
-      institution,
-      category,
-      experience,
-      position,
-      limb,
+      UserId: userContext.current.userId,
+      Name: name,
+      SkillfulLeg: limb,
+      SportGroup: institution,
+      Experience: experience,
+      FieldPosition: position,
+      Weight: weight,
+      Height: height,
+      Gender: gender,
+      Category: category,
+      Birthday: dob,
+      Surname: lastName,
     };
 
     // Aquí puedes manejar el envío de formData, por ejemplo, llamar a una función que envíe los datos a una API.
     console.log("Datos a enviar:", formData);
-    if(typeForm === 'Agregar'){
-
-    }else if(typeForm === 'Editar'){
-
+    if (typeForm === "Agregar") {
+      await CrudApi.post("player", formData)
+        .then((res, req) => {
+          console.log(res);
+          updatePlayers();
+          setOpenModal(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else if (typeForm === "Editar") {
+      await CrudApi.update(`player/${player.playerId}`, formData)
+        .then((res, req) => {
+          console.log(res);
+          updatePlayers();
+          setOpenModal(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
     // También puedes resetear los campos del formulario después de enviar los datos.
     /*
@@ -71,20 +91,22 @@ const FormPlayer = ({ setOpenModal, title, player }) => {
         setPosition('');
         setLimb('');*/
   };
+
   useEffect(() => {
+    console.log(player);
     if (player && typeForm == "Editar") {
-      setName(player[0][1].Name);
-      setLastName(player[0][1].Surname);
-      setAge(player[0][1].Age);
-      setDob("");
-      setGender(player[0][1].Gender);
-      setHeight(player[0][1].Height_cm);
-      setWeight(player[0][1].Weight_kg);
-      setInstitution("");
-      setCategory(player[0][1].Category);
-      setExperience(player[0][1].Experience);
-      setPosition(player[0][1].FootballPlayer.FieldPosition);
-      setLimb(player[0][1].FootballPlayer.SkilfulExtremity);
+      setName(player.Name);
+      setLastName(player.Surname);
+      setAge(0);
+      setDob(player.Birthday);
+      setGender(player.Gender);
+      setLimb(player.SkillfulLeg);
+      setHeight(player.Height);
+      setWeight(player.Weight);
+      setInstitution(player.SportGroup);
+      setCategory(player.Category);
+      setExperience(player.Experience);
+      setPosition(player.FieldPosition);
     }
   }, []);
   return (
@@ -168,13 +190,13 @@ const FormPlayer = ({ setOpenModal, title, player }) => {
                     id="genderInput"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
+                    defaultValue={"default"}
                   >
-                    <option selected disabled>
+                    <option selected value="default" disabled="disabled">
                       Seleccione una opción
                     </option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                    <option value="X">Otro</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
                   </select>
                 </div>
               </div>
@@ -268,14 +290,19 @@ const FormPlayer = ({ setOpenModal, title, player }) => {
                   <label htmlFor="limbInput" className="form-label">
                     Extremidad
                   </label>
-                  <input
-                    type="text"
-                    className="form-control"
+                  <select
+                    className="form-select"
                     id="limbInput"
-                    placeholder="Ingrese la extremidad dominante"
                     value={limb}
                     onChange={(e) => setLimb(e.target.value)}
-                  />
+                    defaultValue={"default"}
+                  >
+                    <option selected value="default" disabled="disabled">
+                      Seleccione la extremidad dominante
+                    </option>
+                    <option value={1}>Derecha</option>
+                    <option value={2}>Izquierda</option>
+                  </select>
                 </div>
               </div>
 

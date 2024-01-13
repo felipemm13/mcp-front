@@ -45,6 +45,7 @@ const WebCam = (props) => {
   };
 
   const handleUploadVideo = async () => {
+    document.getElementById("SaveCaptureVideo").setAttribute("disabled", "true");
     const currentDate = new Date();
     const sessionDate =
       currentDate.getFullYear() +
@@ -74,10 +75,12 @@ const WebCam = (props) => {
       region: REGION,
     });
 
+    const videoURL = `"videos/${userContext.current.userId}/${file.name}-player${infoSession.current.playerSelected}`
+
     const params = {
       ACL: "public-read",
       Bucket: S3_BUCKET,
-      Key: "videos/" + userContext.current.userId + "/" + file.name,
+      Key: videoURL,
       Body: file,
     };
 
@@ -93,6 +96,18 @@ const WebCam = (props) => {
       document.getElementById("SaveCaptureVideo").innerText= `
       Guardado Exitosamente`;
     });
+    const sessionData = {
+      Session_ID: '',
+      Player_ID: infoSession.current.playerSelected,
+      Timestamp:'',
+      Duration: recorderVideo.current.size / 1000000,
+      Num_Plays: infoSession.current.numberOfPlays,
+      Seed: infoSession.current.seed,
+      Session_Type: infoSession.current.typeOfSession,
+      Time_Between_Plays: infoSession.current.secondsToNextPlay,
+      Transition_Time: infoSession.current.secondsForPlayTransition,
+      video_URL: videoURL,
+    }
   };
   const handleChangeWebCam = (e) => {
     setDeviceId(e.target.value);
@@ -160,7 +175,7 @@ const WebCam = (props) => {
             videoConstraints={{
               deviceId: deviceId,
               width: { min: 640, ideal: 1920, max: 1920 },
-              height: { min: 400, ideal: 1080 },
+              height: { min: 400, ideal: 1080 ,max: 1080},
               frameRate: { min: 15, ideal: 30, max: 60 },
             }}
           />
