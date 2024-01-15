@@ -160,12 +160,12 @@ const WebCam = (props) => {
         await CrudApi.post(`sessionAnalytics`, {
           ...sessionAnalyticData,
           sessionId: res.data.sessionId,
-        }).then(async (res) => {});
+        }).then(async () => {});
         sessionMovesData.forEach(async (move) => {
           await CrudApi.post(`sessionMoves`, {
             ...move,
             sessionId: res.data.sessionId,
-          }).then(async (res) => {});
+          }).then(async () => {});
         });
         images.forEach((image, index) => {
           const paramsImage = {
