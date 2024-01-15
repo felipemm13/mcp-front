@@ -10,6 +10,7 @@ const ProviderContext = ({ children }) => {
   const currentFPS = useRef(null);
   const CrudApi = new Connect();
   const listOfPlayers = useRef([]);
+  const currentSession = useRef(null);
   const listOfImages = [
     "assets/calibrations/calibration-example.png",
     "assets/calibrations/calibration-mark-1.png",
@@ -62,7 +63,8 @@ const ProviderContext = ({ children }) => {
         infoSession,
         currentFPS,
         CrudApi,
-        listOfPlayers
+        listOfPlayers,
+        currentSession,
       }}
     >
       {children}

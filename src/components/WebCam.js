@@ -57,12 +57,32 @@ const WebCam = (props) => {
       currentDate.getDate() +
       "/" +
       currentDate.getHours() +
-      ":" +
+      "_" +
       currentDate.getMinutes() +
-      ":" +
+      "_" +
       currentDate.getSeconds();
-    var file = new File([recorderVideo.current], `${sessionDate}-player${infoSession.current.playerSelected}.mp4`, {
-      type: "video/webm",
+    var video = new File(
+      [recorderVideo.current],
+      `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,
+      {
+        type: "video/webm",
+      }
+    );
+    var images = infoSession.current.imageSequences.map((image) => {
+      console.log(image);
+      const byteCharacters = atob(image.split(",")[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new File(
+        [byteArray],
+        `${sessionDate}/player${infoSession.current.playerSelected}`,
+        {
+          type: "image/jpeg",
+        }
+      );
     });
     const S3_BUCKET = "mcp-wildsense";
     const REGION = "us-east-2";
@@ -76,13 +96,19 @@ const WebCam = (props) => {
       region: REGION,
     });
 
-    const videoURL = `videos/${userContext.current.userId}/${file.name}`;
+    const videoURL = `videos/${userContext.current.userId}/${video.name}`;
 
-    const params = {
+    const imagesUrls = infoSession.current.imageSequences.map(
+      (image, index) => {
+        return `images/${userContext.current.userId}/${images[index].name}-play${index}.jpg`;
+      }
+    );
+
+    const paramsVideo = {
       ACL: "public-read",
       Bucket: S3_BUCKET,
       Key: videoURL,
-      Body: file,
+      Body: video,
     };
     const sessionData = {
       userId: userContext.current.userId,
@@ -97,26 +123,80 @@ const WebCam = (props) => {
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors.current,
     };
-    console.log(sessionData)
+    const sessionAnalyticData = {
+      complete: 0,
+      correctPercentage: 0,
+      motorMean: 0,
+      motorSd: 0,
+      motorTotal: 0,
+      responseMean: 0,
+      responseSd: 0,
+      responseTotal: 0,
+      visuMotorMean: 0,
+      visuMotorSd: 0,
+      visuMotorTotal: 0,
+      wrongPercentage: 0,
+    };
+    const sessionMovesData = infoSession.current.sequenceOfPlays.current.map(
+      (play, index) => {
+        return {
+          moveNum: play,
+          arrival: 0,
+          cognitiveMotor: 0,
+          correctResponse: 0,
+          error: false,
+          imageUrl: imagesUrls[index],
+          motor: 0,
+          presentedMs: 0,
+          stimulus: infoSession.current.stimulusTime[index],
+          takeoff: 0,
+        };
+      }
+    );
+    console.log(sessionMovesData);
+
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
-        console.log(res);
-        if (res.status === 201) {
-          var upload = s3
-            .putObject(params)
+        await CrudApi.post(`sessionAnalytics`, {
+          ...sessionAnalyticData,
+          sessionId: res.data.sessionId,
+        }).then(async (res) => {});
+        sessionMovesData.forEach(async (move) => {
+          await CrudApi.post(`sessionMoves`, {
+            ...move,
+            sessionId: res.data.sessionId,
+          }).then(async (res) => {});
+        });
+        images.forEach((image, index) => {
+          const paramsImage = {
+            ACL: "public-read",
+            Bucket: S3_BUCKET,
+            Key: imagesUrls[index],
+            Body: image,
+          };
+          s3.putObject(paramsImage)
             .on("httpUploadProgress", (evt) => {
               document.getElementById("SaveCaptureVideo").innerText =
-                "Subiendo Video " +
+                "Subiendo Imagen " +
                 parseInt((evt.loaded * 100) / evt.total) +
                 "%";
             })
             .promise();
+        });
+        var upload = s3
+          .putObject(paramsVideo)
+          .on("httpUploadProgress", (evt) => {
+            document.getElementById("SaveCaptureVideo").innerText =
+              "Subiendo Video " +
+              parseInt((evt.loaded * 100) / evt.total) +
+              "%";
+          })
+          .promise();
 
-          await upload.then((err, data) => {
-            document.getElementById("SaveCaptureVideo").innerText = `
+        await upload.then(() => {
+          document.getElementById("SaveCaptureVideo").innerText = `
       Guardado Exitosamente`;
-          });
-        }
+        });
       })
       .catch((err) => {
         console.log(err);

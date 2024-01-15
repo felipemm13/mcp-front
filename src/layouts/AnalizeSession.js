@@ -4,8 +4,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
 
 const AnalizeSession = () => {
-  const { videoCurrentSession, infoSession, currentFPS, CrudApi } =
+  const { videoCurrentSession, infoSession, currentFPS, CrudApi,currentSession } =
     useContext(Context);
+  if(!infoSession.current.stimulusTime){
+    infoSession.current = {
+      stimulusTime: currentSession.current[0].SessionMoves.map((move) => move.stimulus),
+    }
+  }
   const navigate = useNavigate();
   const session = useParams().session;
   const FPS = currentFPS.current;
@@ -97,6 +102,32 @@ const AnalizeSession = () => {
           })
         )
       );
+    }else{
+      infoSession.current = {
+        stimulusTime: currentSession.current[0].SessionMoves.map((move) => move.stimulus),
+        imageSequences: currentSession.current[0].SessionMoves.map((move) => move.Image_URL),
+        sequenceOfPlays: currentSession.current[0].SessionMoves.map((move) => move.moveNum),
+        numberOfPlays: currentSession.current[0].numPlays
+      }
+      currentPlay.current.src = infoSession.current.imageSequences[0];
+      prevPlay.current.src = infoSession.current.imageSequences[0];
+      setTableData(
+        Array.from(
+          { length: infoSession.current.numberOfPlays },
+          (element, index) => ({
+            sequence: index + 1,
+            playID: infoSession.current.sequenceOfPlays[index],
+            error: false,
+            estimulo: infoSession.current.stimulusTime[index],
+            takeoff: 0,
+            arrival: 0,
+            visuMotor: 0,
+            motor: 0,
+            cognitiveMotor: 0,
+          })
+        )
+      );
+      console.log(tableData)
     }
   }, []);
 
@@ -152,7 +183,7 @@ const AnalizeSession = () => {
       }
     }
   }, [currentFrame]);
-
+  useEffect(() => console.log(tableData), [tableData]);
   const handleRowClick = (index, playID) => {
     const previousSelectedRow = document.getElementById(
       `RowSequenceIndex${selectedRowIndex.current}`

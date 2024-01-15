@@ -191,7 +191,7 @@ const FootballSession = () => {
 
   useEffect(() => {
     infoSession.current = { ...infoSession.current, ...currentSesionInfo };
-    //console.log(infoSession.current);
+    console.log(infoSession.current);
   }, [currentSesionInfo]);
 
 

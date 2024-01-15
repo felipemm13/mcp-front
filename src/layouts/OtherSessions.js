@@ -2,35 +2,55 @@ import React, { useContext } from "react";
 import { useEffect, useCallback, useState, useRef } from "react";
 import "../styles/OtherSessions.css";
 import { Context } from "../services/Context";
+import { useNavigate } from "react-router-dom";
 
 const OtherSessions = () => {
-  const { CrudApi, listOfPlayers } = useContext(Context);
+  const { CrudApi, listOfPlayers, currentSession } = useContext(Context);
   const [sessions, setSessions] = useState([]);
   const sessionsRef = useRef(null);
+  const [selectedSession, setSelectedSession] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect( () => {
+  useEffect(() => {
     sessionsRef.current = [];
-     listOfPlayers.current.forEach(async (player) => {
+    listOfPlayers.current.forEach(async (player) => {
       await CrudApi.get(`player/${player.playerId}/sessions`)
         .then((res) => {
-          if(sessionsRef.current){
+          if (sessionsRef.current) {
             sessionsRef.current = [...sessionsRef.current, res.Sessions];
-          }else{
+          } else {
             sessionsRef.current = [res.Sessions];
           }
         })
         .catch((error) => {
           console.log(error);
         });
-        setSessions([...sessionsRef.current]);
+      setSessions([...sessionsRef.current]);
     });
   }, []);
 
   useEffect(() => console.log(sessions), [sessions]);
 
-  const handleToAnalizeSession = useCallback(() => {}, []);
+  const handleToAnalizeSession = () => {
+    currentSession.current = selectedSession;
+    navigate("/analize-session/"+selectedSession[0].sessionId);
+  };
 
-  const handleCopyParameters = useCallback(() => {}, []);
+  const handleSelectSession = (session, currentPlayer) => {
+    // Actualiza el estado con la sesión seleccionada
+    setSelectedSession([session, currentPlayer]);
+  };
+  useEffect(() => console.log(selectedSession), [selectedSession]);
+  const calculateAge = (birthday) => {
+    let today = new Date();
+    let birthDate = new Date(birthday);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    let month = today.getMonth() - birthDate.getMonth();
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const handleChangeSessionTypeFiter = useCallback((e) => {});
   const handleChangeUserFiter = useCallback((e) => {});
@@ -103,9 +123,9 @@ const OtherSessions = () => {
             </div>
           </div>
         </div>
-        <div className="" style={{width:'100%'}}>
+        <div className="OtherSessionsTable">
           Seleccionar una sesion
-          <table className="">
+          <table className="custom-table">
             <thead className="">
               <tr>
                 <th>Tipo de sesion</th>
@@ -120,28 +140,66 @@ const OtherSessions = () => {
                 <th>Error %</th>
               </tr>
             </thead>
-            <tbody>
-              {sessions.map((player) =>
-                player.map((session) => {
-                  let currentPlayer = listOfPlayers.current.filter(
-                    (player) => player.playerId === session.playerId
-                  )[0];
-                  return (
-                    <tr>
-                      <td>{session.sessionType}</td>
-                      <td>{currentPlayer.Surname}</td>
-                      <td>{currentPlayer.Name}</td>
-                      <td>{currentPlayer.SportGroup}</td>
-                      <td></td>
-                      <td>{session.seed}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
           </table>
+          <div className="table-container">
+            <table className="custom-table">
+              <tbody>
+                {sessions.map((player) =>
+                  player.map((session) => {
+                    let currentPlayer = listOfPlayers.current.filter(
+                      (player) => player.playerId === session.playerId
+                    )[0];
+                    return (
+                      <tr
+                        key={session.sessionId}
+                        onClick={() =>
+                          handleSelectSession(session, currentPlayer)
+                        }
+                        className={
+                          selectedSession
+                            ? selectedSession[0] === session
+                              ? "selected-row"
+                              : ""
+                            : ""
+                        }
+                      >
+                        <td>{session.sessionType}</td>
+                        <td>{currentPlayer.Surname}</td>
+                        <td>{currentPlayer.Name}</td>
+                        <td>{currentPlayer.SportGroup}</td>
+                        <td>{session.timestamp.split("T")[0]}</td>
+                        <td>
+                          {session.SessionAnalytics[0]
+                            ? session.SessionAnalytics[0].complete === 1
+                              ? "complete"
+                              : "incomplete"
+                            : 0}
+                        </td>
+                        <td>{session.seed}</td>
+                        <td>
+                          {session.SessionAnalytics[0]
+                            ? session.SessionAnalytics[0].visuMotorMean
+                            : 0}
+                        </td>
+                        <td>
+                          {session.SessionAnalytics[0]
+                            ? session.SessionAnalytics[0].motorMean
+                            : 0}
+                        </td>
+                        <td>
+                          {session.SessionAnalytics[0]
+                            ? session.SessionAnalytics[0].wrongPercentage
+                            : 0}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="" style={{width:'100%'}}>
+        <div className="" style={{ width: "100%" }}>
           <div className="">
             <div className="">
               <h4>
@@ -166,6 +224,9 @@ const OtherSessions = () => {
                       className="form-control form-control-sm"
                       id="sessionType"
                       type="text"
+                      value={
+                        selectedSession ? selectedSession[0].sessionType : ""
+                      }
                       readOnly={true}
                     ></input>
                   </div>
@@ -177,6 +238,11 @@ const OtherSessions = () => {
                       className="form-control form-control-sm"
                       id="sessionType"
                       type="text"
+                      value={
+                        selectedSession
+                          ? selectedSession[0].timestamp.split("T")[0]
+                          : ""
+                      }
                       readOnly={true}
                     ></input>
                   </div>
@@ -188,6 +254,9 @@ const OtherSessions = () => {
                       className="form-control form-control-sm"
                       id="sessionType"
                       type="text"
+                      value={
+                        selectedSession ? selectedSession[1].SportGroup : ""
+                      }
                       readOnly={true}
                     ></input>
                   </div>
@@ -208,6 +277,11 @@ const OtherSessions = () => {
                       className="form-control form-control-sm"
                       id="sessionType"
                       type="text"
+                      value={
+                        selectedSession
+                          ? calculateAge(selectedSession[1].Birthday)
+                          : ""
+                      }
                       readOnly={true}
                     ></input>
                   </div>
@@ -220,6 +294,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Category : ""}
                     ></input>
                   </div>
                 </div>
@@ -242,6 +317,11 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={
+                        selectedSession
+                          ? selectedSession[0].timeBetweenPlays
+                          : ""
+                      }
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -253,6 +333,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[0].numPlays : ""}
                     ></input>
                   </div>
                 </div>
@@ -273,6 +354,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Name : ""}
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -284,6 +366,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Gender : ""}
                     ></input>
                   </div>
                 </div>
@@ -304,6 +387,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Weight : ""}
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -315,18 +399,9 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                    ></input>
-                  </div>
-
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Sesion: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
+                      value={
+                        selectedSession ? selectedSession[0].transitionTime : ""
+                      }
                     ></input>
                   </div>
                 </div>
@@ -347,6 +422,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Surname : ""}
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -358,6 +434,9 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={
+                        selectedSession ? selectedSession[1].Experience : ""
+                      }
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -369,6 +448,7 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={selectedSession ? selectedSession[1].Height : ""}
                     ></input>
                   </div>
                 </div>
@@ -389,6 +469,9 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={
+                        selectedSession ? selectedSession[1].SkillfulLeg : ""
+                      }
                     ></input>
                   </div>
                   <div className="" style={{ width: "50%" }}>
@@ -400,6 +483,9 @@ const OtherSessions = () => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
+                      value={
+                        selectedSession ? selectedSession[1].FieldPosition : ""
+                      }
                     ></input>
                   </div>
                 </div>
@@ -407,10 +493,7 @@ const OtherSessions = () => {
             </div>
           </div>
           <div className="buttonsControlSession">
-            <button
-              className="btn btn-secondary btn-lg btn-block sample mt-3"
-              onClick={handleCopyParameters}
-            >
+            <button className="btn btn-secondary btn-lg btn-block sample mt-3">
               <div className="mb-3">Copiar parámetros de sesion</div>
             </button>
             <button
@@ -419,16 +502,10 @@ const OtherSessions = () => {
             >
               <div className="mb-3">Eliminar sesion</div>
             </button>
-            <button
-              className="btn btn-secondary btn-lg btn-block sample mt-3"
-              onClick={handleFilterSelectedPlayerSessions}
-            >
+            <button className="" onClick={handleFilterSelectedPlayerSessions}>
               <div className="mb-3">Filtrar sesiones del jugador</div>
             </button>
-            <button
-              className="btn btn-secondary btn-lg btn-block sample mt-3"
-              onClick={handleToAnalizeSession}
-            >
+            <button className="" onClick={handleToAnalizeSession}>
               <div className="mb-3">Abrir sesion</div>
             </button>
           </div>
