@@ -105,18 +105,11 @@ const FootballSessionView = ({ view }) => {
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("stopRecord"));
       var link = document.createElement("a");
-      imageSequences.current.forEach((image, index) => {
-        link.href = image;
-        link.download = "image.jpeg";
-        //link.click();
-      });
-      //console.log(stimulusTimeSequence.current)
       infoSession.current = {
         ...infoSession.current,
         imageSequences: imageSequences.current,
         stimulusTime: stimulusTimeSequence.current,
       };
-      //console.log(infoSession.current);
       document.getElementById("SaveCaptureVideo").removeAttribute("disabled");
       document.getElementById("OpenAnalizerView").removeAttribute("disabled");
     }
@@ -129,9 +122,8 @@ const FootballSessionView = ({ view }) => {
       sessionContainer.current.style.border = "none";
     }
     finalMessageAnimationRef.start({
-      to: { opacity: 1, transform: "scale(1.5)" },
-
       from: { opacity: 0, transform: "scale(0.75)" },
+      to: { opacity: 1, transform: "scale(1.5)" },
     });
   };
 
@@ -318,15 +310,28 @@ const FootballSessionView = ({ view }) => {
                 infoSession.current.sequenceOfPlays.current[iteracion] - 1;
             }
           } else {
-            if (positions.length - 1 > 0) {
-              indexPosition = rand(
-                0,
-                positions.length - 1,
-                seed * (iteracion + 1) * sequence
-              );
-            } else {
-              indexPosition = 0;
-            }
+            let attempts = 0;
+            do {
+              if (positions.length - 1 > 0) {
+                indexPosition = rand(
+                  0,
+                  positions.length - 1,
+                  (seed * (iteracion + 1) * sequence)*(attempts+1)
+                );
+              } else {
+                indexPosition = 0;
+              }
+              attempts++;
+
+              if (attempts > 1000) {
+                break;
+              }
+            } while (
+              iteracion > 0 &&
+              positions[indexPosition].cx ===
+                distractorsMoves[i][iteracion - 1].cx && positions[indexPosition].cy ===
+                distractorsMoves[i][iteracion - 1].cy 
+            );
           }
           distractorsMoves[i][iteracion] = {
             cx: positions[indexPosition].cx,
@@ -335,6 +340,7 @@ const FootballSessionView = ({ view }) => {
             fill: colors[indexColor],
             delay: infoSession.current.secondsToNextPlay.current * 1000,
           };
+          console.log('distractors',distractorsMoves[i])
           colors.splice(indexColor, 1);
           positions.splice(indexPosition, 1);
         }
@@ -671,7 +677,7 @@ const FootballSessionView = ({ view }) => {
     setCount(3);
     setShowFinalMessage(false);
     setShowAnimation("");
-    if (sessionContainer.current.style) {
+    if (sessionContainer.current) {
       sessionContainer.current.style.border = "none";
     }
     document.getElementById("SaveCaptureVideo").setAttribute("disabled", true);

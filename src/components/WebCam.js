@@ -9,7 +9,7 @@ const WebCam = (props) => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recorderVideo = useRef([]);
-  const { videoCurrentSession, currentFPS, infoSession, userContext } =
+  const { videoCurrentSession, currentFPS, infoSession, userContext, CrudApi } =
     useContext(Context);
   const [devices, setDevices] = useState([]); //list of cameras
 
@@ -45,7 +45,9 @@ const WebCam = (props) => {
   };
 
   const handleUploadVideo = async () => {
-    document.getElementById("SaveCaptureVideo").setAttribute("disabled", "true");
+    document
+      .getElementById("SaveCaptureVideo")
+      .setAttribute("disabled", "true");
     const currentDate = new Date();
     const sessionDate =
       currentDate.getFullYear() +
@@ -59,10 +61,9 @@ const WebCam = (props) => {
       currentDate.getMinutes() +
       ":" +
       currentDate.getSeconds();
-    var file = new File([recorderVideo.current], sessionDate + ".mp4", {
+    var file = new File([recorderVideo.current], `${sessionDate}-player${infoSession.current.playerSelected}.mp4`, {
       type: "video/webm",
     });
-    console.log(file);
     const S3_BUCKET = "mcp-wildsense";
     const REGION = "us-east-2";
 
@@ -75,7 +76,7 @@ const WebCam = (props) => {
       region: REGION,
     });
 
-    const videoURL = `"videos/${userContext.current.userId}/${file.name}-player${infoSession.current.playerSelected}`
+    const videoURL = `videos/${userContext.current.userId}/${file.name}`;
 
     const params = {
       ACL: "public-read",
@@ -83,31 +84,43 @@ const WebCam = (props) => {
       Key: videoURL,
       Body: file,
     };
-
-    var upload = s3
-      .putObject(params)
-      .on("httpUploadProgress", (evt) => {
-        document.getElementById("SaveCaptureVideo").innerText =
-          "Subiendo Video " + parseInt((evt.loaded * 100) / evt.total) + "%";
-      })
-      .promise();
-
-    await upload.then((err, data) => {
-      document.getElementById("SaveCaptureVideo").innerText= `
-      Guardado Exitosamente`;
-    });
     const sessionData = {
-      Session_ID: '',
-      Player_ID: infoSession.current.playerSelected,
-      Timestamp:'',
-      Duration: recorderVideo.current.size / 1000000,
-      Num_Plays: infoSession.current.numberOfPlays,
-      Seed: infoSession.current.seed,
-      Session_Type: infoSession.current.typeOfSession,
-      Time_Between_Plays: infoSession.current.secondsToNextPlay,
-      Transition_Time: infoSession.current.secondsForPlayTransition,
-      video_URL: videoURL,
-    }
+      userId: userContext.current.userId,
+      playerId: parseInt(infoSession.current.playerSelected),
+      timestamp: currentDate.toISOString(),
+      duration: Math.floor(recorderVideo.current.size / 1000),
+      numPlays: infoSession.current.numberOfPlays.current,
+      seed: infoSession.current.seed.current,
+      sessionType: infoSession.current.typeOfSession.current,
+      timeBetweenPlays: infoSession.current.secondsToNextPlay.current,
+      transitionTime: infoSession.current.secondsForPlayTransition.current,
+      videoURL: videoURL,
+      numDistractors: infoSession.current.numOfDistractors.current,
+    };
+    console.log(sessionData)
+    await CrudApi.post("sessions", sessionData)
+      .then(async (res) => {
+        console.log(res);
+        if (res.status === 201) {
+          var upload = s3
+            .putObject(params)
+            .on("httpUploadProgress", (evt) => {
+              document.getElementById("SaveCaptureVideo").innerText =
+                "Subiendo Video " +
+                parseInt((evt.loaded * 100) / evt.total) +
+                "%";
+            })
+            .promise();
+
+          await upload.then((err, data) => {
+            document.getElementById("SaveCaptureVideo").innerText = `
+      Guardado Exitosamente`;
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
   const handleChangeWebCam = (e) => {
     setDeviceId(e.target.value);
@@ -175,7 +188,7 @@ const WebCam = (props) => {
             videoConstraints={{
               deviceId: deviceId,
               width: { min: 640, ideal: 1920, max: 1920 },
-              height: { min: 400, ideal: 1080 ,max: 1080},
+              height: { min: 400, ideal: 1080, max: 1080 },
               frameRate: { min: 15, ideal: 30, max: 60 },
             }}
           />

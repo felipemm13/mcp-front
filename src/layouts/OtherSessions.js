@@ -1,132 +1,38 @@
 import React, { useContext } from "react";
 import { useEffect, useCallback, useState, useRef } from "react";
 import "../styles/OtherSessions.css";
-import firebaseService from "../services/firebaseService2";
 import { Context } from "../services/Context";
 
-const OtherSessions = (props) => {
-  const { CrudApi } = useContext(Context);
-  let sessionTypeRef = useRef(null);
-  let groupRef = useRef(null);
-  let userRef = useRef(null);
-
-  const [sessions, setSessions] = useState("notReady");
-
-  const [sessionClick, setSessionClick] = useState(0);
-
-  const [sessionTypeFilter, setSessionTypeFilter] = useState("all");
-  const [groupFilter, setGroupFilter] = useState("all");
-  const [nameFilter, setNameFilter] = useState("all");
-
-  const [allSessions, setAllSessions] = useState([
-    "reactive",
-    "discriminative",
-    "applied",
-  ]);
-  const [allGroup, setAllGroup] = useState([]);
-  const [allName, setAllName] = useState([]);
-
-  const [actualSessions, setActualSessions] = useState([
-    "reactive",
-    "discriminative",
-    "applied",
-  ]);
-  const [actualGroup, setActualGroup] = useState([]);
-  const [actualName, setActualName] = useState([]);
+const OtherSessions = () => {
+  const { CrudApi, listOfPlayers } = useContext(Context);
+  const [sessions, setSessions] = useState([]);
 
   useEffect(() => {
-    if (sessionTypeFilter == "all") {
-      setActualSessions(allSessions);
-    } else {
-      setActualSessions([sessionTypeFilter]);
-    }
-
-    if (groupFilter == "all") {
-      setActualGroup(allGroup);
-    } else {
-      setActualGroup([groupFilter]);
-    }
-
-    if (nameFilter == "all") {
-      setActualName(allName[0]);
-    } else {
-      setActualName([nameFilter]);
-    }
-  }, [sessionTypeFilter, groupFilter, nameFilter]);
-  useEffect(async () => {
-    // GET SESSION
-    if (sessions === "notReady") {
-    }
+    listOfPlayers.current.forEach(async (player) => {
+      await CrudApi.get(`player/${player.playerId}/sessions`)
+        .then((res) => {
+          setSessions([...sessions,res.Sessions])
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
   }, []);
-  useEffect(() => {
-    // GET SESSION
-    let groups = [];
-    let players = [[], []];
-    for (var session of sessions[1]) {
-      if (!groups.includes(session.Group)) {
-        groups.push(session.Group);
-      }
-      if (!players[0].includes(session.IdSportsPerson)) {
-        players[0].push(session.IdSportsPerson);
-        players[1].push(
-          "" + session.Name + " " + session.Surname + " - " + session.Group
-        );
-      }
-    }
-    setAllGroup(groups);
-    setAllName(players);
-    setActualName(players[0]);
-    setActualGroup(groups);
-  }, [sessions]);
 
-  const handleToAnalizeSession = useCallback(() => {}, [
-    sessions,
-    sessionClick,
-  ]);
+  useEffect(()=>console.log(sessions),[sessions])
 
-  const handleCopyParameters = useCallback(() => {}, [sessions, sessionClick]);
+  const handleToAnalizeSession = useCallback(() => {}, []);
 
-  const handleChangeSessionTypeFiter = useCallback((e) => {
-    setSessionTypeFilter(e.target.value);
-  });
-  const handleChangeUserFiter = useCallback((e) => {
-    setNameFilter(e.target.value);
-  });
-  const handleChangeGroupFilter = useCallback((e) => {
-    setGroupFilter(e.target.value);
-  });
-  const handleFilterSelectedPlayerSessions = useCallback(() => {
-    setSessionTypeFilter("all");
-    setGroupFilter("all");
-    setNameFilter(sessions[1][sessionClick].IdSportsPerson);
-    sessionTypeRef.current.value = "all";
-    groupRef.current.value = "all";
-    userRef.current.value = sessions[1][sessionClick].IdSportsPerson;
-  });
-  const deleteSelectedSession = useCallback(() => {
-    firebaseService.deleteSession(
-      sessions[0][
-        sessions[0].findIndex(
-          (session) => session[0] == sessions[1][sessionClick].IdSportsPerson
-        )
-      ][1].IdGroup,
-      sessions[1][sessionClick].Sport,
-      sessions[1][sessionClick].IdSportsPerson,
-      sessions[1][sessionClick].DateTime,
-      sessions[1][sessionClick].NumPlays
-    );
-    let newSession = [[...sessions[0]], []];
-    for (let [index, session] of sessions[1].entries()) {
-      if (!(index == sessionClick)) {
-        newSession[1].push(session);
-      }
-    }
-    setSessionClick(0);
-    setSessions(newSession);
-  });
-  if (sessions !== "notReady") {
+  const handleCopyParameters = useCallback(() => {}, []);
+
+  const handleChangeSessionTypeFiter = useCallback((e) => {});
+  const handleChangeUserFiter = useCallback((e) => {});
+  const handleChangeGroupFilter = useCallback((e) => {});
+  const handleFilterSelectedPlayerSessions = useCallback(() => {});
+  const deleteSelectedSession = useCallback(() => {});
+  if (sessions.length) {
     return (
-      <div className="interfaceListSesion">
+      <div className="interfaceListSesion" style={{color:'white'}}>
         <div className="filters">
           <div className="filtersTitle">
             <h3>
@@ -144,17 +50,11 @@ const OtherSessions = (props) => {
               <div className="" style={{ width: "70%" }}>
                 <select
                   onChange={handleChangeSessionTypeFiter}
-                  ref={sessionTypeRef}
                   className="form-select"
                 >
                   <option value="all" selected>
                     Todas
                   </option>
-                  {allSessions.map((group, key) => (
-                    <option key={key} value={group}>
-                      {group}
-                    </option>
-                  ))}
                 </select>
               </div>
             </div>
@@ -168,17 +68,11 @@ const OtherSessions = (props) => {
               <div className="" style={{ width: "70%" }}>
                 <select
                   onChange={handleChangeGroupFilter}
-                  ref={groupRef}
                   className="form-select"
                 >
                   <option value="all" selected>
                     Todos
                   </option>
-                  {allGroup.map((group, key) => (
-                    <option key={key} value={group}>
-                      {group}
-                    </option>
-                  ))}
                 </select>
               </div>
             </div>
@@ -192,17 +86,11 @@ const OtherSessions = (props) => {
               <div className="" style={{ width: "85%" }}>
                 <select
                   onChange={handleChangeUserFiter}
-                  ref={userRef}
                   className="form-select"
                 >
                   <option value="all" selected>
                     Todos
                   </option>
-                  {allName[0].map((name, key) => (
-                    <option key={name} value={name}>
-                      {allName[1][key]}
-                    </option>
-                  ))}
                 </select>
               </div>
             </div>
@@ -220,63 +108,26 @@ const OtherSessions = (props) => {
                 <th>Sesion</th>
                 <th>Estatus</th>
                 <th>Semilla aleatoria</th>
-                <th>Numero de semilla</th>
                 <th>Promedio Motor-visual</th>
                 <th>Promedio Motor</th>
                 <th>Error %</th>
               </tr>
             </thead>
             <tbody>
-              {sessions[1].length != 0 &&
-                sessions[1].map((session, index) => {
-                  if (
-                    actualSessions.includes(session.SessionType) &&
-                    actualGroup.includes(session.Group) &&
-                    actualName.includes(session.IdSportsPerson)
-                  ) {
-                    return (
-                      <tr
-                        className={
-                          index == sessionClick
-                            ? "table-primary"
-                            : "table-light"
-                        }
-                        onClick={() => {
-                          setSessionClick(index);
-                        }}
-                        key={index}
-                      >
-                        <td>{session.SessionType}</td>
-                        <td>{session.Surname}</td>
-                        <td>{session.Name}</td>
-                        <td>{session.Group}</td>
-                        <td>{session.DateTime}</td>
-                        <td>
-                          {session.annotations.Complete
-                            ? "Complete"
-                            : "Incomplete"}
-                        </td>
-                        <td>{session.RandomSeed ? "Si" : "No"}</td>
-                        <td>{session.Seed}</td>
-                        <td>
-                          {session.annotations.Complete
-                            ? session.annotations.VisuMotorMean
-                            : ""}
-                        </td>
-                        <td>
-                          {session.annotations.Complete
-                            ? session.annotations.MotorMean
-                            : ""}
-                        </td>
-                        <td>
-                          {session.annotations.Complete
-                            ? session.annotations.WrongPercentaje
-                            : ""}
-                        </td>
-                      </tr>
-                    );
-                  }
-                })}
+              {sessions.map(player =>
+              player.map(session => {
+                let currentPlayer = listOfPlayers.current.filter(player => player.playerId === session.playerId)[0]
+                return (<tr>
+                  <td>{session.sessionType}</td>
+                  <td>{currentPlayer.Surname}</td>
+                  <td>{currentPlayer.Name}</td>
+                  <td>{currentPlayer.SportGroup}</td>
+                  <td></td>
+                  <td>{session.seed}</td>
+                </tr>)
+                }
+                  )
+                )}
             </tbody>
           </table>
         </div>
@@ -306,11 +157,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].SessionType
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -331,11 +177,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].DateTime
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -356,11 +197,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].Group
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -381,17 +217,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Age
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -412,26 +237,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? (sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Gender == "M"
-                              ? 220
-                              : 226) -
-                            sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Age
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -452,17 +257,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Cathegory
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -485,11 +279,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].TimeBetweenPlays_ms
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -510,11 +299,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].NumPlays
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -535,11 +319,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].Name
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -560,17 +339,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Gender
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -591,17 +359,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Weight_kg
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -624,11 +381,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].TransitionTime_ms
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -650,9 +402,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1 ? "1" : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -673,11 +422,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[1][sessionClick].Surname
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -698,17 +442,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Experience
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -729,17 +462,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].Height_cm
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -760,17 +482,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].FootballPlayer.SkilfulExtremity
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -791,17 +502,6 @@ const OtherSessions = (props) => {
                       id="sessionType"
                       type="text"
                       readOnly={true}
-                      value={
-                        sessions.length != 0 && sessionClick != -1
-                          ? sessions[0][
-                              sessions[0].findIndex(
-                                (session) =>
-                                  session[0] ==
-                                  sessions[1][sessionClick].IdSportsPerson
-                              )
-                            ][1].FootballPlayer.FieldPosition
-                          : ""
-                      }
                     ></input>
                   </div>
                 </div>
@@ -811,28 +511,24 @@ const OtherSessions = (props) => {
           <div className="buttonsControlSession">
             <button
               className="btn btn-secondary btn-lg btn-block sample mt-3"
-              disabled={sessionClick == -1}
               onClick={handleCopyParameters}
             >
               <div className="mb-3">Copiar parámetros de sesion</div>
             </button>
             <button
               className="btn btn-secondary btn-lg btn-block sample mt-3"
-              disabled={sessionClick == -1}
               onClick={deleteSelectedSession}
             >
               <div className="mb-3">Eliminar sesion</div>
             </button>
             <button
               className="btn btn-secondary btn-lg btn-block sample mt-3"
-              disabled={sessionClick == -1}
               onClick={handleFilterSelectedPlayerSessions}
             >
               <div className="mb-3">Filtrar sesiones del jugador</div>
             </button>
             <button
               className="btn btn-secondary btn-lg btn-block sample mt-3"
-              disabled={sessionClick == -1}
               onClick={handleToAnalizeSession}
             >
               <div className="mb-3">Abrir sesion</div>

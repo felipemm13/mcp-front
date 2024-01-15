@@ -9,6 +9,7 @@ const ProviderContext = ({ children }) => {
   const infoSession = useRef({});
   const currentFPS = useRef(null);
   const CrudApi = new Connect();
+  const listOfPlayers = useRef([]);
   const listOfImages = [
     "assets/calibrations/calibration-example.png",
     "assets/calibrations/calibration-mark-1.png",
@@ -44,7 +45,7 @@ const ProviderContext = ({ children }) => {
   };
 
   const preLoadImages = () => {
-    listOfImages.map((image) => {
+    listOfImages.forEach((image) => {
       preloadImage(image);
     });
   };
@@ -61,6 +62,7 @@ const ProviderContext = ({ children }) => {
         infoSession,
         currentFPS,
         CrudApi,
+        listOfPlayers
       }}
     >
       {children}

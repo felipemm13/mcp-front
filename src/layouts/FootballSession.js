@@ -12,8 +12,13 @@ import Swal from "sweetalert2";
 import Routes from "../connection/path";
 
 const FootballSession = () => {
-  const { userContext, infoSession, videoCurrentSession, CrudApi } =
-    useContext(Context);
+  const {
+    userContext,
+    infoSession,
+    videoCurrentSession,
+    CrudApi,
+    listOfPlayers,
+  } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
   const [AnimationSeconds, setAnimationSeconds] = useState(0);
@@ -25,14 +30,13 @@ const FootballSession = () => {
   const isRandomSeed = useRef(true);
   const seed = useRef(Math.floor(Math.random() * (6000 - 1)) + 1);
   const secondsToNextPlay = useRef(2);
-  const secondsForPlayTransition = useRef(0.5);
+  const secondsForPlayTransition = useRef(0.1);
   const playsFromDb = useRef([]);
   const defaultPlays = useRef(0);
   const sequenceOfPlays = useRef([]);
   const typeOfSession = useRef("reactive");
   const numOfDistractors = useRef(1);
   const listOfPLayers = useRef([]);
-  const idsStudySportsGroups = useRef([]);
   const currentPlayer = useRef(null);
   const [playersList, setPlayersList] = useState([]);
   const [currentSesionInfo, setCurrentSesionInfo] = useState(null);
@@ -110,32 +114,19 @@ const FootballSession = () => {
       .then((response) => {
         defaultPlays.current = response.length;
         playsFromDb.current = response;
-        //console.log(response);
+        setCurrentSesionInfo({
+          ...currentSesionInfo,
+          playsFromDb: playsFromDb,
+        });
         setPlaysFromDbLoaded(false);
       })
       .catch((error) => console.log(error));
-    /*
-    firebaseService.getPlays("default", false).then((querySnapshot) => {
-      defaultPlays.current = querySnapshot.length;
-      firebaseService
-        .getPlays(
-          userContext.current ? userContext.current.email : "admin@admin.com",
-          false
-        )
-        .then((querySnapshot2) => {
-          let tempPlays = querySnapshot.concat(querySnapshot2);
-          if (tempPlays.length) {
-            playsFromDb.current = tempPlays;
-            console.log(tempPlays);
-            setPlaysFromDbLoaded(false);
-          }
-        });
-    });*/
   };
 
   const getPlayers = async () => {
     await CrudApi.get(`user/${userContext.current.userId}/players`)
       .then((response) => {
+        listOfPlayers.current = response.Players;
         setPlayersList(response.Players);
       })
       .catch((error) => {
@@ -149,7 +140,6 @@ const FootballSession = () => {
       currentPlayer.current = playersList.filter(
         (player) => player.playerId == idPlayer
       )[0];
-      console.log(currentPlayer.current);
     }
     setFormPlayerModalTitle("Editar Jugador");
     setFormPlayerModal(true);
@@ -201,8 +191,9 @@ const FootballSession = () => {
 
   useEffect(() => {
     infoSession.current = { ...infoSession.current, ...currentSesionInfo };
-    console.log(infoSession.current);
+    //console.log(infoSession.current);
   }, [currentSesionInfo]);
+
 
   return (
     <>
@@ -280,7 +271,7 @@ const FootballSession = () => {
               <button
                 className="buttonActionsVideo"
                 onClick={() => navigate("/other-sessions")}
-                disabled
+                disabled={!playersList.length}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -320,6 +311,10 @@ const FootballSession = () => {
                     .getElementById("distractorsLabel")
                     .setAttribute("hidden", "true");
                   typeOfSession.current = e.target.value;
+                  setCurrentSesionInfo({
+                    ...currentSesionInfo,
+                    typeOfSession: typeOfSession,
+                  });
                 }}
               />
               <label className="" htmlFor="reactive">
@@ -351,6 +346,10 @@ const FootballSession = () => {
                       .setAttribute("hidden", "true");
                   }
                   typeOfSession.current = e.target.value;
+                  setCurrentSesionInfo({
+                    ...currentSesionInfo,
+                    typeOfSession: typeOfSession,
+                  });
                 }}
               />
               <label className="" htmlFor="discriminative">
@@ -378,6 +377,10 @@ const FootballSession = () => {
                       e.target.value = 7;
                     }
                     numOfDistractors.current = e.target.value;
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      numOfDistractors: numOfDistractors,
+                    });
                   }}
                 ></input>
               </div>
@@ -396,6 +399,10 @@ const FootballSession = () => {
                     .getElementById("distractorsLabel")
                     .setAttribute("hidden", "true");
                   typeOfSession.current = e.target.value;
+                  setCurrentSesionInfo({
+                    ...currentSesionInfo,
+                    typeOfSession: typeOfSession,
+                  });
                 }}
               />
               <label className="" htmlFor="applied">
@@ -423,6 +430,10 @@ const FootballSession = () => {
                   step="1"
                   onChange={(e) => {
                     numberOfPlays.current = e.target.value;
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      numberOfPlays: numberOfPlays,
+                    });
                   }}
                 />
               </div>
@@ -439,6 +450,10 @@ const FootballSession = () => {
                       document.getElementById("seed").value =
                         Math.floor(Math.random() * (6000 - 1)) + 1;
                       seed.current = document.getElementById("seed").value;
+                      setCurrentSesionInfo({
+                        ...currentSesionInfo,
+                        seed: seed,
+                      });
                     }
                   }}
                 />
@@ -475,6 +490,10 @@ const FootballSession = () => {
                   defaultValue={secondsToNextPlay.current}
                   onChange={(e) => {
                     secondsToNextPlay.current = e.target.value;
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      secondsToNextPlay: secondsToNextPlay,
+                    });
                   }}
                 ></input>
               </div>
@@ -496,6 +515,10 @@ const FootballSession = () => {
                   defaultValue={secondsForPlayTransition.current}
                   onChange={(e) => {
                     secondsForPlayTransition.current = e.target.value;
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      secondsForPlayTransition: secondsForPlayTransition,
+                    });
                   }}
                 ></input>
               </div>
