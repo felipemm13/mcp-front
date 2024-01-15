@@ -6,20 +6,27 @@ import { Context } from "../services/Context";
 const OtherSessions = () => {
   const { CrudApi, listOfPlayers } = useContext(Context);
   const [sessions, setSessions] = useState([]);
+  const sessionsRef = useRef(null);
 
-  useEffect(() => {
-    listOfPlayers.current.forEach(async (player) => {
+  useEffect( () => {
+    sessionsRef.current = [];
+     listOfPlayers.current.forEach(async (player) => {
       await CrudApi.get(`player/${player.playerId}/sessions`)
         .then((res) => {
-          setSessions([...sessions,res.Sessions])
+          if(sessionsRef.current){
+            sessionsRef.current = [...sessionsRef.current, res.Sessions];
+          }else{
+            sessionsRef.current = [res.Sessions];
+          }
         })
         .catch((error) => {
           console.log(error);
         });
+        setSessions([...sessionsRef.current]);
     });
   }, []);
 
-  useEffect(()=>console.log(sessions),[sessions])
+  useEffect(() => console.log(sessions), [sessions]);
 
   const handleToAnalizeSession = useCallback(() => {}, []);
 
@@ -30,16 +37,16 @@ const OtherSessions = () => {
   const handleChangeGroupFilter = useCallback((e) => {});
   const handleFilterSelectedPlayerSessions = useCallback(() => {});
   const deleteSelectedSession = useCallback(() => {});
-  if (sessions.length) {
-    return (
-      <div className="interfaceListSesion" style={{color:'white'}}>
-        <div className="filters">
+  {
+    return sessions.length ? (
+      <div className="OtherSessionsContainer">
+        <div className="OtherSessionsFilters">
           <div className="filtersTitle">
             <h3>
               <b>Filtros</b>
             </h3>
           </div>
-          <div className="filtersSelects">
+          <div className="OtherSessionsFilters">
             <div
               className="px-5"
               style={{ width: "100%", display: "flex", flexDirection: "row" }}
@@ -96,10 +103,10 @@ const OtherSessions = () => {
             </div>
           </div>
         </div>
-        <div className="tableOfSessions">
+        <div className="" style={{width:'100%'}}>
           Seleccionar una sesion
-          <table className="table table-sm">
-            <thead className="thead-light">
+          <table className="">
+            <thead className="">
               <tr>
                 <th>Tipo de sesion</th>
                 <th>Apellido</th>
@@ -114,31 +121,34 @@ const OtherSessions = () => {
               </tr>
             </thead>
             <tbody>
-              {sessions.map(player =>
-              player.map(session => {
-                let currentPlayer = listOfPlayers.current.filter(player => player.playerId === session.playerId)[0]
-                return (<tr>
-                  <td>{session.sessionType}</td>
-                  <td>{currentPlayer.Surname}</td>
-                  <td>{currentPlayer.Name}</td>
-                  <td>{currentPlayer.SportGroup}</td>
-                  <td></td>
-                  <td>{session.seed}</td>
-                </tr>)
-                }
-                  )
-                )}
+              {sessions.map((player) =>
+                player.map((session) => {
+                  let currentPlayer = listOfPlayers.current.filter(
+                    (player) => player.playerId === session.playerId
+                  )[0];
+                  return (
+                    <tr>
+                      <td>{session.sessionType}</td>
+                      <td>{currentPlayer.Surname}</td>
+                      <td>{currentPlayer.Name}</td>
+                      <td>{currentPlayer.SportGroup}</td>
+                      <td></td>
+                      <td>{session.seed}</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
-        <div className="botTable">
-          <div className="selectedSesion">
-            <div className="selectedSesionTitle">
+        <div className="" style={{width:'100%'}}>
+          <div className="">
+            <div className="">
               <h4>
                 <b>Jugador sesion seleccionada</b>
               </h4>
             </div>
-            <div className="selectedSesionInfo">
+            <div className="">
               <div className="selectedSesionInfoLeft p-2">
                 <div
                   className=""
@@ -159,15 +169,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Sesion: </b>
                   </div>
@@ -179,15 +180,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Grupo: </b>
                   </div>
@@ -219,35 +211,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Frecuencia cardiaca max.: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Categoria: </b>
                   </div>
@@ -281,15 +244,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Numero de jugadas: </b>
                   </div>
@@ -321,15 +275,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Genero: </b>
                   </div>
@@ -361,17 +306,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-              </div>
-              <div className="selectedSesionInfoRight p-2">
-                <div
-                  className=""
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Tiempo transicion: </b>
                   </div>
@@ -383,16 +317,7 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                    visibility: "hidden",
-                  }}
-                >
+
                   <div className="" style={{ width: "50%" }}>
                     <b>Sesion: </b>
                   </div>
@@ -424,15 +349,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Experiencia: </b>
                   </div>
@@ -444,15 +360,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Altura: </b>
                   </div>
@@ -484,15 +391,6 @@ const OtherSessions = () => {
                       readOnly={true}
                     ></input>
                   </div>
-                </div>
-                <div
-                  className="mt-2"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
                   <div className="" style={{ width: "50%" }}>
                     <b>Posicion: </b>
                   </div>
@@ -536,11 +434,19 @@ const OtherSessions = () => {
           </div>
         </div>
       </div>
-    );
-  } else {
-    return (
-      <div className="alert alert-primary" role="alert">
-        CARGANDO...{" "}
+    ) : (
+      <div className="OtherSessionsLoading">
+        CARGANDO{" "}
+        <svg
+          width="55"
+          height="55"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle class="spinner_b2T7" cx="4" cy="12" r="3" />
+          <circle class="spinner_b2T7 spinner_YRVV" cx="12" cy="12" r="3" />
+          <circle class="spinner_b2T7 spinner_c9oY" cx="20" cy="12" r="3" />
+        </svg>
       </div>
     );
   }
