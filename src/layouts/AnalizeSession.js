@@ -391,7 +391,7 @@ const AnalizeSession = () => {
   const getCorrectPercentage = useCallback(
     (metric) => {
       let correct = (getAverageMetrics(metric) / getTotalMetrics(metric)) * 100;
-      return Math.floor(correct) ;
+      return Math.floor(correct);
     },
     [selectedRowIndex.current, currentFrame]
   );
@@ -399,13 +399,13 @@ const AnalizeSession = () => {
   const getErrorPercentage = useCallback(
     (metric) => {
       let error = 100 - getCorrectPercentage(metric);
-      return Math.floor(error) ;
+      return Math.floor(error);
     },
     [selectedRowIndex.current, currentFrame]
   );
 
   const SaveAnalizeSession = async () => {
-    const dataAnalytic = [{
+    const dataAnalytic = {
       sessionId: currentSession.current[0].sessionId,
       complete: 0, // Reemplaza con el valor correcto
       correctPercentage: getCorrectPercentage("VisuMotor"),
@@ -415,14 +415,17 @@ const AnalizeSession = () => {
       responseMean: getAverageMetrics("CognitiveMotor"),
       responseSd: getStandardDeviationMetrics("CognitiveMotor"),
       responseTotal: getTotalMetrics("CognitiveMotor"),
-      visuMotorMean: getAverageMetrics('VisuMotor'),
+      visuMotorMean: getAverageMetrics("VisuMotor"),
       visuMotorSd: getStandardDeviationMetrics("VisuMotor"),
       visuMotorTotal: getTotalMetrics("VisuMotor"),
       wrongPercentage: getErrorPercentage("VisuMotor"),
-    }]
-    console.log(dataAnalytic)
-    await CrudApi.update(`sessionAnalytics/${currentSession.current[0].SessionAnalyticsId}`,dataAnalytic).then((response) => {
-      console.log(response)
+    };
+    console.log(dataAnalytic);
+    await CrudApi.update(
+      `sessionAnalytics/${currentSession.current[0].SessionAnalytics[0].sessionAnalyticId}`,
+      dataAnalytic
+    ).then((response) => {
+      console.log(response);
     });
     const dataMoves = tableData.map((row, index) => ({
       sessionId: currentSession.current[0].sessionId,
@@ -431,24 +434,28 @@ const AnalizeSession = () => {
       cognitiveMotor: row.cognitiveMotor,
       correctResponse: 0,
       error: 0,
-      imageUrl: infoSession.current.imageSequences[row.sequence - 1],
       motor: row.motor,
       presentedMs: row.visuMotor,
       stimulus: row.estimulo,
       takeoff: row.takeoff,
     }));
-    await CrudApi.update(`sessionMoves/${currentSession.current[0].sessionMovesId}`,dataMoves).then((response) => {
-      console.log(response)
+    console.log(tableData)
+    currentSession.current[0].SessionMoves.map(async (move, index) => {
+      console.log(dataMoves[index]);
+      await CrudApi.update(
+        `sessionMoves/${move.sessionMovesId}`,
+        dataMoves[index]
+      ).then((response) => {
+        console.log('response',response);
+      });
     });
-
-    
   };
 
   return (
     <div className="AnalizeSessionContainer">
       <button
         className="AnalizeSessionBackButton"
-        onClick={() => navigate("/football-session", { replace: true })}
+        onClick={() => navigate("/football-session")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

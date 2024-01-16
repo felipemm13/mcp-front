@@ -93,7 +93,7 @@ const FootballSession = () => {
         hasConsecutiveDuplicates(sequenceGenerated)
       );
     }
-
+    //sequenceGenerated =[2,4,3,4,2,9,4,6,8,1]
     sequenceOfPlays.current = sequenceGenerated;
     var strSequence = [];
     for (var number of sequenceGenerated) {
@@ -177,7 +177,7 @@ const FootballSession = () => {
 
   const openAnalizerView = () => {
     if (videoCurrentSession.current && infoSession.current) {
-      navigate("/analize-session/current", { replace: true });
+      navigate("/analize-session/current");
     } else {
       Swal.fire({
         title: "Error",
@@ -270,7 +270,7 @@ const FootballSession = () => {
               </button>
               <button
                 className="buttonActionsVideo"
-                onClick={() => navigate("/other-sessions", { replace: true })}
+                onClick={() => navigate("/other-sessions")}
                 disabled={!playersList.length}
               >
                 <svg

@@ -181,7 +181,7 @@ const OtherSessions = () => {
                         <td>{currentPlayer.Surname}</td>
                         <td>{currentPlayer.Name}</td>
                         <td>{currentPlayer.SportGroup}</td>
-                        <td>{session.timestamp.split("T")[0]}</td>
+                        <td>{session.videoURL.split("/")[2]+' '+session.videoURL.split("/")[3].split('-')[0]}</td>
                         <td>
                           {session.SessionAnalytics[0]
                             ? session.SessionAnalytics[0].complete === 1
