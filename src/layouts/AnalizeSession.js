@@ -148,13 +148,13 @@ const AnalizeSession = () => {
           (element, index) => ({
             sequence: index + 1,
             playID: infoSession.current.sequenceOfPlays[index],
-            error: false,
+            error: currentSession.current[0].SessionMoves[index].error,
             estimulo: infoSession.current.stimulusTime[index],
-            takeoff: 0,
-            arrival: 0,
-            visuMotor: 0,
-            motor: 0,
-            cognitiveMotor: 0,
+            takeoff: currentSession.current[0].SessionMoves[index].takeoff,
+            arrival: currentSession.current[0].SessionMoves[index].arrival,
+            visuMotor: currentSession.current[0].SessionMoves[index].presentedMs,
+            motor: currentSession.current[0].SessionMoves[index].motor,
+            cognitiveMotor: currentSession.current[0].SessionMoves[index].cognitiveMotor,
           })
         )
       );
@@ -427,7 +427,18 @@ const AnalizeSession = () => {
     ).then((response) => {
       console.log(response);
     });
-    const dataMoves = tableData.map((row, index) => ({
+    const movesTableRows = document.querySelectorAll(".scrollable-body tr");
+    const updatedTableData = Array.from(movesTableRows).map((row, index) => ({
+      playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
+      error: row.querySelector(`input[type="checkbox"]`).checked,
+      estimulo: row.querySelector(`#RowSequenceStimul${index}`).innerText,
+      takeoff: row.querySelector(`#RowSequenceTakeoff${index}`).innerText,
+      arrival: row.querySelector(`#RowSequenceArrival${index}`).innerText,
+      visuMotor: row.querySelector(`#RowSequenceVisuMotor${index}`).innerText,
+      motor: row.querySelector(`#RowSequenceMotor${index}`).innerText,
+      cognitiveMotor: row.querySelector(`#RowSequenceCognitiveMotor${index}`).innerText,
+    }));
+    const dataMoves = updatedTableData.map((row, index) => ({
       sessionId: currentSession.current[0].sessionId,
       moveNum: row.playID,
       arrival: row.arrival,
