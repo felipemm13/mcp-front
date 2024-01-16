@@ -9,8 +9,17 @@ const WebCam = (props) => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recorderVideo = useRef([]);
-  const { videoCurrentSession, currentFPS, infoSession, userContext, CrudApi } =
-    useContext(Context);
+  const {
+    videoCurrentSession,
+    currentFPS,
+    infoSession,
+    userContext,
+    CrudApi,
+    S3_BUCKET,
+    REGION,
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+  } = useContext(Context);
   const [devices, setDevices] = useState([]); //list of cameras
 
   const [cameraState, setCameraState] = useState(false);
@@ -84,12 +93,10 @@ const WebCam = (props) => {
         }
       );
     });
-    const S3_BUCKET = "mcp-wildsense";
-    const REGION = "us-east-2";
 
     AWS.config.update({
-      accessKeyId: "AKIAT7WTFPDFBSCPIH4P",
-      secretAccessKey: "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",
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
     });
     const s3 = new AWS.S3({
       params: { Bucket: S3_BUCKET },
@@ -109,6 +116,7 @@ const WebCam = (props) => {
       Bucket: S3_BUCKET,
       Key: videoURL,
       Body: video,
+      ContentType:video.type
     };
     const sessionData = {
       userId: userContext.current.userId,
@@ -173,6 +181,7 @@ const WebCam = (props) => {
             Bucket: S3_BUCKET,
             Key: imagesUrls[index],
             Body: image,
+            ContentType: image.type,
           };
           s3.putObject(paramsImage)
             .on("httpUploadProgress", (evt) => {

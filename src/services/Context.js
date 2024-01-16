@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import Connect from "../connection/Connect";
+import AWS from "aws-sdk";
 
 const Context = React.createContext();
 
@@ -11,6 +12,10 @@ const ProviderContext = ({ children }) => {
   const CrudApi = new Connect();
   const listOfPlayers = useRef([]);
   const currentSession = useRef(null);
+  const S3_BUCKET = "mcp-wildsense";
+  const REGION = "us-east-2";
+  const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
+  const AWS_SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
   const listOfImages = [
     "assets/calibrations/calibration-example.png",
     "assets/calibrations/calibration-mark-1.png",
@@ -31,7 +36,6 @@ const ProviderContext = ({ children }) => {
     "assets/teams/team-Yellow.jpg",
     "assets/player-zone.png",
   ];
-
   const preloadImage = (src) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -65,6 +69,11 @@ const ProviderContext = ({ children }) => {
         CrudApi,
         listOfPlayers,
         currentSession,
+        S3_BUCKET,
+        REGION,
+        AWS_ACCESS_KEY_ID,
+        AWS_SECRET_ACCESS_KEY,
+        
       }}
     >
       {children}

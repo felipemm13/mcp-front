@@ -2,18 +2,28 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "../styles/AnalizeSession.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
+import AWS from "aws-sdk";
 
 const AnalizeSession = () => {
-  const { videoCurrentSession, infoSession, currentFPS, CrudApi,currentSession } =
-    useContext(Context);
-  if(!infoSession.current.stimulusTime){
+  const {
+    videoCurrentSession,
+    infoSession,
+    currentFPS,
+    CrudApi,
+    currentSession,
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+  } = useContext(Context);
+  if (!infoSession.current.stimulusTime) {
     infoSession.current = {
-      stimulusTime: currentSession.current[0].SessionMoves.map((move) => move.stimulus),
-    }
+      stimulusTime: currentSession.current[0].SessionMoves.map(
+        (move) => move.stimulus
+      ),
+    };
   }
   const navigate = useNavigate();
   const session = useParams().session;
-  const FPS = currentFPS.current;
+  const FPS = currentFPS.current ? currentFPS.current : 30;
   const [videoSession, setVideoSession] = useState(null);
   const [videoState, setVideoState] = useState("Play");
   const [videoStepFrames, setVideoStepFrames] = useState({
@@ -72,15 +82,16 @@ const AnalizeSession = () => {
     durationP.then((d) => setVideoDuration(d));
   };
 
-  useEffect(() => {
+  useEffect(async () => {
     videosPlayersRef.current = document.querySelectorAll(
       ".AnalizeSessionVideoCentral"
     );
     //console.log(videosPlayersRef.current);
     if (session === "current" && videoCurrentSession.current) {
-      //console.log(infoSession.current);
       //infoSession.current.imageSequences.pop()
       const url = URL.createObjectURL(videoCurrentSession.current);
+      console.log(videoCurrentSession.current);
+      console.log(url);
       getVideoDuration(url);
       //console.log(videoDuration);
       setVideoSession(url);
@@ -102,15 +113,35 @@ const AnalizeSession = () => {
           })
         )
       );
-    }else{
+    } else {
       infoSession.current = {
-        stimulusTime: currentSession.current[0].SessionMoves.map((move) => move.stimulus),
-        imageSequences: currentSession.current[0].SessionMoves.map((move) => move.Image_URL),
-        sequenceOfPlays: currentSession.current[0].SessionMoves.map((move) => move.moveNum),
-        numberOfPlays: currentSession.current[0].numPlays
-      }
+        stimulusTime: currentSession.current[0].SessionMoves.map(
+          (move) => move.stimulus
+        ),
+        imageSequences: currentSession.current[0].SessionMoves.map(
+          (move) =>
+            "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" + move.imageUrl
+        ),
+        sequenceOfPlays: currentSession.current[0].SessionMoves.map(
+          (move) => move.moveNum
+        ),
+        numberOfPlays: currentSession.current[0].numPlays,
+      };
+
+      AWS.config.update({
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      });
+      let blob = await fetch(
+        `https://mcp-wildsense.s3.us-east-2.amazonaws.com/${currentSession.current[0].videoURL}`
+      ).then((r) => r.blob());
+      const url = URL.createObjectURL(blob);
+      getVideoDuration(url);
+      //console.log(videoDuration);
+      setVideoSession(url);
       currentPlay.current.src = infoSession.current.imageSequences[0];
       prevPlay.current.src = infoSession.current.imageSequences[0];
+      infoSession.current.stimulusTime.sort((a, b) => a - b);
       setTableData(
         Array.from(
           { length: infoSession.current.numberOfPlays },
@@ -127,7 +158,6 @@ const AnalizeSession = () => {
           })
         )
       );
-      console.log(tableData)
     }
   }, []);
 
@@ -183,7 +213,7 @@ const AnalizeSession = () => {
       }
     }
   }, [currentFrame]);
-  useEffect(() => console.log(tableData), [tableData]);
+
   const handleRowClick = (index, playID) => {
     const previousSelectedRow = document.getElementById(
       `RowSequenceIndex${selectedRowIndex.current}`
@@ -358,29 +388,67 @@ const AnalizeSession = () => {
     [selectedRowIndex.current, currentFrame]
   );
 
+  const getCorrectPercentage = useCallback(
+    (metric) => {
+      let correct = (getAverageMetrics(metric) / getTotalMetrics(metric)) * 100;
+      return Math.floor(correct) ;
+    },
+    [selectedRowIndex.current, currentFrame]
+  );
+
+  const getErrorPercentage = useCallback(
+    (metric) => {
+      let error = 100 - getCorrectPercentage(metric);
+      return Math.floor(error) ;
+    },
+    [selectedRowIndex.current, currentFrame]
+  );
+
   const SaveAnalizeSession = async () => {
-    const data = {
-      SessionPlay_Number: "",
-      Arrival: "",
-      Cognitive_motor: "",
-      CorrectResponse: "",
-      Error: "",
-      Image_URL: "",
-      Completed: "",
-      Motor: "",
-      Seq_ID: "",
-      Presented_ms: "",
-      Stimulus: "",
-      Takeoff: "",
-    };
-    await CrudApi.post();
+    const dataAnalytic = [{
+      sessionId: currentSession.current[0].sessionId,
+      complete: 0, // Reemplaza con el valor correcto
+      correctPercentage: getCorrectPercentage("VisuMotor"),
+      motorMean: getAverageMetrics("Motor"),
+      motorSd: getStandardDeviationMetrics("Motor"),
+      motorTotal: getTotalMetrics("Motor"),
+      responseMean: getAverageMetrics("CognitiveMotor"),
+      responseSd: getStandardDeviationMetrics("CognitiveMotor"),
+      responseTotal: getTotalMetrics("CognitiveMotor"),
+      visuMotorMean: getAverageMetrics('VisuMotor'),
+      visuMotorSd: getStandardDeviationMetrics("VisuMotor"),
+      visuMotorTotal: getTotalMetrics("VisuMotor"),
+      wrongPercentage: getErrorPercentage("VisuMotor"),
+    }]
+    console.log(dataAnalytic)
+    await CrudApi.update(`sessionAnalytics/${currentSession.current[0].sessionId}`,dataAnalytic).then((response) => {
+      console.log(response)
+    });
+    const dataMoves = tableData.map((row, index) => ({
+      sessionId: currentSession.current[0].sessionId,
+      moveNum: row.playID,
+      arrival: row.arrival,
+      cognitiveMotor: row.cognitiveMotor,
+      correctResponse: 0,
+      error: 0,
+      imageUrl: infoSession.current.imageSequences[row.sequence - 1],
+      motor: row.motor,
+      presentedMs: row.visuMotor,
+      stimulus: row.estimulo,
+      takeoff: row.takeoff,
+    }));
+    await CrudApi.update(`sessionMoves/${currentSession.current[0].sessionId}`,dataMoves).then((response) => {
+      console.log(response)
+    });
+
+    
   };
 
   return (
     <div className="AnalizeSessionContainer">
       <button
         className="AnalizeSessionBackButton"
-        onClick={() => navigate("/football-session")}
+        onClick={() => navigate("/football-session", { replace: true })}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -562,27 +630,23 @@ const AnalizeSession = () => {
             />
           </div>
           <div className="AnalizeSessionVideoCentralFrameControl">
-            <input
-              type="number"
-              value={videoStepFrames.previous}
-              onChange={(e) =>
-                setVideoStepFrames({
-                  ...videoStepFrames,
-                  previous: e.target.value,
-                })
-              }
-              className="AnalizeSessionStepInput"
-            />
             <button
-              data-tooltip={`Retroceder ${videoStepFrames.previous} Frame`}
+              data-tooltip={`Retroceder Estimulo`}
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
-                if (currentFrame - parseInt(videoStepFrames.previous) > 0) {
-                  setCurrentFrame(
-                    currentFrame - parseInt(videoStepFrames.previous)
+                if (currentStimulus.current - 1 > 0) {
+                  console.log(
+                    currentStimulus.current,
+                    infoSession.current.stimulusTime[
+                      currentStimulus.current - 1
+                    ]
                   );
+                  videosPlayersRef.current[2].currentTime =
+                    infoSession.current.stimulusTime[
+                      currentStimulus.current - 1
+                    ] / 1000;
                 } else {
-                  setCurrentFrame(0);
+                  videosPlayersRef.current[2].currentTime = 0;
                 }
               }}
             >
@@ -705,21 +769,22 @@ const AnalizeSession = () => {
               </svg>
             </button>
             <button
-              data-tooltip={`Avanzar ${videoStepFrames.next} Frame`}
+              data-tooltip={`Avanzar Estimulo`}
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
-                if (videoState === "Pause") {
-                  setVideoState("Play");
-                }
                 if (
-                  currentFrame + parseInt(videoStepFrames.next) <
-                  Math.round(videoDuration * FPS)
+                  currentStimulus.current + 1 <
+                  infoSession.current.stimulusTime.length - 1
                 ) {
-                  setCurrentFrame(
-                    currentFrame + parseInt(videoStepFrames.next)
-                  );
+                  videosPlayersRef.current[2].currentTime =
+                    infoSession.current.stimulusTime[
+                      currentStimulus.current + 1
+                    ] / 1000;
                 } else {
-                  setCurrentFrame(Math.round(videoDuration * FPS));
+                  videosPlayersRef.current[2].currentTime =
+                    infoSession.current.stimulusTime[
+                      infoSession.current.stimulusTime.length - 1
+                    ] / 1000;
                 }
               }}
             >
@@ -732,14 +797,6 @@ const AnalizeSession = () => {
                 <path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4L224 214.3V256v41.7L52.5 440.6zM256 352V256 128 96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6l-192 160c-9.5 7.9-22.8 9.7-34.1 4.4s-18.4-16.6-18.4-29V352z" />
               </svg>
             </button>
-            <input
-              type="number"
-              value={videoStepFrames.next}
-              onChange={(e) =>
-                setVideoStepFrames({ ...videoStepFrames, next: e.target.value })
-              }
-              className="AnalizeSessionStepInput"
-            />
           </div>
         </div>
         <div className="AnalizeSessionVideoFramesCurrentInfoContainer">
@@ -1013,7 +1070,7 @@ const AnalizeSession = () => {
           <div>
             <button
               className="AnalizeSessionMarksControlButton"
-              onClick={() => SaveAnalizeSession()}
+              onClick={SaveAnalizeSession}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1072,24 +1129,24 @@ const AnalizeSession = () => {
                 <td>{getTotalMetrics("VisuMotor")}</td>
                 <td>{getAverageMetrics("VisuMotor")}</td>
                 <td>{getStandardDeviationMetrics("VisuMotor")}</td>
-                <td>0</td>
-                <td>0</td>
+                <td>{getCorrectPercentage("VisuMotor")}</td>
+                <td>{getErrorPercentage("VisuMotor")}</td>
               </tr>
               <tr className="table-row">
                 <td>Motor Reaccion {"[ms]"}</td>
                 <td>{getTotalMetrics("Motor")}</td>
                 <td>{getAverageMetrics("Motor")}</td>
                 <td>{getStandardDeviationMetrics("Motor")}</td>
-                <td>0</td>
-                <td>0</td>
+                <td>{getCorrectPercentage("Motor")}</td>
+                <td>{getErrorPercentage("Motor")}</td>
               </tr>
               <tr className="table-row">
                 <td>Tiempo Respuesta {"[ms]"}</td>
                 <td>{getTotalMetrics("CognitiveMotor")}</td>
                 <td>{getAverageMetrics("CognitiveMotor")}</td>
                 <td>{getStandardDeviationMetrics("CognitiveMotor")}</td>
-                <td>0</td>
-                <td>0</td>
+                <td>{getCorrectPercentage("CognitiveMotor")}</td>
+                <td>{getErrorPercentage("CognitiveMotor")}</td>
               </tr>
             </tbody>
           </table>
