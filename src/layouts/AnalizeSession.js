@@ -421,7 +421,7 @@ const AnalizeSession = () => {
       wrongPercentage: getErrorPercentage("VisuMotor"),
     }]
     console.log(dataAnalytic)
-    await CrudApi.update(`sessionAnalytics/${currentSession.current[0].sessionId}`,dataAnalytic).then((response) => {
+    await CrudApi.update(`sessionAnalytics/${currentSession.current[0].SessionAnalyticsId}`,dataAnalytic).then((response) => {
       console.log(response)
     });
     const dataMoves = tableData.map((row, index) => ({
@@ -437,7 +437,7 @@ const AnalizeSession = () => {
       stimulus: row.estimulo,
       takeoff: row.takeoff,
     }));
-    await CrudApi.update(`sessionMoves/${currentSession.current[0].sessionId}`,dataMoves).then((response) => {
+    await CrudApi.update(`sessionMoves/${currentSession.current[0].sessionMovesId}`,dataMoves).then((response) => {
       console.log(response)
     });
 
