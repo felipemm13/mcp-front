@@ -47,7 +47,7 @@ const AnalizeSession = () => {
     playID: index + 1,
     error: false,
     estimulo: 0,
-    takeoff: 0,
+    decisionMaking: 0,
     arrival: 0,
     visuMotor: 0,
     motor: 0,
@@ -110,7 +110,7 @@ const AnalizeSession = () => {
             playID: infoSession.current.sequenceOfPlays.current[index],
             error: false,
             estimulo: infoSession.current.stimulusTime[index],
-            takeoff: 0,
+            decisionMaking: 0,
             arrival: 0,
             visuMotor: 0,
             motor: 0,
@@ -162,7 +162,8 @@ const AnalizeSession = () => {
           playID: infoSession.current.sequenceOfPlays[index],
           error: currentSession.current[0].SessionMoves[index].error,
           estimulo: infoSession.current.stimulusTime[index],
-          takeoff: currentSession.current[0].SessionMoves[index].takeoff,
+          decisionMaking:
+            currentSession.current[0].SessionMoves[index].decisionMaking,
           arrival: currentSession.current[0].SessionMoves[index].arrival,
           visuMotor: currentSession.current[0].SessionMoves[index].presentedMs,
           motor: currentSession.current[0].SessionMoves[index].motor,
@@ -246,30 +247,33 @@ const AnalizeSession = () => {
     if (selectedRowIndex.current === index) {
       selectedRowIndex.current = null;
       selectedPlayID.current = null;
-      document.getElementById("AddTakeoffMark").disabled = true;
+      document.getElementById("AddDecisionMakingMark").disabled = true;
       document.getElementById("AddArrivalMark").disabled = true;
     } else {
       selectedRow.style.background = "rgb(255, 255, 255, 0.75)";
       selectedRow.style.color = "black";
       selectedRowIndex.current = index;
       selectedPlayID.current = playID;
-      document.getElementById("AddTakeoffMark").disabled = false;
+      document.getElementById("AddDecisionMakingMark").disabled = false;
       document.getElementById("AddArrivalMark").disabled = false;
     }
   };
 
-  const AddTakeoffMark = () => {
+  const AddDecisionMakingMark = () => {
     if (
-      document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
+      document.getElementById(
+        `RowSequenceDecisionMaking${selectedRowIndex.current}`
+      )
     ) {
       document.getElementById(
-        `RowSequenceTakeoff${selectedRowIndex.current}`
+        `RowSequenceDecisionMaking${selectedRowIndex.current}`
       ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
       document.getElementById(
         `RowSequenceVisuMotor${selectedRowIndex.current}`
       ).innerHTML =
-        document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
-          .innerHTML -
+        document.getElementById(
+          `RowSequenceDecisionMaking${selectedRowIndex.current}`
+        ).innerHTML -
         document.getElementById(`RowSequenceStimul${selectedRowIndex.current}`)
           .innerHTML;
       if (
@@ -304,8 +308,9 @@ const AnalizeSession = () => {
         `RowSequenceArrival${selectedRowIndex.current}`
       ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
       if (
-        document.getElementById(`RowSequenceTakeoff${selectedRowIndex.current}`)
-          .innerHTML > 0
+        document.getElementById(
+          `RowSequenceDecisionMaking${selectedRowIndex.current}`
+        ).innerHTML > 0
       ) {
         document.getElementById(
           `RowSequenceMotor${selectedRowIndex.current}`
@@ -314,7 +319,7 @@ const AnalizeSession = () => {
             `RowSequenceArrival${selectedRowIndex.current}`
           ).innerHTML -
           document.getElementById(
-            `RowSequenceTakeoff${selectedRowIndex.current}`
+            `RowSequenceDecisionMaking${selectedRowIndex.current}`
           ).innerHTML;
       }
       if (
@@ -528,7 +533,8 @@ const AnalizeSession = () => {
       playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
       error: row.querySelector(`input[type="checkbox"]`).checked,
       estimulo: row.querySelector(`#RowSequenceStimul${index}`).innerText,
-      takeoff: row.querySelector(`#RowSequenceTakeoff${index}`).innerText,
+      decisionMaking: row.querySelector(`#RowSequenceDecisionMaking${index}`)
+        .innerText,
       arrival: row.querySelector(`#RowSequenceArrival${index}`).innerText,
       visuMotor: row.querySelector(`#RowSequenceVisuMotor${index}`).innerText,
       motor: row.querySelector(`#RowSequenceMotor${index}`).innerText,
@@ -540,11 +546,12 @@ const AnalizeSession = () => {
       arrival: row.arrival,
       cognitiveMotor: row.cognitiveMotor,
       correctResponse: 0,
-      error: 0,
+      error: row.error ? 1 : 0,
+      imageUrl: imagesUrls[index],
       motor: row.motor,
       presentedMs: row.visuMotor,
       stimulus: row.estimulo,
-      takeoff: row.takeoff,
+      decisionMaking: row.decisionMaking,
     }));
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
@@ -568,19 +575,26 @@ const AnalizeSession = () => {
           };
           s3.putObject(paramsImage)
             .on("httpUploadProgress", (evt) => {
-
+              document.getElementById("SaveAnalizeSession").innerText =
+                "Subiendo Imagen " +
+                parseInt((evt.loaded * 100) / evt.total) +
+                "%";
             })
             .promise();
         });
         var upload = s3
           .putObject(paramsVideo)
           .on("httpUploadProgress", (evt) => {
-
+            document.getElementById("SaveAnalizeSession").innerText =
+              "Subiendo Video " +
+              parseInt((evt.loaded * 100) / evt.total) +
+              "%";
           })
           .promise();
 
         await upload.then(() => {
-
+          document.getElementById("SaveAnalizeSession").innerText = `
+          Guardado Exitosamente`;
         });
       })
       .catch((err) => {
@@ -622,7 +636,8 @@ const AnalizeSession = () => {
         playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
         error: row.querySelector(`input[type="checkbox"]`).checked,
         estimulo: row.querySelector(`#RowSequenceStimul${index}`).innerText,
-        takeoff: row.querySelector(`#RowSequenceTakeoff${index}`).innerText,
+        decisionMaking: row.querySelector(`#RowSequenceDecisionMaking${index}`)
+          .innerText,
         arrival: row.querySelector(`#RowSequenceArrival${index}`).innerText,
         visuMotor: row.querySelector(`#RowSequenceVisuMotor${index}`).innerText,
         motor: row.querySelector(`#RowSequenceMotor${index}`).innerText,
@@ -639,7 +654,7 @@ const AnalizeSession = () => {
         motor: row.motor,
         presentedMs: row.visuMotor,
         stimulus: row.estimulo,
-        takeoff: row.takeoff,
+        decisionMaking: row.decisionMaking,
       }));
       //console.log(tableData);
       currentSession.current[0].SessionMoves.map(async (move, index) => {
@@ -1211,7 +1226,9 @@ const AnalizeSession = () => {
                         />
                       </td>
                       <td id={`RowSequenceStimul${index}`}>{row.estimulo}</td>
-                      <td id={`RowSequenceTakeoff${index}`}>{row.takeoff}</td>
+                      <td id={`RowSequenceDecisionMaking${index}`}>
+                        {row.decisionMaking}
+                      </td>
                       <td id={`RowSequenceArrival${index}`}>{row.arrival}</td>
                       <td id={`RowSequenceVisuMotor${index}`}>
                         {row.visuMotor}
@@ -1286,8 +1303,8 @@ const AnalizeSession = () => {
           <div>
             <button
               className="AnalizeSessionMarksControlButton"
-              id="AddTakeoffMark"
-              onClick={AddTakeoffMark}
+              id="AddDecisionMakingMark"
+              onClick={AddDecisionMakingMark}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

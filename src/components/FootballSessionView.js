@@ -186,7 +186,7 @@ const FootballSessionView = ({ view }) => {
       htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
         imageSequences.current.push(dataUrl);
       });
-    }, [infoSession.current.secondsToNextPlay.current * 1000]);
+    }, [infoSession.current.secondsForPlayTransition.current * 750]);
     ballAnimationRef.update({
       from: ballAnimationMoves[0],
       to: [
@@ -213,7 +213,10 @@ const FootballSessionView = ({ view }) => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                 imageSequences.current.push(dataUrl);
               });
-            }, [infoSession.current.secondsForPlayTransition.current * 1000]);
+            }, [
+              infoSession.current.secondsToNextPlay.current * 1000 +
+                infoSession.current.secondsForPlayTransition.current * 250,
+            ]);
             sequenceIndex++;
           }
         }
@@ -341,8 +344,7 @@ const FootballSessionView = ({ view }) => {
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
-              delay:
-                infoSession.current.secondsToNextPlay.current * 1000 
+              delay: infoSession.current.secondsToNextPlay.current * 1000,
             };
           } else {
             distractorsMoves[i][iteracion] = {
@@ -374,7 +376,7 @@ const FootballSessionView = ({ view }) => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
-          }, [infoSession.current.secondsToNextPlay.current * 1050]);
+          }, [infoSession.current.secondsForPlayTransition.current * 750]);
           indexSequence++;
         }
       }
@@ -405,7 +407,10 @@ const FootballSessionView = ({ view }) => {
                 htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                   imageSequences.current.push(dataUrl);
                 });
-              }, [infoSession.current.secondsForPlayTransition.current * 1050]);
+              }, [
+                infoSession.current.secondsToNextPlay.current * 1000 +
+                  infoSession.current.secondsForPlayTransition.current * 250,
+              ]);
               indexSequence++;
             }
           }
@@ -625,7 +630,7 @@ const FootballSessionView = ({ view }) => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
-          }, [infoSession.current.secondsToNextPlay.current * 1050]);
+          }, [infoSession.current.secondsForPlayTransition.current * 750]);
           sequenceIndex++;
         }
       }
@@ -659,7 +664,10 @@ const FootballSessionView = ({ view }) => {
                 htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                   imageSequences.current.push(dataUrl);
                 });
-              }, [infoSession.current.secondsForPlayTransition.current * 1050]);
+              }, [
+                infoSession.current.secondsToNextPlay.current * 1000 +
+                  infoSession.current.secondsForPlayTransition.current * 250,
+              ]);
               sequenceIndex++;
             }
           }
@@ -678,7 +686,7 @@ const FootballSessionView = ({ view }) => {
       htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
         imageSequences.current.push(dataUrl);
       });
-    }, [infoSession.current.secondsToNextPlay.current * 1000]);
+    }, [infoSession.current.secondsForPlayTransition.current * 750]);
     ballAnimationRef.start();
     idealPlayerAnimationRef.start();
     apiRedPlayersAnimation.start();

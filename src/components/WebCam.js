@@ -158,7 +158,7 @@ const WebCam = (props) => {
           motor: 0,
           presentedMs: 0,
           stimulus: infoSession.current.stimulusTime[index],
-          takeoff: 0,
+          decisionMaking: 0,
         };
       }
     );
@@ -262,7 +262,7 @@ const WebCam = (props) => {
         .setAttribute("disabled", "true");
     }
   }, [props.showWindowPortal, cameraIsAvailable, props.infoSession]);
-  
+
   return (
     <>
       <div className="WebcamContainer" id="webcamContainer">
