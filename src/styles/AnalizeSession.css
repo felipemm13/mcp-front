@@ -191,10 +191,7 @@
     /* Agrega scroll vertical al tbody */
     text-align: center;
     position: relative;
-    -ms-overflow-style: none;
-    /* Quitar scrollbar en IE 10 y superiores */
-    scrollbar-width: none;
-    /* Quitar scrollbar en Firefox */
+
 }
 
 .table-container::-webkit-scrollbar {

@@ -244,7 +244,7 @@ const FootballSessionView = ({ view }) => {
         colors = [
           "black",
           "blue",
-          "brown",
+          "cyan",
           "gray",
           "green",
           "red",
@@ -301,6 +301,7 @@ const FootballSessionView = ({ view }) => {
           } else {
             indexColor = 0;
           }
+          let attempts = 0;
           if (i === 0) {
             if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
               indexPosition =
@@ -310,37 +311,48 @@ const FootballSessionView = ({ view }) => {
                 infoSession.current.sequenceOfPlays.current[iteracion] - 1;
             }
           } else {
-            let attempts = 0;
+            attempts = 0;
             do {
               if (positions.length - 1 > 0) {
                 indexPosition = rand(
                   0,
                   positions.length - 1,
-                  (seed * (iteracion + 1) * sequence)*(attempts+1)
+                  seed * (iteracion + 1) * sequence * (attempts + 1)
                 );
               } else {
                 indexPosition = 0;
               }
               attempts++;
 
-              if (attempts > 1000) {
+              if (attempts > 10) {
                 break;
               }
             } while (
               iteracion > 0 &&
               positions[indexPosition].cx ===
-                distractorsMoves[i][iteracion - 1].cx && positions[indexPosition].cy ===
-                distractorsMoves[i][iteracion - 1].cy 
+                distractorsMoves[i][iteracion - 1].cx &&
+              positions[indexPosition].cy ===
+                distractorsMoves[i][iteracion - 1].cy
             );
           }
-          distractorsMoves[i][iteracion] = {
-            cx: positions[indexPosition].cx,
-            cy: positions[indexPosition].cy,
-            opacity: 1,
-            fill: colors[indexColor],
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
-          };
-          console.log('distractors',distractorsMoves[i])
+          if (attempts > 10) {
+            distractorsMoves[i][iteracion] = {
+              cx: positions[indexPosition].cx,
+              cy: positions[indexPosition].cy,
+              opacity: 1,
+              fill: colors[indexColor],
+              delay:
+                infoSession.current.secondsToNextPlay.current * 1000 
+            };
+          } else {
+            distractorsMoves[i][iteracion] = {
+              cx: positions[indexPosition].cx,
+              cy: positions[indexPosition].cy,
+              opacity: 1,
+              fill: colors[indexColor],
+              delay: infoSession.current.secondsToNextPlay.current * 1000,
+            };
+          }
           colors.splice(indexColor, 1);
           positions.splice(indexPosition, 1);
         }
@@ -362,7 +374,7 @@ const FootballSessionView = ({ view }) => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
-          }, [infoSession.current.secondsToNextPlay.current * 1000]);
+          }, [infoSession.current.secondsToNextPlay.current * 1050]);
           indexSequence++;
         }
       }
@@ -393,7 +405,7 @@ const FootballSessionView = ({ view }) => {
                 htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                   imageSequences.current.push(dataUrl);
                 });
-              }, [infoSession.current.secondsForPlayTransition.current * 1000]);
+              }, [infoSession.current.secondsForPlayTransition.current * 1050]);
               indexSequence++;
             }
           }
@@ -613,7 +625,7 @@ const FootballSessionView = ({ view }) => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
-          }, [infoSession.current.secondsToNextPlay.current * 1000]);
+          }, [infoSession.current.secondsToNextPlay.current * 1050]);
           sequenceIndex++;
         }
       }
@@ -647,7 +659,7 @@ const FootballSessionView = ({ view }) => {
                 htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                   imageSequences.current.push(dataUrl);
                 });
-              }, [infoSession.current.secondsForPlayTransition.current * 1000]);
+              }, [infoSession.current.secondsForPlayTransition.current * 1050]);
               sequenceIndex++;
             }
           }

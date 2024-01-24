@@ -21,6 +21,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
+    console.log(imgTemp);
     await fetch("https://200.1.17.171:3000/calibration_automatic", {
       method: "POST",
       mode: "cors",

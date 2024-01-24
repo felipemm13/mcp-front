@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import Connect from "../connection/Connect";
-import AWS from "aws-sdk";
 
 const Context = React.createContext();
 
@@ -49,14 +48,14 @@ const ProviderContext = ({ children }) => {
     });
   };
 
-  const preLoadImages = () => {
-    listOfImages.forEach((image) => {
+  const preloadImages = (list) => {
+    list.forEach((image) => {
       preloadImage(image);
     });
   };
 
   useEffect(() => {
-    preLoadImages();
+    preloadImages(listOfImages);
   }, []);
 
   return (
@@ -73,7 +72,7 @@ const ProviderContext = ({ children }) => {
         REGION,
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
-        
+        preloadImages,
       }}
     >
       {children}

@@ -1,9 +1,22 @@
+import { useEffect } from "react";
 import authService from "../services/authService";
 import "../styles/Menu.css";
 import { useNavigate } from "react-router-dom";
 
 const Menu = (props) => {
   const navigate = useNavigate();
+  useEffect(()=>{  if (navigator.mediaDevices?.enumerateDevices) {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        devices.filter(({ kind }) => kind === "videoinput")
+      })
+      .catch((err) => {
+        console.error(`${err.name}: ${err.message}`);
+      });
+  } else {
+    console.log("Error al cargar dispositivos de video");
+  }},[])
   return (
     <>
       <div className="MenuContainer">
@@ -19,7 +32,7 @@ const Menu = (props) => {
         <div className="menuContainer">
           <button
             className="button"
-            onClick={() => navigate("football-session", { replace: true })}
+            onClick={() => navigate("football-session",{replace:true})}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

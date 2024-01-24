@@ -177,7 +177,7 @@ const FootballSession = () => {
 
   const openAnalizerView = () => {
     if (videoCurrentSession.current && infoSession.current) {
-      navigate("/analize-session/current");
+      navigate("/analize-session/current",{replace:true});
     } else {
       Swal.fire({
         title: "Error",
@@ -201,7 +201,7 @@ const FootballSession = () => {
         <div className="sessionActions">
           <button
             className="FootballSessionButton"
-            onClick={() => navigate("/", { replace: true })}
+            onClick={() => navigate("/",{replace:true})}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -270,7 +270,7 @@ const FootballSession = () => {
               </button>
               <button
                 className="buttonActionsVideo"
-                onClick={() => navigate("/other-sessions")}
+                onClick={() => navigate("/other-sessions",{replace:true})}
                 disabled={!playersList.length}
               >
                 <svg

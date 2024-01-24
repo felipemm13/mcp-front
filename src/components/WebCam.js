@@ -130,6 +130,7 @@ const WebCam = (props) => {
       transitionTime: infoSession.current.secondsForPlayTransition.current,
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors.current,
+      fps: currentFPS.current,
     };
     const sessionAnalyticData = {
       complete: 0,
@@ -148,7 +149,7 @@ const WebCam = (props) => {
     const sessionMovesData = infoSession.current.sequenceOfPlays.current.map(
       (play, index) => {
         return {
-          moveNum: play,
+          moveNum: index+1,
           arrival: 0,
           cognitiveMotor: 0,
           correctResponse: 0,
@@ -161,8 +162,6 @@ const WebCam = (props) => {
         };
       }
     );
-    console.log(sessionMovesData);
-
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
         await CrudApi.post(`sessionAnalytics`, {
@@ -211,9 +210,11 @@ const WebCam = (props) => {
         console.log(err);
       });
   };
+
   const handleChangeWebCam = (e) => {
     setDeviceId(e.target.value);
   };
+
   useEffect(() => {
     if (navigator.mediaDevices?.enumerateDevices) {
       navigator.mediaDevices
@@ -239,6 +240,7 @@ const WebCam = (props) => {
       .addEventListener("click", handleUploadVideo);
     //document.getElementById("StartCaptureVideo").addEventListener("click", handleStartCaptureClick);
   }, []);
+
   useEffect(() => {
     if (
       cameraIsAvailable &&
@@ -260,6 +262,7 @@ const WebCam = (props) => {
         .setAttribute("disabled", "true");
     }
   }, [props.showWindowPortal, cameraIsAvailable, props.infoSession]);
+  
   return (
     <>
       <div className="WebcamContainer" id="webcamContainer">

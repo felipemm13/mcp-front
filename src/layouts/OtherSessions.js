@@ -25,11 +25,25 @@ const OtherSessions = () => {
         .catch((error) => {
           console.log(error);
         });
-      setSessions([...sessionsRef.current]);
+      setSessions([[].concat(...sessionsRef.current)]);
     });
   }, []);
 
-  useEffect(() => console.log(sessions), [sessions]);
+  useEffect(() => {
+    console.log('use',sessions);
+    sessions.sort((a, b) => {
+      let dateA = 
+        a.videoURL.split("/")[2] +
+                            " " +
+                            a.videoURL.split("/")[3].split("-")[0];
+      let dateB =
+        b.videoURL.split("/")[2] +
+        " " +
+        b.videoURL.split("/")[3].split("-")[0];
+        
+      return dateA - dateB;
+    });
+  }, [sessions]);
 
   const handleToAnalizeSession = () => {
     currentSession.current = selectedSession;
@@ -181,7 +195,11 @@ const OtherSessions = () => {
                         <td>{currentPlayer.Surname}</td>
                         <td>{currentPlayer.Name}</td>
                         <td>{currentPlayer.SportGroup}</td>
-                        <td>{session.videoURL.split("/")[2]+' '+session.videoURL.split("/")[3].split('-')[0]}</td>
+                        <td>
+                          {session.videoURL.split("/")[2] +
+                            " " +
+                            session.videoURL.split("/")[3].split("-")[0]}
+                        </td>
                         <td>
                           {session.SessionAnalytics[0]
                             ? session.SessionAnalytics[0].complete === 1
