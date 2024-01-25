@@ -30,19 +30,30 @@ const OtherSessions = () => {
   }, []);
 
   useEffect(() => {
-    console.log('use',sessions);
-    sessions.sort((a, b) => {
-      let dateA = 
-        a.videoURL.split("/")[2] +
-                            " " +
-                            a.videoURL.split("/")[3].split("-")[0];
-      let dateB =
-        b.videoURL.split("/")[2] +
-        " " +
-        b.videoURL.split("/")[3].split("-")[0];
-        
-      return dateA - dateB;
-    });
+    if (sessions.length) {
+      sessions[0].sort((a, b) => {
+        /*
+        let dateA =
+          a.videoURL.split("/")[2] +
+          " " +
+          a.videoURL.split("/")[3].split("-")[0];
+        let dateB =
+          b.videoURL.split("/")[2] +
+          " " +
+          b.videoURL.split("/")[3].split("-")[0];*/
+          let dateA = new Date(a.timestamp)
+          let dateB = new Date(b.timestamp)
+        console.log(a,b)
+        if (dateA < dateB) {
+          return 1;
+        }
+        if (dateA > dateB) {
+          return -1;
+        }
+        return 0;
+      });
+    }
+    console.log("use", sessions);
   }, [sessions]);
 
   const handleToAnalizeSession = () => {
