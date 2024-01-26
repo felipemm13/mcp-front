@@ -32,28 +32,26 @@ const OtherSessions = () => {
   useEffect(() => {
     if (sessions.length) {
       sessions[0].sort((a, b) => {
-        /*
-        let dateA =
-          a.videoURL.split("/")[2] +
-          " " +
-          a.videoURL.split("/")[3].split("-")[0];
-        let dateB =
-          b.videoURL.split("/")[2] +
-          " " +
-          b.videoURL.split("/")[3].split("-")[0];*/
-          let dateA = new Date(a.timestamp)
-          let dateB = new Date(b.timestamp)
-        console.log(a,b)
+        const extractDateAndTime = (url) => {
+          const [, datePart, timePart] = url.match(
+            /(\d{4}-\d{2}-\d{2})\/(\d{2}_\d{2}_\d{2})/
+          );
+          return `${datePart} ${timePart.replace(/_/g, ":")}`;
+        };
+
+        const dateA = new Date(extractDateAndTime(a.videoURL));
+        const dateB = new Date(extractDateAndTime(b.videoURL));
+
         if (dateA < dateB) {
-          return 1;
+          return -1;
         }
         if (dateA > dateB) {
-          return -1;
+          return 1;
         }
         return 0;
       });
+      console.log("use", sessions);
     }
-    console.log("use", sessions);
   }, [sessions]);
 
   const handleToAnalizeSession = () => {
@@ -563,9 +561,9 @@ const OtherSessions = () => {
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <circle class="spinner_b2T7" cx="4" cy="12" r="3" />
-          <circle class="spinner_b2T7 spinner_YRVV" cx="12" cy="12" r="3" />
-          <circle class="spinner_b2T7 spinner_c9oY" cx="20" cy="12" r="3" />
+          <circle className="spinner_b2T7" cx="4" cy="12" r="3" />
+          <circle className="spinner_b2T7 spinner_YRVV" cx="12" cy="12" r="3" />
+          <circle className="spinner_b2T7 spinner_c9oY" cx="20" cy="12" r="3" />
         </svg>
       </div>
     );
