@@ -233,7 +233,13 @@ const FootballSessionView = ({ view }) => {
   };
 
   const handleDiscriminativeAnimation = () => {
-    const seed = new Date().getSeconds();
+    let seed = new Date().getSeconds();
+    let checkbox = document.getElementById("randomSeed").isChecked;
+    if (checkbox) {
+      if (infoSession.current.seed) {
+        seed = infoSession.current.seed;
+      }
+    }
     let colors = [];
     let positions = [];
     let indexSequence = 0;
@@ -304,7 +310,6 @@ const FootballSessionView = ({ view }) => {
           } else {
             indexColor = 0;
           }
-          let attempts = 0;
           if (i === 0) {
             if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
               indexPosition =
@@ -318,7 +323,7 @@ const FootballSessionView = ({ view }) => {
               indexPosition = rand(
                 0,
                 positions.length - 1,
-                seed * (iteracion + 1) * sequence * (attempts + 1)
+                seed * (iteracion + 1) * sequence
               );
             } else {
               indexPosition = 0;
@@ -332,13 +337,11 @@ const FootballSessionView = ({ view }) => {
               distractorsMoves[i][iteracion - 1].cy
           ) {
             distractorsMoves[i][iteracion] = {
-              cx: positions[indexPosition].cx,
+              cx: positions[indexPosition].cx + 1,
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
-              delay:
-                infoSession.current.secondsToNextPlay.current * 1000 +
-                infoSession.current.secondsForPlayTransition.current * 2000,
+              delay: infoSession.current.secondsToNextPlay.current * 1000,
             };
           } else {
             distractorsMoves[i][iteracion] = {
@@ -355,66 +358,73 @@ const FootballSessionView = ({ view }) => {
       }
     );
     let sequenceIndex = 0;
+    console.log(distractorsMoves);
     apiDiscriminativeAnimation.update((i) => {
-      let distractorsInitialPosition =
-        distractorsMoves[i] && distractorsMoves[i].shift();
-      if (i == 0) {
-        let color =
-          distractorsInitialPosition && distractorsInitialPosition.fill;
-        teamRef.current.style.fill = color;
-        //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
-        if (
-          indexSequence < infoSession.current.sequenceOfPlays.current.length
-        ) {
-          setTimeout(() => {
-            htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
-              imageSequences.current.push(dataUrl);
-            });
-          }, [infoSession.current.secondsForPlayTransition.current * 750]);
-          indexSequence++;
+      if (distractorsMoves[i]) {
+        let distractorsInitialPosition = distractorsMoves[i].shift();
+        if (i == 0) {
+          let color =
+            distractorsInitialPosition && distractorsInitialPosition.fill;
+          teamRef.current.style.fill = color;
+          //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+          if (
+            indexSequence < infoSession.current.sequenceOfPlays.current.length
+          ) {
+            setTimeout(() => {
+              htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+                imageSequences.current.push(dataUrl);
+              });
+            }, [infoSession.current.secondsForPlayTransition.current * 750]);
+            indexSequence++;
+          }
         }
-      }
-      return {
-        from: distractorsInitialPosition,
-        to: [
-          distractorsMoves[i],
-          {
-            cx: containerWidth.current * 0.5,
-            cy: containerHeight.current * 0.5,
-            opacity: 0,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+        console.log(i, distractorsMoves[i]);
+        return {
+          from: distractorsInitialPosition,
+          to: [
+            distractorsMoves[i],
+            {
+              cx: containerWidth.current * 0.5,
+              cy: containerHeight.current * 0.5,
+              opacity: 0,
+              delay: infoSession.current.secondsToNextPlay.current * 1000,
+            },
+          ],
+          config: {
+            duration:
+              infoSession.current.secondsForPlayTransition.current * 1000,
           },
-        ],
-        config: {
-          duration: infoSession.current.secondsForPlayTransition.current * 1000,
-        },
-        onStart: () => {
-          if (i === 0) {
-            let color = distractorsMoves[i][sequenceIndex++].fill;
-            //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
-            teamRef.current.style.fill = color;
-            if (
-              indexSequence < infoSession.current.sequenceOfPlays.current.length
-            ) {
-              stimulusTimeSequence.current.push(new Date().getTime() - time);
-              setTimeout(() => {
-                htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
-                  imageSequences.current.push(dataUrl);
-                });
-              }, [
-                infoSession.current.secondsToNextPlay.current * 250 +
-                  infoSession.current.secondsForPlayTransition.current * 1000,
-              ]);
-              indexSequence++;
+          onStart: () => {
+            if (i === 0 && distractorsMoves[i][sequenceIndex]) {
+              let color = distractorsMoves[i][sequenceIndex++].fill;
+              //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
+              teamRef.current.style.fill = color;
+              if (
+                indexSequence <
+                infoSession.current.sequenceOfPlays.current.length
+              ) {
+                stimulusTimeSequence.current.push(new Date().getTime() - time);
+                setTimeout(() => {
+                  htmlToImage
+                    .toJpeg(sessionContainer.current)
+                    .then((dataUrl) => {
+                      imageSequences.current.push(dataUrl);
+                    });
+                }, [
+                  infoSession.current.secondsToNextPlay.current * 250 +
+                    infoSession.current.secondsForPlayTransition.current * 1000,
+                ]);
+                indexSequence++;
+              }
             }
-          }
-        },
-        onResolve: () => {
-          if (i === 0) {
-            handleFinishAnimation();
-          }
-        },
-      };
+          },
+          onResolve: () => {
+            if (i === 0) {
+              handleFinishAnimation();
+            }
+          },
+        };
+      }
     }, []);
     if (view === "coach") {
       document
@@ -494,7 +504,6 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
-              ...move[i],
               opacity: 0,
               delay: 0,
             };
@@ -592,7 +601,6 @@ const FootballSessionView = ({ view }) => {
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
-        onStart: () => {},
       };
     }, []);
 
@@ -661,8 +669,8 @@ const FootballSessionView = ({ view }) => {
                   imageSequences.current.push(dataUrl);
                 });
               }, [
-                infoSession.current.secondsToNextPlay.current * 250 +
-                  infoSession.current.secondsForPlayTransition.current * 1000,
+                infoSession.current.secondsToNextPlay.current * 1000 +
+                  infoSession.current.secondsForPlayTransition.current * 250,
               ]);
               sequenceIndex++;
             }

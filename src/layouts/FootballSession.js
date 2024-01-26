@@ -4,12 +4,13 @@ import FootballSessionView from "../components/FootballSessionView";
 import WebCam from "../components/WebCam";
 import { useEffect, useState, useRef, useContext } from "react";
 import WindowPortal from "../components/WindowPortal";
-import { n_rand } from "../utility/math_functions";
+import { n_rand, rand } from "../utility/math_functions";
 import firebaseService from "../services/firebaseService2";
 import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
 import Routes from "../connection/path";
+import seedrandom from "seedrandom";
 
 const FootballSession = () => {
   const {
@@ -76,6 +77,13 @@ const FootballSession = () => {
       }
       return false;
     };
+    let seedSequence = new Date().getSeconds();
+    let checkbox = document.getElementById("randomSeed").checked;
+    if (checkbox) {
+      if (seed.current) {
+        seedSequence = seed.current;
+      }
+    }
     if (typeOfSession.current === "applied") {
       sequenceGenerated = n_rand(
         playsFromDb.current.length,
@@ -83,15 +91,20 @@ const FootballSession = () => {
         seed.current
       );
     } else {
-      do {
-        sequenceGenerated = [];
-        for (var i = 0; i < numberOfPlays.current; i++) {
-          sequenceGenerated.push(Math.floor(Math.random() * 9) + 1);
+      //do {
+      sequenceGenerated = [];
+      for (var i = 0; i < numberOfPlays.current; i++) {
+        let sr = seedrandom(seedSequence*i)
+        let numRand = Math.ceil(sr() * 8)
+        if (numRand >= 5) {
+          numRand = numRand + 1;
         }
-      } while (
+        sequenceGenerated.push(numRand);
+      }
+      /*} while (
         sequenceGenerated.includes(5) ||
         hasConsecutiveDuplicates(sequenceGenerated)
-      );
+      );*/
     }
     //sequenceGenerated =[2,4,3,4,2,9,4,6,8,1]
     sequenceOfPlays.current = sequenceGenerated;
@@ -177,7 +190,7 @@ const FootballSession = () => {
 
   const openAnalizerView = () => {
     if (videoCurrentSession.current && infoSession.current) {
-      navigate("/analize-session/current",{replace:true});
+      navigate("/analize-session/current", { replace: true });
     } else {
       Swal.fire({
         title: "Error",
@@ -194,14 +207,13 @@ const FootballSession = () => {
     console.log(infoSession.current);
   }, [currentSesionInfo]);
 
-
   return (
     <>
       <div className="FootballSessionContainer">
         <div className="sessionActions">
           <button
             className="FootballSessionButton"
-            onClick={() => navigate("/",{replace:true})}
+            onClick={() => navigate("/", { replace: true })}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -270,7 +282,7 @@ const FootballSession = () => {
               </button>
               <button
                 className="buttonActionsVideo"
-                onClick={() => navigate("/other-sessions",{replace:true})}
+                onClick={() => navigate("/other-sessions", { replace: true })}
                 disabled={!playersList.length}
               >
                 <svg
