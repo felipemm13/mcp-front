@@ -214,8 +214,8 @@ const FootballSessionView = ({ view }) => {
                 imageSequences.current.push(dataUrl);
               });
             }, [
-              infoSession.current.secondsToNextPlay.current * 1000 +
-                infoSession.current.secondsForPlayTransition.current * 250,
+              infoSession.current.secondsToNextPlay.current * 250 +
+                infoSession.current.secondsForPlayTransition.current * 1000,
             ]);
             sequenceIndex++;
           }
@@ -314,37 +314,31 @@ const FootballSessionView = ({ view }) => {
                 infoSession.current.sequenceOfPlays.current[iteracion] - 1;
             }
           } else {
-            attempts = 0;
-            do {
-              if (positions.length - 1 > 0) {
-                indexPosition = rand(
-                  0,
-                  positions.length - 1,
-                  seed * (iteracion + 1) * sequence * (attempts + 1)
-                );
-              } else {
-                indexPosition = 0;
-              }
-              attempts++;
-
-              if (attempts > 10) {
-                break;
-              }
-            } while (
-              iteracion > 0 &&
-              positions[indexPosition].cx ===
-                distractorsMoves[i][iteracion - 1].cx &&
-              positions[indexPosition].cy ===
-                distractorsMoves[i][iteracion - 1].cy
-            );
+            if (positions.length - 1 > 0) {
+              indexPosition = rand(
+                0,
+                positions.length - 1,
+                seed * (iteracion + 1) * sequence * (attempts + 1)
+              );
+            } else {
+              indexPosition = 0;
+            }
           }
-          if (attempts > 10) {
+          if (
+            distractorsMoves[i][iteracion - 1] &&
+            positions[indexPosition].cx ===
+              distractorsMoves[i][iteracion - 1].cx &&
+            positions[indexPosition].cy ===
+              distractorsMoves[i][iteracion - 1].cy
+          ) {
             distractorsMoves[i][iteracion] = {
               cx: positions[indexPosition].cx,
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay:
+                infoSession.current.secondsToNextPlay.current * 1000 +
+                infoSession.current.secondsForPlayTransition.current * 2000,
             };
           } else {
             distractorsMoves[i][iteracion] = {
@@ -408,8 +402,8 @@ const FootballSessionView = ({ view }) => {
                   imageSequences.current.push(dataUrl);
                 });
               }, [
-                infoSession.current.secondsToNextPlay.current * 1000 +
-                  infoSession.current.secondsForPlayTransition.current * 250,
+                infoSession.current.secondsToNextPlay.current * 250 +
+                  infoSession.current.secondsForPlayTransition.current * 1000,
               ]);
               indexSequence++;
             }
@@ -500,6 +494,7 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
+              ...move[i],
               opacity: 0,
               delay: 0,
             };
@@ -597,6 +592,7 @@ const FootballSessionView = ({ view }) => {
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
+        onStart: () => {},
       };
     }, []);
 
@@ -665,8 +661,8 @@ const FootballSessionView = ({ view }) => {
                   imageSequences.current.push(dataUrl);
                 });
               }, [
-                infoSession.current.secondsToNextPlay.current * 1000 +
-                  infoSession.current.secondsForPlayTransition.current * 250,
+                infoSession.current.secondsToNextPlay.current * 250 +
+                  infoSession.current.secondsForPlayTransition.current * 1000,
               ]);
               sequenceIndex++;
             }
