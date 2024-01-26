@@ -106,7 +106,6 @@ const FootballSession = () => {
         hasConsecutiveDuplicates(sequenceGenerated)
       );*/
     }
-    //sequenceGenerated =[2,4,3,4,2,9,4,6,8,1]
     sequenceOfPlays.current = sequenceGenerated;
     var strSequence = [];
     for (var number of sequenceGenerated) {

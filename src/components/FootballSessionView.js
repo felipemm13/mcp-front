@@ -173,12 +173,20 @@ const FootballSessionView = ({ view }) => {
         } else {
           ballPosition = sequence - 1;
         }
+        if(positions[ballPosition-1] && positions[ballPosition].cx === positions[ballPosition-1].cx && positions[ballPosition].cy === positions[ballPosition-1].cy){
+          return {
+            x: positions[ballPosition].cx+1,
+            y: positions[ballPosition].cy,
+            opacity: 1,
+            delay: infoSession.current.secondsToNextPlay.current * 1000,
+          };
+        }else{
         return {
           x: positions[ballPosition].cx,
           y: positions[ballPosition].cy,
           opacity: 1,
           delay: infoSession.current.secondsToNextPlay.current * 1000,
-        };
+        };}
       }
     );
     setShowAnimation("reactive");
