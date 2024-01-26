@@ -52,24 +52,27 @@ const WebCam = (props) => {
       .getSettings().frameRate;
     mediaRecorderRef.current.stop();
   };
-
+  const padZero = (value) => {
+    return value < 10 ? "0" + value : value;
+  };
   const handleUploadVideo = async () => {
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
     const currentDate = new Date();
     const sessionDate =
-      currentDate.getFullYear() +
+      padZero(currentDate.getFullYear()) +
       "-" +
-      (currentDate.getMonth() + 1) +
+      padZero(currentDate.getMonth() + 1) +
       "-" +
-      currentDate.getDate() +
+      padZero(currentDate.getDate()) +
       "/" +
-      currentDate.getHours() +
+      padZero(currentDate.getHours()) +
       "_" +
-      currentDate.getMinutes() +
+      padZero(currentDate.getMinutes()) +
       "_" +
-      currentDate.getSeconds();
+      padZero(currentDate.getSeconds());
+    console.log(sessionDate);
     var video = new File(
       [recorderVideo.current],
       `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,
@@ -116,7 +119,7 @@ const WebCam = (props) => {
       Bucket: S3_BUCKET,
       Key: videoURL,
       Body: video,
-      ContentType:video.type
+      ContentType: video.type,
     };
     const sessionData = {
       userId: userContext.current.userId,
@@ -149,7 +152,7 @@ const WebCam = (props) => {
     const sessionMovesData = infoSession.current.sequenceOfPlays.current.map(
       (play, index) => {
         return {
-          moveNum: index+1,
+          moveNum: index + 1,
           arrival: 0,
           cognitiveMotor: 0,
           correctResponse: 0,
