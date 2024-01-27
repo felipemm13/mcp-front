@@ -9,10 +9,13 @@ const OtherSessions = () => {
   const [sessions, setSessions] = useState([]);
   const sessionsRef = useRef(null);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [isCharged, setIsCharged] = useState(false);
+  const [isSorted, setIsSorted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     sessionsRef.current = [];
+    setIsCharged(false);
     listOfPlayers.current.forEach(async (player) => {
       await CrudApi.get(`player/${player.playerId}/sessions`)
         .then((res) => {
@@ -27,10 +30,12 @@ const OtherSessions = () => {
         });
       setSessions([[].concat(...sessionsRef.current)]);
     });
+    setIsCharged(true);
   }, []);
 
   useEffect(() => {
-    if (sessions.length) {
+    setIsSorted(false);
+    if (sessions.length && isCharged) {
       sessions[0].sort((a, b) => {
         const extractDateAndTime = (url) => {
           const [, datePart, timePart] = url.match(
@@ -42,15 +47,17 @@ const OtherSessions = () => {
         const dateA = new Date(extractDateAndTime(a.videoURL));
         const dateB = new Date(extractDateAndTime(b.videoURL));
 
-        if (dateA < dateB) {
+        if (dateA > dateB) {
           return -1;
         }
-        if (dateA > dateB) {
+        if (dateA < dateB) {
           return 1;
         }
         return 0;
       });
-      console.log("use", sessions);
+      setTimeout(() => {
+        setIsSorted(true);
+      }, 250);
     }
   }, [sessions]);
 
@@ -181,11 +188,11 @@ const OtherSessions = () => {
           <div className="table-container">
             <table className="custom-table">
               <tbody>
-                {sessions.map((player) =>
-                  player.map((session) => {
-                    let currentPlayer = listOfPlayers.current.filter(
+                {isSorted ? (
+                  sessions[0].map((session) => {
+                    let currentPlayer = listOfPlayers.current.find(
                       (player) => player.playerId === session.playerId
-                    )[0];
+                    );
                     return (
                       <tr
                         key={session.sessionId}
@@ -235,6 +242,27 @@ const OtherSessions = () => {
                       </tr>
                     );
                   })
+                ) : (
+                  <svg
+                    width="55"
+                    height="55"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle className="spinner_b2T7" cx="4" cy="12" r="3" />
+                    <circle
+                      className="spinner_b2T7 spinner_YRVV"
+                      cx="12"
+                      cy="12"
+                      r="3"
+                    />
+                    <circle
+                      className="spinner_b2T7 spinner_c9oY"
+                      cx="20"
+                      cy="12"
+                      r="3"
+                    />
+                  </svg>
                 )}
               </tbody>
             </table>

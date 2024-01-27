@@ -36,6 +36,7 @@ const AnalizeSession = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [loadedVideo, setLoadedVideo] = useState(false);
   const currentPlay = useRef(null);
   const prevPlay = useRef(null);
   const currentStimulus = useRef(0);
