@@ -390,7 +390,6 @@ const FootballSessionView = ({ view }) => {
             indexSequence++;
           }
         }
-        console.log(i, distractorsMoves[i]);
         return {
           from: distractorsInitialPosition,
           to: [
@@ -491,7 +490,6 @@ const FootballSessionView = ({ view }) => {
       red: maxPlayersInPlay,
       yellow: maxPlayersInPlay,
     });
-    console.log(maxPlayersInPlayYellow, maxPlayersInPlayRed);
 
     let playerTeams = plays.map((play) => play.Team);
 
@@ -500,8 +498,8 @@ const FootballSessionView = ({ view }) => {
       return play.figureCoordinates.map((player) => {
         if (player.color === "Red") {
           return {
-            cx: (player.xCoor / 49) * containerWidth.current,
-            cy: (player.yCoor / 49) * containerHeight.current,
+            cx: (player.xCoor / 50) * containerWidth.current,
+            cy: (player.yCoor / 50) * containerHeight.current,
             opacity: 1,
             delay: infoSession.current.secondsToNextPlay.current * 1000,
           };
@@ -513,23 +511,6 @@ const FootballSessionView = ({ view }) => {
     redPlayersMoves = redPlayersMoves.map((move) =>
       move.filter((player) => player !== undefined)
     );
-    redPlayersMoves = redPlayersMoves.map((move, index) => {
-      for (let i = 0; i < move.length; i++) {
-        if (
-          move[i - 1] &&
-          move[i] &&
-          move[i - 1].cx === move[i].cx &&
-          move[i - 1].cy === move[i].cy
-        ) {
-          console.log('duplicates')
-          move[i] = {
-            ...move[i],
-            cx: move[i - 1].cx + 1,
-          };
-        }
-      }
-      return move;
-    });
 
     let animationRedPlayersMoves = [];
     for (let i = 0; i < apiRedPlayersAnimation.current.length; i++) {
@@ -554,8 +535,8 @@ const FootballSessionView = ({ view }) => {
       return play.figureCoordinates.map((player) => {
         if (player.color === "Yellow") {
           return {
-            cx: (player.xCoor / 49) * containerWidth.current,
-            cy: (player.yCoor / 49) * containerHeight.current,
+            cx: (player.xCoor / 50) * containerWidth.current,
+            cy: (player.yCoor / 50) * containerHeight.current,
             opacity: 1,
             delay: infoSession.current.secondsToNextPlay.current * 1000,
           };
@@ -588,8 +569,8 @@ const FootballSessionView = ({ view }) => {
     //Ideal Player
     let animationIdealPlayerMoves = plays.map((play) => {
       return {
-        cx: (play.IdealPositionX / 49) * containerWidth.current,
-        cy: (play.IdealPositionY / 49) * containerHeight.current,
+        cx: (play.IdealPositionX / 50) * containerWidth.current,
+        cy: (play.IdealPositionY / 50) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
@@ -598,8 +579,8 @@ const FootballSessionView = ({ view }) => {
     //Ball Animation
     let animationBallMoves = plays.map((play) => {
       return {
-        x: (play.ballX / 49) * containerWidth.current,
-        y: (play.ballY / 49) * containerHeight.current,
+        x: (play.ballX / 50) * containerWidth.current,
+        y: (play.ballY / 50) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
@@ -615,7 +596,6 @@ const FootballSessionView = ({ view }) => {
           move[i - 1].cx === move[i].cx &&
           move[i - 1].cy === move[i].cy
           ) {
-            console.log('duplicates',move[i-1],move[i])
           move[i] = {
             ...move[i],
             cx: move[i].cx + 1,
@@ -632,7 +612,6 @@ const FootballSessionView = ({ view }) => {
           move[i - 1].cx === move[i].cx &&
           move[i - 1].cy === move[i].cy
           ) {
-            console.log('duplicates',move[i-1],move[i])
             move[i] = {
               ...move[i],
               cx: move[i].cx + 1,
@@ -883,7 +862,7 @@ const FootballSessionView = ({ view }) => {
                 <circle fill="#fff" r="2376" />
                 <path
                   fill="none"
-                  d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-49 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
+                  d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-50 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
                 />
               </g>
               <path
@@ -976,7 +955,7 @@ const FootballSessionView = ({ view }) => {
                   <circle fill="#fff" r="2376" />
                   <path
                     fill="none"
-                    d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-49 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
+                    d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-50 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
                   />
                 </g>
                 <path
