@@ -178,7 +178,7 @@ const FootballSessionView = ({ view }) => {
           positions[ballPosition].cy === positions[ballPosition - 1].cy
         ) {
           return {
-            x: positions[ballPosition].cx + 1,
+            x: positions[ballPosition].cx + 0.1,
             y: positions[ballPosition].cy,
             opacity: 1,
             delay: infoSession.current.secondsToNextPlay.current * 1000,
@@ -349,7 +349,7 @@ const FootballSessionView = ({ view }) => {
               distractorsMoves[i][iteracion - 1].cy
           ) {
             distractorsMoves[i][iteracion] = {
-              cx: positions[indexPosition].cx + 1,
+              cx: positions[indexPosition].cx + 0.1,
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
@@ -520,7 +520,7 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
-              cx: containerWidth.current * 0.5 + j,
+              cx: containerWidth.current * 0.5 + j/10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
               delay: infoSession.current.secondsToNextPlay.current * 1000,
@@ -556,7 +556,7 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
-              cx: containerWidth.current * 0.5 + j,
+              cx: containerWidth.current * 0.5 + j/10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
               delay: infoSession.current.secondsToNextPlay.current * 1000,
@@ -598,7 +598,7 @@ const FootballSessionView = ({ view }) => {
           ) {
           move[i] = {
             ...move[i],
-            cx: move[i].cx + 1,
+            cx: move[i].cx + 0.1,
           };
         }
       }
@@ -614,7 +614,7 @@ const FootballSessionView = ({ view }) => {
           ) {
             move[i] = {
               ...move[i],
-              cx: move[i].cx + 1,
+              cx: move[i].cx + 0.1,
             };
           }
         }

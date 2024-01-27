@@ -5,7 +5,6 @@ import WebCam from "../components/WebCam";
 import { useEffect, useState, useRef, useContext } from "react";
 import WindowPortal from "../components/WindowPortal";
 import { n_rand, rand } from "../utility/math_functions";
-import firebaseService from "../services/firebaseService2";
 import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
@@ -22,10 +21,6 @@ const FootballSession = () => {
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
-  const [AnimationSeconds, setAnimationSeconds] = useState(0);
-  const [AnimationNumberOfPlay, setAnimationNumberOfPlay] = useState(0);
-  const [AnimationCaptures, setAnimationCaptures] = useState([]);
-  const [currentSesionTimeStamp, setCurrentSesionTimeStamp] = useState(null);
 
   const numberOfPlays = useRef(3);
   const isRandomSeed = useRef(true);
@@ -69,14 +64,6 @@ const FootballSession = () => {
 
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
-    const hasConsecutiveDuplicates = (arr) => {
-      for (var i = 0; i < arr.length - 1; i++) {
-        if (arr[i] === arr[i + 1]) {
-          return true;
-        }
-      }
-      return false;
-    };
     let seedSequence = new Date().getSeconds();
     let checkbox = document.getElementById("randomSeed").checked;
     if (checkbox) {
@@ -203,7 +190,7 @@ const FootballSession = () => {
 
   useEffect(() => {
     infoSession.current = { ...infoSession.current, ...currentSesionInfo };
-    console.log(infoSession.current);
+    //console.log(infoSession.current);
   }, [currentSesionInfo]);
 
   return (
