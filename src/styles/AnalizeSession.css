@@ -82,7 +82,14 @@
 }
 
 .AnalizeSessionVideoCentralFrame {
+    display: flex;
+    flex-direction: column;
     width: 70%;
+}
+.AnalizeSessionVideoCentralFrame svg {
+    justify-self: center;
+    align-self:center;
+    z-index: 1;
 }
 
 .AnalizeSessionVideoInfoSessionFrames {
@@ -98,6 +105,11 @@
 .AnalizeSessionVideoFrame {
     display: flex;
     flex-direction: column;
+}
+.AnalizeSessionVideoFrame svg{
+    justify-self: center;
+    align-self:center;
+    z-index: 1;
 }
 
 .AnalizeSessionVideoFrameLabelsInputs {
@@ -378,3 +390,13 @@
     cursor: pointer;
     background-color: rgb(218, 37, 153, 0.75);
 }
+
+.loading {
+    display: inline-block;
+    justify-self: center;
+    align-self: center;
+    position: relative;
+    width: 3em;
+    height:3em;
+    padding:2em;
+  }

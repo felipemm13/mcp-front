@@ -92,7 +92,7 @@ const OtherSessions = () => {
       <div className="OtherSessionsContainer">
         <button
           className="AnalizeSessionBackButton"
-          onClick={() => navigate("/football-session", { replace: true })}
+          onClick={() => navigate("/football-session")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

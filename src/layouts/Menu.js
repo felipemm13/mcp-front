@@ -32,7 +32,7 @@ const Menu = (props) => {
         <div className="menuContainer">
           <button
             className="button"
-            onClick={() => navigate("football-session",{replace:true})}
+            onClick={() => navigate("football-session")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

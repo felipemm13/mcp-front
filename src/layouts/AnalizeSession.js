@@ -36,7 +36,7 @@ const AnalizeSession = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
-  const [loadedVideo, setLoadedVideo] = useState(false);
+  const [loading, setLoading] = useState(true);
   const currentPlay = useRef(null);
   const prevPlay = useRef(null);
   const currentStimulus = useRef(0);
@@ -671,14 +671,22 @@ const AnalizeSession = () => {
     }
   };
 
+  const handleLoadStart = () => {
+    setLoading(true);
+  };
+
+  const handleLoadedData = () => {
+    setLoading(false);
+  };
+
   return (
     <div className="AnalizeSessionContainer">
       <button
         className="AnalizeSessionBackButton"
         onClick={() =>
           session === "current"
-            ? navigate("/football-session", { replace: true })
-            : navigate("/other-sessions", { replace: true })
+            ? navigate("/football-session")
+            : navigate("/other-sessions")
         }
       >
         <svg
@@ -804,6 +812,26 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
+              {loading && (
+                <svg
+                  width="40"
+                  height="40"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              )}
               <video
                 className="AnalizeSessionVideoCentral"
                 id="videoPlayer1"
@@ -846,6 +874,26 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
+              {loading && (
+                <svg
+                  width="40"
+                  height="40"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              )}
               <video
                 className="AnalizeSessionVideoCentral"
                 id="videoPlayer2"
@@ -891,6 +939,26 @@ const AnalizeSession = () => {
                 />
               </div>
             </div>
+            {loading && (
+                <svg
+                  width="40"
+                  height="40"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              )}
             <video
               className="AnalizeSessionVideoCentral"
               style={{ width: "100%" }}
@@ -900,6 +968,8 @@ const AnalizeSession = () => {
               onTimeUpdate={(e) => {
                 setCurrentFrame(Math.round(e.target.currentTime * FPS.current));
               }}
+              onLoadStart={handleLoadStart}
+              onLoadedData={handleLoadedData}
             />
           </div>
           <div className="AnalizeSessionVideoCentralFrameControl">
@@ -1119,6 +1189,26 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
+              {loading && (
+                <svg
+                  width="40"
+                  height="40"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              )}
               <video
                 className="AnalizeSessionVideoCentral"
                 id="videoPlayer4"
@@ -1164,6 +1254,26 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
+              {loading && (
+                <svg
+                  width="40"
+                  height="40"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              )}
               <video
                 className="AnalizeSessionVideoCentral"
                 id="videoPlayer5"
