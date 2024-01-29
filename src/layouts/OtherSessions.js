@@ -561,21 +561,29 @@ const OtherSessions = () => {
               </div>
             </div>
           </div>
-          <div className="buttonsControlSession">
-            <button className="btn btn-secondary btn-lg btn-block sample mt-3">
-              <div className="mb-3">Copiar parámetros de sesion</div>
+          <div className="OtherSessionsControlSessionButtons">
+            <button className="OtherSessionsButtons" disabled={!selectedSession}>
+              Copiar parámetros de sesion
             </button>
             <button
-              className="btn btn-secondary btn-lg btn-block sample mt-3"
+              className="OtherSessionsButtons"
               onClick={deleteSelectedSession}
+              disabled={!selectedSession}
             >
-              <div className="mb-3">Eliminar sesion</div>
+              Eliminar sesion
             </button>
-            <button className="" onClick={handleFilterSelectedPlayerSessions}>
-              <div className="mb-3">Filtrar sesiones del jugador</div>
+            <button
+              className="OtherSessionsButtons"
+              onClick={handleFilterSelectedPlayerSessions}
+            >
+              Filtrar sesiones del jugador
             </button>
-            <button className="" onClick={handleToAnalizeSession}>
-              <div className="mb-3">Abrir sesion</div>
+            <button
+              className="OtherSessionsButtons"
+              onClick={handleToAnalizeSession}
+              disabled={!selectedSession}
+            >
+              Abrir sesion
             </button>
           </div>
         </div>
