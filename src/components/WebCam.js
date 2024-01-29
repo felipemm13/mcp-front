@@ -59,6 +59,12 @@ const WebCam = (props) => {
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
+    document
+      .getElementById("OpenAnalizerView")
+      .setAttribute("disabled", "true");
+    document
+      .getElementById("OpenOtherSessions")
+      .setAttribute("disabled", "true");
     const currentDate = new Date();
     const sessionDate =
       padZero(currentDate.getFullYear()) +
@@ -212,6 +218,12 @@ const WebCam = (props) => {
       .catch((err) => {
         console.log(err);
       });
+      document
+      .getElementById("OpenAnalizerView")
+      .setAttribute("disabled", "false");
+    document
+      .getElementById("OpenOtherSessions")
+      .setAttribute("disabled", "false");
   };
 
   const handleChangeWebCam = (e) => {

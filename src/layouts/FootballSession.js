@@ -278,6 +278,7 @@ const FootballSession = () => {
               </button>
               <button
                 className="buttonActionsVideo"
+                id='OpenOtherSessions'
                 onClick={() => navigate("/other-sessions")}
                 disabled={!playersList.length}
               >
