@@ -91,18 +91,18 @@ const AnalizeSession = () => {
     );
     //console.log(videosPlayersRef.current);
     if (session === "current" && videoCurrentSession.current) {
-      console.log("info", infoSession.current, currentSession.current);
       //infoSession.current.imageSequences.pop()
       const url = URL.createObjectURL(videoCurrentSession.current);
       currentPlayer.current = listOfPlayers.current.find(
         () => infoSession.current.playerSelected
       );
-      console.log(currentPlayer);
       getVideoDuration(url);
       //console.log(videoDuration);
       setVideoSession(url);
-      currentPlay.current.src = infoSession.current.imageSequences[0];
-      prevPlay.current.src = infoSession.current.imageSequences[0];
+      if (currentPlay.current && prevPlay.current) {
+        currentPlay.current.src = infoSession.current.imageSequences[0];
+        prevPlay.current.src = infoSession.current.imageSequences[0];
+      }
       setTableData(
         Array.from(
           { length: infoSession.current.numberOfPlays.current },
@@ -120,7 +120,6 @@ const AnalizeSession = () => {
         )
       );
     } else {
-      console.log(currentSession.current);
       infoSession.current = {
         stimulusTime: currentSession.current[0].SessionMoves.map(
           (move) => move.stimulus
@@ -939,26 +938,7 @@ const AnalizeSession = () => {
                 />
               </div>
             </div>
-            {loading && (
-                <svg
-                  width="40"
-                  height="40"
-                  stroke="#DA2599"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="loading"
-                >
-                  <g className="spinner_V8m1">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9.5"
-                      fill="none"
-                      strokeWidth="3"
-                    ></circle>
-                  </g>
-                </svg>
-              )}
+
             <video
               className="AnalizeSessionVideoCentral"
               style={{ width: "100%" }}
