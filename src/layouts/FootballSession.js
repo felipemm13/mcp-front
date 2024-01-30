@@ -199,10 +199,6 @@ const FootballSession = () => {
     //console.log(infoSession.current);
   }, [currentSesionInfo]);
 
-  useEffect(() => {
-    console.log(seed.current);
-  }, [seed.current]);
-
   return (
     <>
       <div className="FootballSessionContainer">
