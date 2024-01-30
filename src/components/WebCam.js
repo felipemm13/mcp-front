@@ -220,10 +220,10 @@ const WebCam = (props) => {
       });
       document
       .getElementById("OpenAnalizerView")
-      .setAttribute("disabled", "false");
+      .removeAttribute("disabled");
     document
       .getElementById("OpenOtherSessions")
-      .setAttribute("disabled", "false");
+      .removeAttribute("disabled");
   };
 
   const handleChangeWebCam = (e) => {
