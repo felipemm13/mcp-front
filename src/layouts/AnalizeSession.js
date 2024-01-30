@@ -439,20 +439,24 @@ const AnalizeSession = () => {
     }
   }, [selectedRowIndex.current, currentFrame]);
 
+  const padZero = (value) => {
+    return value < 10 ? "0" + value : value;
+  };
+
   const saveCurrentSession = async () => {
     const currentDate = new Date();
     const sessionDate =
-      currentDate.getFullYear() +
+      padZero(currentDate.getFullYear()) +
       "-" +
-      (currentDate.getMonth() + 1) +
+      padZero(currentDate.getMonth() + 1) +
       "-" +
-      currentDate.getDate() +
+      padZero(currentDate.getDate()) +
       "/" +
-      currentDate.getHours() +
+      padZero(currentDate.getHours()) +
       "_" +
-      currentDate.getMinutes() +
+      padZero(currentDate.getMinutes()) +
       "_" +
-      currentDate.getSeconds();
+      padZero(currentDate.getSeconds());
     var video = new File(
       [videoSession],
       `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,

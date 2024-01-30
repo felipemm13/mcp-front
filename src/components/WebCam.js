@@ -78,7 +78,6 @@ const WebCam = (props) => {
       padZero(currentDate.getMinutes()) +
       "_" +
       padZero(currentDate.getSeconds());
-    console.log(sessionDate);
     var video = new File(
       [recorderVideo.current],
       `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,
