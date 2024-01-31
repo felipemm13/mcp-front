@@ -16,18 +16,21 @@ const OtherSessions = () => {
   useEffect(() => {
     sessionsRef.current = [];
     setIsCharged(false);
+    console.log(listOfPlayers.current);
     listOfPlayers.current.forEach(async (player) => {
-      await CrudApi.get(`player/${player.playerId}/sessions`)
-        .then((res) => {
-          if (sessionsRef.current) {
-            sessionsRef.current = [...sessionsRef.current, res.Sessions];
-          } else {
-            sessionsRef.current = [res.Sessions];
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      if (player) {
+        await CrudApi.get(`player/${player.playerId}/sessions`)
+          .then((res) => {
+            if (sessionsRef.current) {
+              sessionsRef.current = [...sessionsRef.current, res.Sessions];
+            } else {
+              sessionsRef.current = [res.Sessions];
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
       setSessions([[].concat(...sessionsRef.current)]);
     });
     setIsCharged(true);
@@ -57,7 +60,7 @@ const OtherSessions = () => {
       });
       setTimeout(() => {
         setIsSorted(true);
-      }, 250);
+      }, 100);
     }
   }, [sessions]);
 
@@ -562,7 +565,10 @@ const OtherSessions = () => {
             </div>
           </div>
           <div className="OtherSessionsControlSessionButtons">
-            <button className="OtherSessionsButtons" disabled={!selectedSession}>
+            <button
+              className="OtherSessionsButtons"
+              disabled={!selectedSession}
+            >
               Copiar parámetros de sesion
             </button>
             <button

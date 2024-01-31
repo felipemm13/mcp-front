@@ -151,8 +151,10 @@ const AnalizeSession = () => {
     getVideoDuration(url);
     //console.log(videoDuration);
     setVideoSession(url);
-    currentPlay.current.src = infoSession.current.imageSequences[0];
-    prevPlay.current.src = infoSession.current.imageSequences[0];
+    if (currentPlay.current && prevPlay.current) {
+      currentPlay.current.src = infoSession.current.imageSequences[0];
+      prevPlay.current.src = infoSession.current.imageSequences[0];
+    }
     infoSession.current.stimulusTime.sort((a, b) => a - b);
     setTableData(
       Array.from(

@@ -24,7 +24,10 @@ const FootballSession = () => {
 
   const numberOfPlays = useRef(3);
   const isRandomSeed = useRef(true);
-  const seed = useRef(infoSession.current?.seed?.current || Math.floor(Math.random() * (6000 - 1)) + 1);
+  const seed = useRef(
+    infoSession.current?.seed?.current ||
+      Math.floor(Math.random() * (6000 - 1)) + 1
+  );
   const secondsToNextPlay = useRef(2);
   const secondsForPlayTransition = useRef(0.1);
   const playsFromDb = useRef([]);
@@ -42,7 +45,9 @@ const FootballSession = () => {
   const [formPlayerModalTitle, setFormPlayerModalTitle] = useState("");
 
   useEffect(() => {
-    console.log(infoSession.current);
+    if (!userContext.current) {
+      navigate("/");
+    }
     listOfPLayers.current = [];
     window.addEventListener("beforeunload", () => {
       setShowWindowPortal(false);
@@ -59,13 +64,16 @@ const FootballSession = () => {
     document
       .getElementById("OpenAnalizerView")
       .addEventListener("click", openAnalizerView);
+    document.getElementById("BackToHome").addEventListener("click", () => {
+      navigate("/");
+    });
     getPlays();
     getPlayers();
   }, []);
 
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
-    let seedSequence = seed.current
+    let seedSequence = seed.current;
     /*let checkbox = document.getElementById("randomSeed").checked;
     if (checkbox) {
       if (seed.current) {
@@ -79,40 +87,44 @@ const FootballSession = () => {
         seed.current
       );
     } else {
-      //do {
       sequenceGenerated = [];
-      console.log(seedSequence)
       for (var i = 0; i < numberOfPlays.current; i++) {
-        let sr = seedrandom(seedSequence * (i+1));
+        let sr = seedrandom(seedSequence * (i + 1));
         let numRand = Math.ceil(sr() * 8);
         if (numRand >= 5) {
           numRand = numRand + 1;
         }
+        if (sequenceGenerated[i - 1] === numRand) {
+          numRand = (numRand + 1) % 8;
+        }
         sequenceGenerated.push(numRand);
       }
-      /*} while (
-        sequenceGenerated.includes(5) ||
-        hasConsecutiveDuplicates(sequenceGenerated)
-      );*/
     }
     sequenceOfPlays.current = sequenceGenerated;
     setSequenceLabel(sequenceGenerated);
   };
 
-  const setSequenceLabel = (sequenceArray)=>{
+  const setSequenceLabel = (sequenceArray) => {
     var strSequence = [];
     for (var number of sequenceArray) {
-      if (number <= defaultPlays.current) {
-        //strSequence.push(parseInt(playsFromDb.current[number - 1].id));
-        strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+      if (
+        typeOfSession.current === "applied" ||
+        infoSession.current?.typeOfSession?.current === "applied"
+      ) {
+        if (number <= defaultPlays.current) {
+          //strSequence.push(parseInt(playsFromDb.current[number - 1].id));
+          strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+        } else {
+          //strSequence.push("U-" + parseInt(playsFromDb.current[number - 1].id));
+          strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+        }
       } else {
-        //strSequence.push("U-" + parseInt(playsFromDb.current[number - 1].id));
-        strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+        strSequence.push(number);
       }
     }
     document.getElementById("showSessionSequence").value =
       strSequence.join(" → ");
-  }
+  };
 
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
@@ -129,14 +141,16 @@ const FootballSession = () => {
   };
 
   const getPlayers = async () => {
-    await CrudApi.get(`user/${userContext.current.userId}/players`)
-      .then((response) => {
-        listOfPlayers.current = response.Players;
-        setPlayersList(response.Players);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (userContext.current?.userId) {
+      await CrudApi.get(`user/${userContext.current.userId}/players`)
+        .then((response) => {
+          listOfPlayers.current = response.Players;
+          setPlayersList(response.Players);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   const handleEditPlayer = (idPlayer) => {
@@ -203,10 +217,7 @@ const FootballSession = () => {
     <>
       <div className="FootballSessionContainer">
         <div className="sessionActions">
-          <button
-            className="FootballSessionButton"
-            onClick={() => navigate("/")}
-          >
+          <button id="BackToHome" className="FootballSessionButton">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="25"
@@ -274,7 +285,7 @@ const FootballSession = () => {
               </button>
               <button
                 className="buttonActionsVideo"
-                id='OpenOtherSessions'
+                id="OpenOtherSessions"
                 onClick={() => navigate("/other-sessions")}
                 disabled={!playersList.length}
               >
@@ -296,7 +307,6 @@ const FootballSession = () => {
             <WebCam
               infoSession={currentSesionInfo}
               openWindow={setOpenWindowDisabled}
-              user={userContext}
               showWindowPortal={showWindowPortal}
             />
           </div>
@@ -308,7 +318,8 @@ const FootballSession = () => {
                 name="typeGame"
                 value="reactive"
                 defaultChecked={
-                  infoSession.current?.typeOfSession?.current === "reactive"|| typeOfSession.current === "reactive"
+                  infoSession.current?.typeOfSession?.current === "reactive" ||
+                  typeOfSession.current === "reactive"
                 }
                 onClick={(e) => {
                   document
@@ -338,7 +349,7 @@ const FootballSession = () => {
                 value="discriminative"
                 defaultChecked={
                   infoSession.current?.typeOfSession?.current ===
-                  "discriminative" 
+                  "discriminative"
                 }
                 onChange={(e) => {
                   if (e.target.select) {
@@ -392,7 +403,9 @@ const FootballSession = () => {
                   min="1"
                   max="7"
                   step="1"
-                  defaultValue={infoSession.current?.numOfDistractors?.current || 1}
+                  defaultValue={
+                    infoSession.current?.numOfDistractors?.current || 1
+                  }
                   onChange={(e) => {
                     if (e.target.value > 7) {
                       e.target.value = 7;
@@ -449,7 +462,9 @@ const FootballSession = () => {
                   type="number"
                   name="numberOfPlays"
                   id="numberOfPlays"
-                  defaultValue={infoSession.current?.numberOfPlays?.current || 3}
+                  defaultValue={
+                    infoSession.current?.numberOfPlays?.current || 3
+                  }
                   min="1"
                   step="1"
                   onChange={(e) => {
@@ -467,9 +482,14 @@ const FootballSession = () => {
                   type="checkbox"
                   id="randomSeed"
                   name="randomSeed"
-                  defaultChecked={infoSession.current?.isRandomSeed?.current || true}
+                  defaultChecked={
+                    infoSession.current?.isRandomSeed?.current || true
+                  }
                   onChange={() => {
-                    console.log(seed.current,infoSession.current?.isRandomSeed?.current);
+                    console.log(
+                      seed.current,
+                      infoSession.current?.isRandomSeed?.current
+                    );
                     isRandomSeed.current = !isRandomSeed.current;
                     if (isRandomSeed.current) {
                       document.getElementById("seed").value =
@@ -493,7 +513,9 @@ const FootballSession = () => {
                   id="seed"
                   min="1"
                   step="1"
-                  defaultValue={infoSession.current?.seed?.current || seed.current}
+                  defaultValue={
+                    infoSession.current?.seed?.current || seed.current
+                  }
                   readOnly
                   onChange={(e) => {
                     seed.current = e.target.value;
@@ -512,7 +534,9 @@ const FootballSession = () => {
                   id="secondsToNextPlay"
                   min="1"
                   step="0.5"
-                  defaultValue={infoSession.current?.secondsToNextPlay?.current || 2}
+                  defaultValue={
+                    infoSession.current?.secondsToNextPlay?.current || 2
+                  }
                   onChange={(e) => {
                     secondsToNextPlay.current = e.target.value;
                     setCurrentSesionInfo({
@@ -537,7 +561,9 @@ const FootballSession = () => {
                   id="secondsForPlayTransition"
                   min="0.25"
                   step="0.05"
-                  defaultValue={infoSession.current?.secondsForPlayTransition?.current || 0.1}
+                  defaultValue={
+                    infoSession.current?.secondsForPlayTransition?.current || 0
+                  }
                   onChange={(e) => {
                     secondsForPlayTransition.current = e.target.value;
                     setCurrentSesionInfo({
@@ -625,7 +651,9 @@ const FootballSession = () => {
                       playerSelected: e.target.value,
                     });
                   }}
-                  defaultValue={infoSession.current?.playerSelected?.current || "default"}
+                  defaultValue={
+                    infoSession.current?.playerSelected?.current || "default"
+                  }
                 >
                   {playersList.length ? (
                     <option selected value="default" disabled="disabled">

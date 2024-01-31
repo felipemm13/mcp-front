@@ -59,6 +59,12 @@ const WebCam = (props) => {
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
+      document
+      .getElementById("StartCaptureVideo")
+      .setAttribute("disabled", "true");
+      document
+      .getElementById("BackToHome")
+      .setAttribute("disabled", "true");
     document
       .getElementById("OpenAnalizerView")
       .setAttribute("disabled", "true");
@@ -223,6 +229,12 @@ const WebCam = (props) => {
     document
       .getElementById("OpenOtherSessions")
       .removeAttribute("disabled");
+      document
+      .getElementById("StartCaptureVideo")
+      .removeAttribute("disabled");
+    document
+      .getElementById("BackToHome")
+      .removeAttribute("disabled");
   };
 
   const handleChangeWebCam = (e) => {
@@ -376,7 +388,7 @@ const WebCam = (props) => {
       </div>
       {calibrationModal && (
         <Calibration
-          userEmail={props.user.email}
+          userEmail={userContext.current.email}
           webcamRef={webcamRef}
           sate={calibrationModal}
           setOpenModal={setCalibrationModal}
