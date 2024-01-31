@@ -3,9 +3,19 @@ import { useEffect, useCallback, useState, useRef } from "react";
 import "../styles/OtherSessions.css";
 import { Context } from "../services/Context";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import AWS from "aws-sdk";
 
 const OtherSessions = () => {
-  const { CrudApi, listOfPlayers, currentSession } = useContext(Context);
+  const {
+    CrudApi,
+    listOfPlayers,
+    currentSession,
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+    S3_BUCKET,
+    REGION,
+  } = useContext(Context);
   const [sessions, setSessions] = useState([]);
   const sessionsRef = useRef(null);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -13,12 +23,11 @@ const OtherSessions = () => {
   const [isSorted, setIsSorted] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const getSessions = async () => {
     sessionsRef.current = [];
     setIsCharged(false);
-    console.log(listOfPlayers.current);
-    listOfPlayers.current.forEach(async (player) => {
-      if (player) {
+    if (listOfPlayers.current.length) {
+      listOfPlayers.current.forEach(async (player) => {
         await CrudApi.get(`player/${player.playerId}/sessions`)
           .then((res) => {
             if (sessionsRef.current) {
@@ -30,10 +39,15 @@ const OtherSessions = () => {
           .catch((error) => {
             console.log(error);
           });
-      }
-      setSessions([[].concat(...sessionsRef.current)]);
-    });
-    setIsCharged(true);
+        setSessions([[].concat(...sessionsRef.current)]);
+      });
+      setIsCharged(true);
+    } else {
+      navigate("/football-session");
+    }
+  };
+  useEffect(() => {
+    getSessions();
   }, []);
 
   useEffect(() => {
@@ -89,7 +103,55 @@ const OtherSessions = () => {
   const handleChangeUserFiter = useCallback((e) => {});
   const handleChangeGroupFilter = useCallback((e) => {});
   const handleFilterSelectedPlayerSessions = useCallback(() => {});
-  const deleteSelectedSession = useCallback(() => {});
+  const deleteSelectedSession = () => {
+    Swal.fire({
+      title: "¿Estas seguro?",
+      text: "No podras revertir esta accion",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Si, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await CrudApi.delete(`sessions/${selectedSession[0].sessionId}`)
+          .then((res) => {
+            AWS.config.update({
+              accessKeyId: AWS_ACCESS_KEY_ID,
+              secretAccessKey: AWS_SECRET_ACCESS_KEY,
+            });
+            const s3 = new AWS.S3({
+              region: REGION,
+            });
+            selectedSession[0].SessionMoves.map((move) => {
+              console.log(move.imageUrl);
+              deleteS3Files(s3, move.imageUrl);
+            });
+            deleteS3Files(s3, selectedSession[0].videoURL);
+            Swal.fire("Eliminado", "La sesion ha sido eliminada", "success");
+            getSessions();
+          })
+          .catch((error) => {
+            Swal.fire("Error", "No se pudo eliminar la sesion", "error");
+          });
+      }
+    });
+  };
+
+  const deleteS3Files = async (s3, key) => {
+    return new Promise(() => {
+      try {
+        let params = { Bucket: S3_BUCKET, Key: key };
+        s3.deleteObject(params, (err, data) => {
+          if (err) console.log(err, err.stack); // error
+          else console.log(data); // deleted
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    });
+  };
   {
     return sessions.length ? (
       <div className="OtherSessionsContainer">

@@ -28,7 +28,7 @@ const AnalizeSession = () => {
   }
   const navigate = useNavigate();
   const session = useParams().session;
-  const FPS = useRef(currentFPS.current ? currentFPS.current : 30);
+  const FPS = useRef(currentFPS.current ? currentFPS.current : 29.97);
   const currentPlayer = useRef(null);
   const [videoSession, setVideoSession] = useState(null);
   const [videoState, setVideoState] = useState("Play");
@@ -120,6 +120,7 @@ const AnalizeSession = () => {
         )
       );
     } else {
+      FPS.current = currentSession.current[0].fps
       infoSession.current = {
         stimulusTime: currentSession.current[0].SessionMoves.map(
           (move) => move.stimulus
@@ -446,6 +447,11 @@ const AnalizeSession = () => {
   };
 
   const saveCurrentSession = async () => {
+    document
+      .getElementById("SaveAnalizeSession")
+      .setAttribute("disabled", true);
+    document.getElementById("SaveAnalizeSession").innerText =
+      "Guardando información...";
     const currentDate = new Date();
     const sessionDate =
       padZero(currentDate.getFullYear()) +
@@ -628,7 +634,9 @@ const AnalizeSession = () => {
         wrongPercentage: getErrorPercentage(),
       };
       //console.log(dataAnalytic);
-      document.getElementById("SaveAnalizeSession").disabled = true;
+      document
+        .getElementById("SaveAnalizeSession")
+        .setAttribute("disabled", true);
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
       await CrudApi.update(
@@ -674,6 +682,7 @@ const AnalizeSession = () => {
         });
       });
     }
+    document.getElementById("SaveAnalizeSession").removeAttribute("disabled");
   };
 
   const handleLoadStart = () => {

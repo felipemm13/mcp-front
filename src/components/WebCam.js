@@ -31,7 +31,9 @@ const WebCam = (props) => {
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
     });
-
+    console.log(mediaRecorderRef.current.stream
+      .getVideoTracks()[0]
+      .getSettings().frameRate)
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
       handleDataAvailable
@@ -307,7 +309,7 @@ const WebCam = (props) => {
               deviceId: deviceId,
               width: { min: 640, ideal: 1920, max: 1920 },
               height: { min: 400, ideal: 1080, max: 1080 },
-              frameRate: { min: 15, ideal: 30, max: 60 },
+              frameRate: { min: 15, max: 60 },
             }}
           />
         ) : (
