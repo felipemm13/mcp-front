@@ -316,7 +316,6 @@
     background-color: rgb(218, 37, 153, 0.75);
     cursor: pointer;
 }
-
 .AnalizeSessionMarksControlButton:disabled {
     background-color: #6c757d;
     cursor: default;

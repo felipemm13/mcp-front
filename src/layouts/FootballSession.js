@@ -29,7 +29,7 @@ const FootballSession = () => {
       Math.floor(Math.random() * (6000 - 1)) + 1
   );
   const secondsToNextPlay = useRef(2);
-  const secondsForPlayTransition = useRef(0.1);
+  const secondsForPlayTransition = useRef(0);
   const playsFromDb = useRef([]);
   const defaultPlays = useRef(0);
   const sequenceOfPlays = useRef([]);
@@ -74,12 +74,6 @@ const FootballSession = () => {
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
     let seedSequence = seed.current;
-    /*let checkbox = document.getElementById("randomSeed").checked;
-    if (checkbox) {
-      if (seed.current) {
-        seedSequence = seed.current;
-      }
-    }*/
     if (typeOfSession.current === "applied") {
       sequenceGenerated = n_rand(
         playsFromDb.current.length,
@@ -96,6 +90,12 @@ const FootballSession = () => {
         }
         if (sequenceGenerated[i - 1] === numRand) {
           numRand = (numRand + 1) % 8;
+          if(numRand === 0){
+            numRand = 1;
+          }
+          if (numRand >= 5) {
+            numRand = numRand + 1;
+          }
         }
         sequenceGenerated.push(numRand);
       }
@@ -559,7 +559,7 @@ const FootballSession = () => {
                   type="number"
                   name="secondsForPlayTransition"
                   id="secondsForPlayTransition"
-                  min="0.25"
+                  min="0"
                   step="0.05"
                   defaultValue={
                     infoSession.current?.secondsForPlayTransition?.current || 0

@@ -120,7 +120,7 @@ const AnalizeSession = () => {
         )
       );
     } else {
-      FPS.current = currentSession.current[0].fps
+      FPS.current = currentSession.current[0].fps;
       infoSession.current = {
         stimulusTime: currentSession.current[0].SessionMoves.map(
           (move) => move.stimulus
@@ -236,7 +236,6 @@ const AnalizeSession = () => {
   }, [currentFrame]);
 
   const handleRowClick = (index, playID) => {
-    document.getElementById("SaveAnalizeSession").disabled = false;
     const previousSelectedRow = document.getElementById(
       `RowSequenceIndex${selectedRowIndex.current}`
     );
@@ -250,6 +249,7 @@ const AnalizeSession = () => {
     if (selectedRowIndex.current === index) {
       selectedRowIndex.current = null;
       selectedPlayID.current = null;
+      document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("AddDecisionMakingMark").disabled = true;
       document.getElementById("AddArrivalMark").disabled = true;
     } else {
@@ -257,6 +257,7 @@ const AnalizeSession = () => {
       selectedRow.style.color = "black";
       selectedRowIndex.current = index;
       selectedPlayID.current = playID;
+      document.getElementById("SaveAnalizeSession").disabled = false;
       document.getElementById("AddDecisionMakingMark").disabled = false;
       document.getElementById("AddArrivalMark").disabled = false;
     }
@@ -447,9 +448,7 @@ const AnalizeSession = () => {
   };
 
   const saveCurrentSession = async () => {
-    document
-      .getElementById("SaveAnalizeSession")
-      .setAttribute("disabled", true);
+    document.getElementById("SaveAnalizeSession").setAttribute("disabled", "true");
     document.getElementById("SaveAnalizeSession").innerText =
       "Guardando información...";
     const currentDate = new Date();
@@ -607,6 +606,7 @@ const AnalizeSession = () => {
         await upload.then(() => {
           document.getElementById("SaveAnalizeSession").innerText = `
           Guardado Exitosamente`;
+          document.getElementById("SaveAnalizeSession").disabled = false
         });
       })
       .catch((err) => {
@@ -634,9 +634,7 @@ const AnalizeSession = () => {
         wrongPercentage: getErrorPercentage(),
       };
       //console.log(dataAnalytic);
-      document
-        .getElementById("SaveAnalizeSession")
-        .setAttribute("disabled", true);
+      document.getElementById("SaveAnalizeSession").disabled = true
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
       await CrudApi.update(
@@ -677,12 +675,12 @@ const AnalizeSession = () => {
           `sessionMoves/${move.sessionMovesId}`,
           dataMoves[index]
         ).then((response) => {
-          document.getElementById("SaveAnalizeSessionButton").innerHTML =
-            "Guardado Exitoso";
+          document.getElementById("SaveAnalizeSession").innerHTML =
+            "Guardado Exitosamente";
+            document.getElementById("SaveAnalizeSession").disabled = false
         });
       });
     }
-    document.getElementById("SaveAnalizeSession").removeAttribute("disabled");
   };
 
   const handleLoadStart = () => {
