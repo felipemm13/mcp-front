@@ -11,20 +11,20 @@ const PlaysView = () => {
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const playersContainer = useRef(null);
   const [containerMeasure, setContainerMeasure] = useState({
-    containerWidth: 700,
-    containerHeight: 500,
+    containerWidth: 500,
+    containerHeight: 300,
   });
   const [gameState, setGameState] = useState({
     playPositions: {
-      IdealPositionX: 45,
-      IdealPositionY: 30,
-      ballX: 43,
+      IdealPositionX: 10,
+      IdealPositionY: 24,
+      ballX: 25,
       ballY: 15,
       Team: "Red",
     },
     players: [
-      { xCoor: 45, yCoor: 10, color: "red" },
-      { xCoor: 30, yCoor: 10, color: "yellow" },
+      { xCoor: 20, yCoor: 10, color: "red" },
+      { xCoor: 15, yCoor: 10, color: "yellow" },
     ],
     numPlayers: { red: 1, yellow: 1 },
   });
@@ -48,21 +48,46 @@ const PlaysView = () => {
       .catch((error) => console.log(error));
   };
   const handleChangePlay = (play) => {
-    const numPlayers = countPlayers(play.figureCoordinates);
-    setGameState({ playPositions: {}, players: [],numPlayers:{red:1,yellow:1}});
-    setTimeout(() => {
+    if (play.figureCoordinates) {
+      const numPlayers = countPlayers(play.figureCoordinates);
       setGameState({
-        playPositions: {
-          IdealPositionX: play.IdealPositionX,
-          IdealPositionY: play.IdealPositionY,
-          ballX: play.ballX,
-          ballY: play.ballY,
-          Team: play.Team,
-        },
-        players: play.figureCoordinates,
-        numPlayers: numPlayers,
+        playPositions: {},
+        players: [],
+        numPlayers: { red: 1, yellow: 1 },
       });
-    }, [50]);
+      setTimeout(() => {
+        setGameState({
+          playPositions: {
+            IdealPositionX: play.IdealPositionX,
+            IdealPositionY: play.IdealPositionY,
+            ballX: play.ballX,
+            ballY: play.ballY,
+            Team: play.Team,
+          },
+          players: play.figureCoordinates,
+          numPlayers: numPlayers,
+        });
+      }, [50]);
+    } else {
+      setGameState({
+        playPositions: {},
+        players: [],
+        numPlayers: { red: 1, yellow: 1 },
+      });
+      setTimeout(() => {
+        setGameState({
+          playPositions: {
+            IdealPositionX: play.playPositions.IdealPositionX,
+            IdealPositionY: play.playPositions.IdealPositionY,
+            ballX: play.playPositions.ballX,
+            ballY: play.playPositions.ballY,
+            Team: play.playPositions.Team,
+          },
+          players: play.players,
+          numPlayers: play.numPlayers,
+        });
+      }, [50]);
+    }
   };
 
   const handleRedPlayers = (e) => {
@@ -312,17 +337,41 @@ const PlaysView = () => {
                   anteriormente
                 </h2>
               </div>
-              <div>
-                <h4>Jugada base</h4>
-
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "1em",
+                  justifyContent: "center",
+                }}
+              >
                 <div>
+                  <h4>Jugada base</h4>
                   <select
                     className=""
                     onChange={(e) =>
                       handleChangePlay(JSON.parse(e.target.value))
                     }
                   >
-                    <option disabled="">Seleccionar una jugada base</option>
+                    <option
+                      disabled=""
+                      value={JSON.stringify({
+                        playPositions: {
+                          IdealPositionX: 10,
+                          IdealPositionY: 24,
+                          ballX: 25,
+                          ballY: 15,
+                          Team: "Red",
+                        },
+                        players: [
+                          { xCoor: 20, yCoor: 10, color: "red" },
+                          { xCoor: 15, yCoor: 10, color: "yellow" },
+                        ],
+                        numPlayers: { red: 1, yellow: 1 },
+                      })}
+                    >
+                      Crear una nueva jugada
+                    </option>
                     {playsFromDb.map((play) => {
                       return (
                         <option key={play.playsId} value={JSON.stringify(play)}>
@@ -334,29 +383,33 @@ const PlaysView = () => {
                 </div>
                 <div>
                   <h4>Equipo del deportista</h4>
-                  <div>
-                    <select
-                      onChange={(e) =>
-                        setGameState((prevState) => ({
-                          ...prevState,
-                          playPositions: {
-                            ...prevState.playPositions,
-                            Team: e.target.value,
-                          },
-                        }))
-                      }
-                    >
-                      <option value="red">Rojo</option>
-                      <option value="yellow">Amarillo</option>
-                    </select>
-                  </div>
+                  <select
+                    onChange={(e) =>
+                      setGameState((prevState) => ({
+                        ...prevState,
+                        playPositions: {
+                          ...prevState.playPositions,
+                          Team: e.target.value,
+                        },
+                      }))
+                    }
+                    value={gameState.playPositions.Team}
+                  >
+                    <option value="Red">Rojo</option>
+                    <option value="Yellow">Amarillo</option>
+                  </select>
                 </div>
               </div>
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "1em",
+                  justifyContent: "center",
+                }}
+              >
                 <div>
                   <h4>Deportistas rojos</h4>
-                </div>
-                <div className="">
                   <input
                     id="sessionType"
                     type="number"
@@ -367,12 +420,8 @@ const PlaysView = () => {
                     onChange={(e) => handleRedPlayers(e)}
                   />
                 </div>
-              </div>
-              <div>
                 <div>
                   <h4>Deportistas amarillos</h4>
-                </div>
-                <div>
                   <input
                     id="sessionType"
                     type="number"
@@ -385,7 +434,13 @@ const PlaysView = () => {
                 </div>
               </div>
             </div>
-            <div>
+            <div
+              style={{
+                display: "flex",
+                marginTop: "1em",
+                justifyContent: "center",
+              }}
+            >
               <button>Guardar nueva situación de juego</button>
             </div>
           </div>
