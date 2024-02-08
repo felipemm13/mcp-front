@@ -40,8 +40,6 @@ const PlaysView = () => {
       });
     }
   }, [playersContainer]);
-  useEffect(() => console.log(gameState), [gameState]);
-  useEffect(() => console.log(containerMeasure), [containerMeasure]);
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
