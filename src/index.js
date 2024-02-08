@@ -9,6 +9,7 @@ import FootballSessionView from "./components/FootballSessionView";
 import OtherSessions from "./layouts/OtherSessions";
 import AnalizeSession from "./layouts/AnalizeSession";
 import { ProviderContext } from "./services/Context";
+import PlaysView from "./layouts/PlaysView";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: "player-view",
     element: <FootballSessionView />,
+  },
+  {
+    path: "plays-view",
+    element: <PlaysView />,
   },
   {
     path: "other-sessions",

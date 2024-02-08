@@ -1,22 +1,27 @@
 import { useEffect } from "react";
-import authService from "../services/authService";
+
 import "../styles/Menu.css";
 import { useNavigate } from "react-router-dom";
 
 const Menu = (props) => {
   const navigate = useNavigate();
-  useEffect(()=>{  if (navigator.mediaDevices?.enumerateDevices) {
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((devices) => {
-        devices.filter(({ kind }) => kind === "videoinput")
-      })
-      .catch((err) => {
-        console.error(`${err.name}: ${err.message}`);
-      });
-  } else {
-    console.log("Error al cargar dispositivos de video");
-  }},[])
+  useEffect(() => {
+    setTimeout(() => {
+      const user = JSON.parse(localStorage.getItem("user"));
+    }, [100]);
+    if (navigator.mediaDevices?.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          devices.filter(({ kind }) => kind === "videoinput");
+        })
+        .catch((err) => {
+          console.error(`${err.name}: ${err.message}`);
+        });
+    } else {
+      console.log("Error al cargar dispositivos de video");
+    }
+  }, []);
   return (
     <>
       <div className="MenuContainer">
@@ -44,7 +49,7 @@ const Menu = (props) => {
             </svg>
             Sesion de futbol
           </button>
-          <button className="button">
+          <button className="button" onClick={() => navigate("plays-view")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="25"
@@ -69,8 +74,8 @@ const Menu = (props) => {
           <button
             className="button logout"
             onClick={() => {
-              authService.logoutUser();
               props.setUser(null);
+              localStorage.removeItem("user");
             }}
           >
             <svg

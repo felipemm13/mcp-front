@@ -12,6 +12,7 @@ const Webapp = () => {
   const [loading, setLoading] = useState(false);
   const email = useRef(null);
   const password = useRef(null);
+  const userLocal = useRef(null);
   const loginUser = async () => {
     setLoading(true);
     await CrudApi.post(Routes.userRoutes.LOGINUSER, {
@@ -25,7 +26,7 @@ const Webapp = () => {
       })
       .catch((error) => {
         console.log(error);
-        
+
         if (error && error.response.status === 402) {
           Swal.fire({
             title: "Error",
@@ -42,12 +43,18 @@ const Webapp = () => {
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
-      setUser(userContext.current ? userContext.current : null);
+      userLocal.current = JSON.parse(localStorage.getItem("user"));
+      setUser(userLocal.current ?? null);
       setLoading(false);
-    }, 500);
+    }, 250);
   }, []);
 
-  useEffect(()=>{userContext.current = user},[user])
+  useEffect(() => {
+    userContext.current = user;
+    if (user && !userLocal.current) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
 
   return (
     <>

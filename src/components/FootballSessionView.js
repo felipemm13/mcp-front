@@ -498,13 +498,13 @@ const FootballSessionView = ({ view }) => {
       return play.figureCoordinates.map((player) => {
         if (player.color === "Red") {
           return {
-            cx: (player.xCoor / 50) * containerWidth.current,
-            cy: (player.yCoor / 50) * containerHeight.current,
+            cx: (player.xCoor / 48) * containerWidth.current,
+            cy: (player.yCoor / 48) * containerHeight.current,
             opacity: 1,
             delay: infoSession.current.secondsToNextPlay.current * 1000,
           };
-        }else{
-          return undefined
+        } else {
+          return undefined;
         }
       });
     });
@@ -520,7 +520,7 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
-              cx: containerWidth.current * 0.5 + j/10,
+              cx: containerWidth.current * 0.5 + j / 10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
               delay: infoSession.current.secondsToNextPlay.current * 1000,
@@ -535,13 +535,13 @@ const FootballSessionView = ({ view }) => {
       return play.figureCoordinates.map((player) => {
         if (player.color === "Yellow") {
           return {
-            cx: (player.xCoor / 50) * containerWidth.current,
-            cy: (player.yCoor / 50) * containerHeight.current,
+            cx: (player.xCoor / 48) * containerWidth.current,
+            cy: (player.yCoor / 48) * containerHeight.current,
             opacity: 1,
             delay: infoSession.current.secondsToNextPlay.current * 1000,
           };
-        }else{
-          return undefined
+        } else {
+          return undefined;
         }
       });
     });
@@ -556,7 +556,7 @@ const FootballSessionView = ({ view }) => {
             return move[i];
           } else {
             return {
-              cx: containerWidth.current * 0.5 + j/10,
+              cx: containerWidth.current * 0.5 + j / 10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
               delay: infoSession.current.secondsToNextPlay.current * 1000,
@@ -569,8 +569,8 @@ const FootballSessionView = ({ view }) => {
     //Ideal Player
     let animationIdealPlayerMoves = plays.map((play) => {
       return {
-        cx: (play.IdealPositionX / 50) * containerWidth.current,
-        cy: (play.IdealPositionY / 50) * containerHeight.current,
+        cx: (play.IdealPositionX / 48) * containerWidth.current,
+        cy: (play.IdealPositionY / 48) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
@@ -579,15 +579,13 @@ const FootballSessionView = ({ view }) => {
     //Ball Animation
     let animationBallMoves = plays.map((play) => {
       return {
-        x: (play.ballX / 50) * containerWidth.current,
-        y: (play.ballY / 50) * containerHeight.current,
+        x: (play.ballX / 48) * containerWidth.current,
+        y: (play.ballY / 48) * containerHeight.current,
         opacity: 1,
         delay: infoSession.current.secondsToNextPlay.current * 1000,
       };
     });
 
-    //console.log(animationRedPlayersMoves);
-    //console.log(animationYellowPlayersMoves);
     animationRedPlayersMoves = animationRedPlayersMoves.map((move, index) => {
       for (let i = 0; i < move.length; i++) {
         if (
@@ -595,7 +593,7 @@ const FootballSessionView = ({ view }) => {
           move[i] &&
           move[i - 1].cx === move[i].cx &&
           move[i - 1].cy === move[i].cy
-          ) {
+        ) {
           move[i] = {
             ...move[i],
             cx: move[i].cx + 0.1,
@@ -604,13 +602,14 @@ const FootballSessionView = ({ view }) => {
       }
       return move;
     });
-    animationYellowPlayersMoves = animationYellowPlayersMoves.map((move, index) => {
-      for (let i = 0; i < move.length; i++) {
-        if (
-          move[i - 1] &&
-          move[i] &&
-          move[i - 1].cx === move[i].cx &&
-          move[i - 1].cy === move[i].cy
+    animationYellowPlayersMoves = animationYellowPlayersMoves.map(
+      (move, index) => {
+        for (let i = 0; i < move.length; i++) {
+          if (
+            move[i - 1] &&
+            move[i] &&
+            move[i - 1].cx === move[i].cx &&
+            move[i - 1].cy === move[i].cy
           ) {
             move[i] = {
               ...move[i],
@@ -619,8 +618,9 @@ const FootballSessionView = ({ view }) => {
           }
         }
         return move;
-      });
-      setShowAnimation("applied");
+      }
+    );
+    setShowAnimation("applied");
     //console.log(animationYellowPlayersMoves);
     //Actualizar animaciones red players
     apiRedPlayersAnimation.update((i) => {
@@ -925,7 +925,7 @@ const FootballSessionView = ({ view }) => {
                   cx={containerWidth.current * 0.5}
                   cy={containerHeight.current * 0.5}
                   opacity={0}
-                  r={view === "player" ? "7vmin" : "5vmin"}
+                  r={view === "player" ? "6.9vmin" : "4.9vmin"}
                   fill="green"
                   style={idealPlayerAnimation}
                 />

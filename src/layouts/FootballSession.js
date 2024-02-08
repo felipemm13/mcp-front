@@ -46,7 +46,12 @@ const FootballSession = () => {
 
   useEffect(() => {
     if (!userContext.current) {
-      navigate("/");
+      const localUser = JSON.parse(localStorage.getItem("user"));
+      if (localUser) {
+        userContext.current = localUser;
+      } else {
+        navigate("/");
+      }
     }
     listOfPLayers.current = [];
     window.addEventListener("beforeunload", () => {
@@ -90,7 +95,7 @@ const FootballSession = () => {
         }
         if (sequenceGenerated[i - 1] === numRand) {
           numRand = (numRand + 1) % 8;
-          if(numRand === 0){
+          if (numRand === 0) {
             numRand = 1;
           }
           if (numRand >= 5) {
