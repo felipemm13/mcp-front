@@ -4,6 +4,7 @@ import Connect from "../connection/Connect";
 const Context = React.createContext();
 
 const ProviderContext = ({ children }) => {
+  const tercios = [1 / 3, 2 / 3, 3 / 3];
   const userContext = useRef(null);
   const videoCurrentSession = useRef(null);
   const infoSession = useRef({});
@@ -73,6 +74,7 @@ const ProviderContext = ({ children }) => {
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
         preloadImages,
+        tercios,
       }}
     >
       {children}

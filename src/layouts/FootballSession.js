@@ -21,7 +21,6 @@ const FootballSession = () => {
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
-
   const numberOfPlays = useRef(3);
   const isRandomSeed = useRef(true);
   const seed = useRef(

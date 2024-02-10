@@ -6,13 +6,13 @@ import Routes from "../connection/path";
 import Draggable from "react-draggable";
 
 const PlaysView = () => {
-  const { CrudApi } = useContext(Context);
+  const { CrudApi, tercios } = useContext(Context);
   const navigate = useNavigate();
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const playersContainer = useRef(null);
   const [containerMeasure, setContainerMeasure] = useState({
-    containerWidth: 500,
-    containerHeight: 300,
+    containerWidth: 700,
+    containerHeight: 500,
   });
   const [gameState, setGameState] = useState({
     playPositions: {
@@ -31,15 +31,12 @@ const PlaysView = () => {
 
   useEffect(() => {
     getPlays();
+    setContainerMeasure({
+      containerWidth: playersContainer.current.clientWidth,
+      containerHeight: playersContainer.current.clientHeight,
+    });
   }, []);
-  useEffect(() => {
-    if (playersContainer.current) {
-      setContainerMeasure({
-        containerWidth: playersContainer.current.clientWidth,
-        containerHeight: playersContainer.current.clientHeight,
-      });
-    }
-  }, [playersContainer]);
+
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
@@ -47,6 +44,7 @@ const PlaysView = () => {
       })
       .catch((error) => console.log(error));
   };
+
   const handleChangePlay = (play) => {
     if (play.figureCoordinates) {
       const numPlayers = countPlayers(play.figureCoordinates);
@@ -63,6 +61,7 @@ const PlaysView = () => {
             ballX: play.ballX,
             ballY: play.ballY,
             Team: play.Team,
+            playsId: play.playsId,
           },
           players: play.figureCoordinates,
           numPlayers: numPlayers,
@@ -92,9 +91,10 @@ const PlaysView = () => {
 
   const handleRedPlayers = (e) => {
     if (e.target.value > gameState.numPlayers.red) {
+      console.log("añadir");
       setGameState((prevState) => ({
         ...prevState,
-        players: [...prevState.players, { xCoor: 24, yCoor: 24, color: "red" }],
+        players: [...prevState.players, { xCoor: 24, yCoor: 24, color: "Red" }],
         numPlayers: {
           ...prevState.numPlayers,
           red: ++prevState.numPlayers.red,
@@ -104,27 +104,33 @@ const PlaysView = () => {
       const lastRedPlayerIndex = gameState.players
         .slice()
         .reverse()
-        .findIndex((player) => player.color === "red");
-      setGameState((prevState) => ({
-        ...prevState,
-        players: prevState.players.filter(
-          (_, index) =>
-            index !== prevState.players.length - 1 - lastRedPlayerIndex
-        ),
-        numPlayers: {
-          ...prevState.numPlayers,
-          red: --prevState.numPlayers.red,
-        },
-      }));
+        .findIndex(
+          (player) => player.color === "red" || player.color === "Red"
+        );
+
+      if (lastRedPlayerIndex !== -1) {
+        const indexToRemove = gameState.players.length - 1 - lastRedPlayerIndex;
+        setGameState((prevState) => ({
+          ...prevState,
+          players: prevState.players.filter(
+            (_, index) => index !== indexToRemove
+          ),
+          numPlayers: {
+            ...prevState.numPlayers,
+            red: prevState.numPlayers.red - 1,
+          },
+        }));
+      }
     }
   };
+
   const handleYellowPlayers = (e) => {
     if (e.target.value > gameState.numPlayers.yellow) {
       setGameState((prevState) => ({
         ...prevState,
         players: [
           ...prevState.players,
-          { xCoor: 24, yCoor: 24, color: "yellow" },
+          { xCoor: 24, yCoor: 24, color: "Yellow" },
         ],
         numPlayers: {
           ...prevState.numPlayers,
@@ -135,18 +141,24 @@ const PlaysView = () => {
       const lastYellowPlayerIndex = gameState.players
         .slice()
         .reverse()
-        .findIndex((player) => player.color === "yellow");
-      setGameState((prevState) => ({
-        ...prevState,
-        players: prevState.players.filter(
-          (_, index) =>
-            index !== prevState.players.length - 1 - lastYellowPlayerIndex
-        ),
-        numPlayers: {
-          ...prevState.numPlayers,
-          yellow: --prevState.numPlayers.yellow,
-        },
-      }));
+        .findIndex(
+          (player) => player.color === "yellow" || player.color === "Yellow"
+        );
+
+      if (lastYellowPlayerIndex !== -1) {
+        const indexToRemove =
+          gameState.players.length - 1 - lastYellowPlayerIndex;
+        setGameState((prevState) => ({
+          ...prevState,
+          players: prevState.players.filter(
+            (_, index) => index !== indexToRemove
+          ),
+          numPlayers: {
+            ...prevState.numPlayers,
+            yellow: prevState.numPlayers.yellow - 1,
+          },
+        }));
+      }
     }
   };
 
@@ -163,6 +175,80 @@ const PlaysView = () => {
       { red: 0, yellow: 0 } // Inicializar el contador
     );
     return resultado;
+  };
+
+  const handleStop = (index, event, color) => {
+    const containerRect = playersContainer.current.getBoundingClientRect();
+    const newPositionX = Math.round(
+      ((event.pageX - containerRect.left) / containerRect.width) * 48
+    );
+    const newPositionY = Math.round(
+      ((event.pageY - containerRect.top) / containerRect.height) * 48
+    );
+    if (color === "green") {
+      setGameState((prevState) => {
+        return {
+          ...prevState,
+          playPositions: {
+            ...prevState.playPositions,
+            IdealPositionX: newPositionX,
+            IdealPositionY: newPositionY,
+          },
+        };
+      });
+    } else if (color === "ball") {
+      setGameState((prevState) => {
+        return {
+          ...prevState,
+          playPositions: {
+            ...prevState.playPositions,
+            ballX: newPositionX,
+            ballY: newPositionY,
+          },
+        };
+      });
+    } else {
+      setGameState((prevState) => {
+        const updatedPlayers = [...prevState.players];
+        updatedPlayers[index].xCoor = newPositionX;
+        updatedPlayers[index].yCoor = newPositionY;
+        return { ...prevState, players: updatedPlayers };
+      });
+    }
+  };
+
+  const handleSavePlay = async () => {
+    const playSelected = JSON.parse(
+      document.getElementById("PlaySelected").value
+    );
+    if (gameState.playPositions.playsId) {
+      const playUpdated = {
+        ...playSelected,
+        ...gameState.playPositions,
+      };
+      const  playData = {
+          ballX: playUpdated.ballX,
+          ballY: playUpdated.ballY,
+          IdealPositionX: playUpdated.IdealPositionX,
+          IdealPositionY: playUpdated.IdealPositionY,
+          Team: playUpdated.Team,
+      }
+      const figuresData = gameState.players
+      console.log(playData)
+      //await CrudApi.put(`plays/${playUpdated.playsId}`,playData)
+      figuresData.map((figure)=>{
+        const figureData = {
+          xCoor: figure.xCoor,
+          yCoor:figure.yCoor,
+          color: figure.color,
+        }
+        console.log(figure.figureId,figureData)
+        //await CrudApi.put(`figCoord/${figure.figureId}`,figureData)
+      })
+    } else {
+      console.log(gameState);
+      //Crear la jugada y luego crear las figuras
+    }
   };
 
   return (
@@ -188,9 +274,50 @@ const PlaysView = () => {
       <div className="PlaysViewPlaysContainer">
         <div className="PlaysViewPlays">
           <div className="PlaysViewPlayImageContainer">
-            <img className="PlaysViewPlayImage" src="assets/player-zone.png" />
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" fill="#1bfc08" />
+              <line
+                x1="0"
+                y1={`${tercios[0] * 100}%`}
+                x2="100%"
+                y2={`${tercios[0] * 100}%`}
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1="0"
+                y1={`${tercios[1] * 100}%`}
+                x2="100%"
+                y2={`${tercios[1] * 100}%`}
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1={`${tercios[0] * 100}%`}
+                y1="0"
+                x2={`${tercios[0] * 100}%`}
+                y2="100%"
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1={`${tercios[1] * 100}%`}
+                y1="0"
+                x2={`${tercios[1] * 100}%`}
+                y2="100%"
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+            </svg>
           </div>
-          <div ref={playersContainer} className="PlaysViewPlayPlayersContainer">
+          <div
+            ref={(ref) => (playersContainer.current = ref)}
+            className="PlaysViewPlayPlayersContainer"
+          >
             {gameState.players.map((player, index) => {
               if (index === 0) {
                 return (
@@ -206,6 +333,7 @@ const PlaysView = () => {
 
                     <Draggable
                       bounds="parent"
+                      key={`player${index}`}
                       defaultPosition={{
                         x:
                           containerMeasure.containerWidth *
@@ -214,6 +342,7 @@ const PlaysView = () => {
                           containerMeasure.containerHeight *
                           (gameState.playPositions.IdealPositionY / 48),
                       }}
+                      onStop={(event) => handleStop(index, event, "green")}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -231,7 +360,7 @@ const PlaysView = () => {
                     </Draggable>
                     <Draggable
                       bounds="parent"
-                      key={`${index}`}
+                      key={`first${index}`}
                       defaultPosition={{
                         x:
                           containerMeasure.containerWidth * (player.xCoor / 48),
@@ -239,6 +368,7 @@ const PlaysView = () => {
                           containerMeasure.containerHeight *
                           (player.yCoor / 48),
                       }}
+                      onStop={(event) => handleStop(index, event, player.color)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -261,6 +391,7 @@ const PlaysView = () => {
                     </Draggable>
                     <Draggable
                       bounds="parent"
+                      key={`ball${index}`}
                       defaultPosition={{
                         x:
                           containerMeasure.containerWidth *
@@ -269,6 +400,7 @@ const PlaysView = () => {
                           containerMeasure.containerHeight *
                           (gameState.playPositions.ballY / 48),
                       }}
+                      onStop={(event) => handleStop(index, event, "ball")}
                     >
                       <svg
                         width={"10vmin"}
@@ -304,6 +436,7 @@ const PlaysView = () => {
                     x: containerMeasure.containerWidth * (player.xCoor / 48),
                     y: containerMeasure.containerHeight * (player.yCoor / 48),
                   }}
+                  onStop={(event) => handleStop(index, event, player.color)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -349,6 +482,7 @@ const PlaysView = () => {
                   <h4>Jugada base</h4>
                   <select
                     className=""
+                    id="PlaySelected"
                     onChange={(e) =>
                       handleChangePlay(JSON.parse(e.target.value))
                     }
@@ -441,7 +575,9 @@ const PlaysView = () => {
                 justifyContent: "center",
               }}
             >
-              <button>Guardar nueva situación de juego</button>
+              <button onClick={() => handleSavePlay()}>
+                Guardar nueva situación de juego
+              </button>
             </div>
           </div>
         </div>

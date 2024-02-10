@@ -1,8 +1,16 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  createRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "../styles/AnalizeSession.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
 import AWS from "aws-sdk";
+import ReactPlayer from "react-player";
 
 const AnalizeSession = () => {
   const {
@@ -42,6 +50,8 @@ const AnalizeSession = () => {
   const currentStimulus = useRef(0);
   const selectedRowIndex = useRef(0);
   const selectedPlayID = useRef(null);
+  const [playingVideo, setPlayingVideo] = useState(false);
+  const videoRefs = useRef([]);
 
   const initialData = Array.from({ length: 0 }, (_, index) => ({
     sequence: index + 1,
@@ -86,10 +96,14 @@ const AnalizeSession = () => {
   };
 
   useEffect(() => {
-    videosPlayersRef.current = document.querySelectorAll(
-      ".AnalizeSessionVideoCentral"
-    );
-    //console.log(videosPlayersRef.current);
+    videoRefs.current = Array(5)
+      .fill()
+      .map((_, index) => videoRefs.current[index] || createRef());
+    videoRefs.current[0].seekTo(-2 / FPS.current, "seconds");
+    videoRefs.current[1].seekTo(-1 / FPS.current, "seconds");
+    videoRefs.current[2].seekTo(0 / FPS.current, "seconds");
+    videoRefs.current[3].seekTo(1 / FPS.current, "seconds");
+    videoRefs.current[4].seekTo(2 / FPS.current, "seconds");
     if (session === "current" && videoCurrentSession.current) {
       //infoSession.current.imageSequences.pop()
       const url = URL.createObjectURL(videoCurrentSession.current);
@@ -120,7 +134,7 @@ const AnalizeSession = () => {
         )
       );
     } else {
-      FPS.current = currentSession.current[0].fps;
+      FPS.current = currentSession.current[0].fps ?? 30;
       infoSession.current = {
         stimulusTime: currentSession.current[0].SessionMoves.map(
           (move) => move.stimulus
@@ -178,10 +192,10 @@ const AnalizeSession = () => {
   };
 
   useEffect(() => {
-    if (videosPlayersRef.current.length) {
+    if (videoRefs.current.length) {
       if (currentFrame > 0) {
         if (
-          Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
+          Math.round(videoRefs.current[2].getCurrentTime() * 1000) >=
           infoSession.current.stimulusTime[currentStimulus.current]
         ) {
           currentStimulus.current =
@@ -197,10 +211,10 @@ const AnalizeSession = () => {
             ];
         }
         if (
-          Math.round(videosPlayersRef.current[2].currentTime * 1000) <
+          Math.round(videoRefs.current[2].getCurrentTime() * 1000) <
             infoSession.current.stimulusTime[currentStimulus.current] &&
           currentStimulus.current > 0 &&
-          Math.round(videosPlayersRef.current[2].currentTime * 1000) >=
+          Math.round(videoRefs.current[2].getCurrentTime() * 1000) >=
             infoSession.current.stimulusTime[currentStimulus.current - 1]
         ) {
           currentStimulus.current -= 1;
@@ -213,23 +227,30 @@ const AnalizeSession = () => {
         }
 
         if (videoState === "Play") {
-          videosPlayersRef.current[0].currentTime =
-            (currentFrame - 2) / FPS.current;
-          videosPlayersRef.current[1].currentTime =
-            (currentFrame - 1) / FPS.current;
-          videosPlayersRef.current[2].currentTime = currentFrame / FPS.current;
-          videosPlayersRef.current[3].currentTime =
-            (currentFrame + 1) / FPS.current;
-          videosPlayersRef.current[4].currentTime =
-            (currentFrame + 2) / FPS.current;
-          //setCurrentTime(videosPlayersRef.current[2].currentTime);
+          videoRefs.current[0].seekTo(
+            (currentFrame - 2) / FPS.current,
+            "seconds"
+          );
+          videoRefs.current[1].seekTo(
+            (currentFrame - 1) / FPS.current,
+            "seconds"
+          );
+          videoRefs.current[2].seekTo(currentFrame / FPS.current, "seconds");
+          videoRefs.current[3].seekTo(
+            (currentFrame + 1) / FPS.current,
+            "seconds"
+          );
+          videoRefs.current[4].seekTo(
+            (currentFrame + 2) / FPS.current,
+            "seconds"
+          );
         }
       } else {
-        videosPlayersRef.current[0].currentTime = 0;
-        videosPlayersRef.current[1].currentTime = 0;
-        videosPlayersRef.current[2].currentTime = 0;
-        videosPlayersRef.current[3].currentTime = 0;
-        videosPlayersRef.current[4].currentTime = 0;
+        videoRefs.current[0].seekTo(0);
+        videoRefs.current[1].seekTo(0);
+        videoRefs.current[2].seekTo(0);
+        videoRefs.current[3].seekTo(0);
+        videoRefs.current[4].seekTo(0);
         currentStimulus.current = 0;
       }
     }
@@ -271,7 +292,7 @@ const AnalizeSession = () => {
     ) {
       document.getElementById(
         `RowSequenceDecisionMaking${selectedRowIndex.current}`
-      ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
+      ).innerHTML = Math.round(videoRefs.current[2].getCurrentTime() * 1000);
       document.getElementById(
         `RowSequenceVisuMotor${selectedRowIndex.current}`
       ).innerHTML =
@@ -310,7 +331,7 @@ const AnalizeSession = () => {
     ) {
       document.getElementById(
         `RowSequenceArrival${selectedRowIndex.current}`
-      ).innerHTML = Math.round(videosPlayersRef.current[2].currentTime * 1000);
+      ).innerHTML = Math.round(videoRefs.current[2].getCurrentTime() * 1000);
       if (
         document.getElementById(
           `RowSequenceDecisionMaking${selectedRowIndex.current}`
@@ -448,7 +469,9 @@ const AnalizeSession = () => {
   };
 
   const saveCurrentSession = async () => {
-    document.getElementById("SaveAnalizeSession").setAttribute("disabled", "true");
+    document
+      .getElementById("SaveAnalizeSession")
+      .setAttribute("disabled", "true");
     document.getElementById("SaveAnalizeSession").innerText =
       "Guardando información...";
     const currentDate = new Date();
@@ -606,7 +629,7 @@ const AnalizeSession = () => {
         await upload.then(() => {
           document.getElementById("SaveAnalizeSession").innerText = `
           Guardado Exitosamente`;
-          document.getElementById("SaveAnalizeSession").disabled = false
+          document.getElementById("SaveAnalizeSession").disabled = false;
         });
       })
       .catch((err) => {
@@ -634,7 +657,7 @@ const AnalizeSession = () => {
         wrongPercentage: getErrorPercentage(),
       };
       //console.log(dataAnalytic);
-      document.getElementById("SaveAnalizeSession").disabled = true
+      document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
       await CrudApi.update(
@@ -677,7 +700,7 @@ const AnalizeSession = () => {
         ).then((response) => {
           document.getElementById("SaveAnalizeSession").innerHTML =
             "Guardado Exitosamente";
-            document.getElementById("SaveAnalizeSession").disabled = false
+          document.getElementById("SaveAnalizeSession").disabled = false;
         });
       });
     }
@@ -691,6 +714,7 @@ const AnalizeSession = () => {
     setLoading(false);
   };
 
+  useEffect(() => console.log(videoRefs), [videoRefs]);
   return (
     <div className="AnalizeSessionContainer">
       <button
@@ -817,10 +841,10 @@ const AnalizeSession = () => {
                     type="text"
                     readOnly={true}
                     disabled={true}
-                    value={
-                      videosPlayersRef.current.length &&
-                      Math.round(videosPlayersRef.current[0].currentTime * 1000)
-                    }
+                    value={Math.max(
+                      Math.round(((currentFrame - 2) / FPS.current) * 1000),
+                      0
+                    )}
                   />
                 </div>
               </div>
@@ -844,20 +868,17 @@ const AnalizeSession = () => {
                   </g>
                 </svg>
               )}
-              <video
-                className="AnalizeSessionVideoCentral"
-                id="videoPlayer1"
-                src={videoSession}
-                disablePictureInPicture
-                onClick={() => {
-                  setCurrentFrame(
-                    videosPlayersRef.current[0].currentTime * FPS.current > 0
-                      ? videosPlayersRef.current[0].currentTime * FPS.current
-                      : 0
-                  );
-                }}
+              <ReactPlayer
+                playing={playingVideo}
+                ref={(videoRef) => (videoRefs.current[0] = videoRef)}
+                id="VideoPlayers"
+                width={"90%"}
+                height={"100%"}
+                url={videoSession}
+                playDelay={-66}
               />
             </div>
+
             <div className="AnalizeSessionVideoFrame">
               <div className="AnalizeSessionVideoFrameLabelsInputs">
                 <div className="AnalizeSessionVideoFrameLabelInput">
@@ -879,10 +900,10 @@ const AnalizeSession = () => {
                     type="text"
                     readOnly={true}
                     disabled={true}
-                    value={
-                      videosPlayersRef.current.length &&
-                      Math.round(videosPlayersRef.current[1].currentTime * 1000)
-                    }
+                    value={Math.max(
+                      Math.round(((currentFrame - 1) / FPS.current) * 1000),
+                      0
+                    )}
                   />
                 </div>
               </div>
@@ -906,18 +927,15 @@ const AnalizeSession = () => {
                   </g>
                 </svg>
               )}
-              <video
-                className="AnalizeSessionVideoCentral"
-                id="videoPlayer2"
-                src={videoSession}
-                disablePictureInPicture
-                onClick={() => {
-                  setCurrentFrame(
-                    videosPlayersRef.current[1].currentTime * FPS.current > 0
-                      ? videosPlayersRef.current[1].currentTime * FPS.current
-                      : 0
-                  );
-                }}
+
+              <ReactPlayer
+                playing={playingVideo}
+                ref={(videoRef) => (videoRefs.current[1] = videoRef)}
+                id="VideoPlayers"
+                width={"90%"}
+                height={"100%"}
+                url={videoSession}
+                playDelay={-33}
               />
             </div>
           </div>
@@ -944,25 +962,24 @@ const AnalizeSession = () => {
                   type="text"
                   readOnly={true}
                   disabled={true}
-                  value={
-                    videosPlayersRef.current.length &&
-                    Math.round(videosPlayersRef.current[2].currentTime * 1000)
-                  }
+                  value={Math.round((currentFrame / FPS.current) * 1000)}
                 />
               </div>
             </div>
-
-            <video
-              className="AnalizeSessionVideoCentral"
-              style={{ width: "100%" }}
-              id="videoPlayer3"
-              src={videoSession}
-              disablePictureInPicture
-              onTimeUpdate={(e) => {
-                setCurrentFrame(Math.round(e.target.currentTime * FPS.current));
-              }}
-              onLoadStart={handleLoadStart}
-              onLoadedData={handleLoadedData}
+            
+            <ReactPlayer
+              onProgress={(e) =>
+                setCurrentFrame(Math.round(e.playedSeconds * FPS.current))
+              }
+              progressInterval={1}
+              ref={(videoRef) => (videoRefs.current[2] = videoRef)}
+              onEnded={() => {setPlayingVideo(false);setVideoState('Play')}}
+              onReady={() => setLoading(false)}
+              playing={playingVideo}
+              id="VideoPlayers"
+              width={"100%"}
+              height={"100%"}
+              url={videoSession}
             />
           </div>
           <div className="AnalizeSessionVideoCentralFrameControl">
@@ -971,14 +988,15 @@ const AnalizeSession = () => {
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
                 if (currentStimulus.current - 1 > 0) {
-                  videosPlayersRef.current[2].currentTime =
+                  videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
                       currentStimulus.current - 1
-                    ] / 1000;
-                  setCurrentTime(videosPlayersRef.current[2].currentTime);
+                    ] / 1000
+                  );
+                  setCurrentTime(videoRefs.current[2].getCurrentTime());
                 } else {
-                  videosPlayersRef.current[2].currentTime = 0;
-                  setCurrentTime(videosPlayersRef.current[2].currentTime);
+                  videoRefs.current[2].seekTo(0);
+                  setCurrentTime(videoRefs.current[2].getCurrentTime());
                 }
               }}
             >
@@ -1033,14 +1051,10 @@ const AnalizeSession = () => {
               onClick={() => {
                 if (videoState === "Play") {
                   setVideoState("Pause");
-                  for (let videoPlayer of videosPlayersRef.current) {
-                    videoPlayer.play();
-                  }
+                  setPlayingVideo(true);
                 } else {
                   setVideoState("Play");
-                  for (let videoPlayer of videosPlayersRef.current) {
-                    videoPlayer.pause();
-                  }
+                  setPlayingVideo(false);
                 }
               }}
             >
@@ -1111,17 +1125,19 @@ const AnalizeSession = () => {
                   currentStimulus.current + 1 <
                   infoSession.current.stimulusTime.length - 1
                 ) {
-                  videosPlayersRef.current[2].currentTime =
+                  videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
                       currentStimulus.current + 1
-                    ] / 1000;
-                  setCurrentTime(videosPlayersRef.current[2].currentTime);
+                    ] / 1000
+                  );
+                  setCurrentTime(videoRefs.current[2].getCurrentTime());
                 } else {
-                  videosPlayersRef.current[2].currentTime =
+                  videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
                       infoSession.current.stimulusTime.length - 1
-                    ] / 1000;
-                  setCurrentTime(videosPlayersRef.current[2].currentTime);
+                    ] / 1000
+                  );
+                  setCurrentTime(videoRefs.current[2].getCurrentTime());
                 }
               }}
             >
@@ -1175,10 +1191,10 @@ const AnalizeSession = () => {
                     type="text"
                     readOnly={true}
                     disabled={true}
-                    value={
-                      videosPlayersRef.current.length &&
-                      Math.round(videosPlayersRef.current[3].currentTime * 1000)
-                    }
+                    value={Math.min(
+                      Math.round(((currentFrame + 1) / FPS.current) * 1000),
+                      Math.round(Math.round(videoDuration * FPS.current)/FPS.current * 1000)
+                    )}
                   />
                 </div>
               </div>
@@ -1202,18 +1218,13 @@ const AnalizeSession = () => {
                   </g>
                 </svg>
               )}
-              <video
-                className="AnalizeSessionVideoCentral"
-                id="videoPlayer4"
-                src={videoSession}
-                disablePictureInPicture
-                onClick={() => {
-                  setCurrentFrame(
-                    videosPlayersRef.current[3].currentTime * FPS.current > 0
-                      ? videosPlayersRef.current[3].currentTime * FPS.current
-                      : 0
-                  );
-                }}
+              <ReactPlayer
+                playing={playingVideo}
+                ref={(videoRef) => (videoRefs.current[3] = videoRef)}
+                id="VideoPlayers"
+                width={"90%"}
+                height={"100%"}
+                url={videoSession}
               />
             </div>
             <div className="AnalizeSessionVideoFrame">
@@ -1240,10 +1251,10 @@ const AnalizeSession = () => {
                     id="sessionType"
                     type="text"
                     readOnly={true}
-                    value={
-                      videosPlayersRef.current.length &&
-                      Math.round(videosPlayersRef.current[4].currentTime * 1000)
-                    }
+                    value={Math.min(
+                      Math.round(((currentFrame + 2) / FPS.current) * 1000),
+                      Math.round(Math.round(videoDuration * FPS.current)/FPS.current * 1000)
+                    )}
                   />
                 </div>
               </div>
@@ -1267,18 +1278,13 @@ const AnalizeSession = () => {
                   </g>
                 </svg>
               )}
-              <video
-                className="AnalizeSessionVideoCentral"
-                id="videoPlayer5"
-                src={videoSession}
-                disablePictureInPicture
-                onClick={() => {
-                  setCurrentFrame(
-                    videosPlayersRef.current[4].currentTime * FPS.current > 0
-                      ? videosPlayersRef.current[4].currentTime * FPS.current
-                      : 0
-                  );
-                }}
+              <ReactPlayer
+                playing={playingVideo}
+                ref={(videoRef) => (videoRefs.current[4] = videoRef)}
+                id="VideoPlayers"
+                width={"90%"}
+                height={"100%"}
+                url={videoSession}
               />
             </div>
           </div>
