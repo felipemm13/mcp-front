@@ -84,6 +84,7 @@ const FootballSession = () => {
         numberOfPlays.current,
         seed.current
       );
+      console.log(sequenceGenerated);
     } else {
       sequenceGenerated = [];
       for (var i = 0; i < numberOfPlays.current; i++) {
@@ -104,7 +105,7 @@ const FootballSession = () => {
         sequenceGenerated.push(numRand);
       }
     }
-    sequenceOfPlays.current = sequenceGenerated;
+    
     setSequenceLabel(sequenceGenerated);
   };
 
@@ -126,6 +127,8 @@ const FootballSession = () => {
         strSequence.push(number);
       }
     }
+    sequenceOfPlays.current = strSequence;
+    console.log(strSequence);
     document.getElementById("showSessionSequence").value =
       strSequence.join(" → ");
   };

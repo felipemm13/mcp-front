@@ -451,7 +451,6 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     let sequenceIndex = 0;
-    console.log(infoSession.current.playsFromDb,infoSession.current.sequenceOfPlays)
     const plays = infoSession.current.sequenceOfPlays.current.map(
       (sequence) => {
         let play = infoSession.current.playsFromDb.current.find(

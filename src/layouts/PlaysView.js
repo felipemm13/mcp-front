@@ -23,8 +23,8 @@ const PlaysView = () => {
       Team: "Red",
     },
     players: [
-      { xCoor: 20, yCoor: 10, color: "red" },
-      { xCoor: 15, yCoor: 10, color: "yellow" },
+      { xCoor: 20, yCoor: 10, color: "Red" },
+      { xCoor: 15, yCoor: 10, color: "Yellow" },
     ],
     numPlayers: { red: 1, yellow: 1 },
   });
@@ -53,8 +53,32 @@ const PlaysView = () => {
       .catch((error) => console.log(error));
   };
 
-  const handleChangePlay = (play) => {
-    if (play.figureCoordinates) {
+  const handleChangePlay = (play, e) => {
+    document.getElementById('SavePlayButton').disabled = false;
+    if (e.target.options[e.target.selectedIndex].id === "CreateNewPlayOption") {
+      document.getElementById("SavePlayButton").innerText =
+        "Guardar nueva situación de juego";
+      setGameState({
+        playPositions: {},
+        players: [],
+        numPlayers: { red: 1, yellow: 1 },
+      });
+      setTimeout(() => {
+        setGameState({
+          playPositions: {
+            IdealPositionX: play.playPositions.IdealPositionX,
+            IdealPositionY: play.playPositions.IdealPositionY,
+            ballX: play.playPositions.ballX,
+            ballY: play.playPositions.ballY,
+            Team: play.playPositions.Team,
+          },
+          players: play.players,
+          numPlayers: play.numPlayers,
+        });
+      }, [50]);
+    } else {
+      document.getElementById("SavePlayButton").innerText =
+        "Actualizar situación de juego";
       const numPlayers = countPlayers(play.figureCoordinates);
       setGameState({
         playPositions: {},
@@ -73,25 +97,6 @@ const PlaysView = () => {
           },
           players: play.figureCoordinates,
           numPlayers: numPlayers,
-        });
-      }, [50]);
-    } else {
-      setGameState({
-        playPositions: {},
-        players: [],
-        numPlayers: { red: 1, yellow: 1 },
-      });
-      setTimeout(() => {
-        setGameState({
-          playPositions: {
-            IdealPositionX: play.playPositions.IdealPositionX,
-            IdealPositionY: play.playPositions.IdealPositionY,
-            ballX: play.playPositions.ballX,
-            ballY: play.playPositions.ballY,
-            Team: play.playPositions.Team,
-          },
-          players: play.players,
-          numPlayers: play.numPlayers,
         });
       }, [50]);
     }
@@ -204,6 +209,7 @@ const PlaysView = () => {
     const playSelected = JSON.parse(
       document.getElementById("PlaySelected").value
     );
+    document.getElementById("SavePlayButton").disabled = true;
     if (gameState.playPositions.playsId) {
       const playUpdated = {
         ...playSelected,
@@ -244,7 +250,10 @@ const PlaysView = () => {
           color: figure.color,
         };
         await CrudApi.update(`figCoord/${figure.figureId}`, figureData)
-          .then((res) => {})
+          .then((res) => {
+            document.getElementById("SavePlayButton").innerText =
+              "Situacion de juego Actualizada";
+          })
           .catch((error) => console.log(error));
       });
     } else {
@@ -261,11 +270,11 @@ const PlaysView = () => {
               playsId: response.data.playsId,
               orderNum: index,
             })
-              .then((res) => {
-                console.log(res);
-              })
+              .then((res) => {})
               .catch((error) => console.log(error));
           });
+          document.getElementById("SavePlayButton").innerText =
+            "Situacion de juego guardada";
         })
         .catch((error) => console.log(error));
     }
@@ -505,11 +514,12 @@ const PlaysView = () => {
                     className=""
                     id="PlaySelected"
                     onChange={(e) =>
-                      handleChangePlay(JSON.parse(e.target.value))
+                      handleChangePlay(JSON.parse(e.target.value), e)
                     }
                   >
                     <option
                       disabled=""
+                      id="CreateNewPlayOption"
                       value={JSON.stringify({
                         playPositions: {
                           IdealPositionX: 10,
@@ -519,8 +529,8 @@ const PlaysView = () => {
                           Team: "Red",
                         },
                         players: [
-                          { xCoor: 20, yCoor: 10, color: "red" },
-                          { xCoor: 15, yCoor: 10, color: "yellow" },
+                          { xCoor: 20, yCoor: 10, color: "Red" },
+                          { xCoor: 15, yCoor: 10, color: "Yellow" },
                         ],
                         numPlayers: { red: 1, yellow: 1 },
                       })}
@@ -596,7 +606,11 @@ const PlaysView = () => {
                 justifyContent: "center",
               }}
             >
-              <button onClick={() => handleSavePlay()}>
+              <button
+                className="PlaysViewSavePlayButton"
+                id="SavePlayButton"
+                onClick={() => handleSavePlay()}
+              >
                 Guardar nueva situación de juego
               </button>
             </div>
