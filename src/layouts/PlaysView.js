@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import "../styles/PlaysView.css";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../services/Context";
 import Routes from "../connection/path";
 import Draggable from "react-draggable";
 
 const PlaysView = () => {
-  const { CrudApi, tercios } = useContext(Context);
+  const { CrudApi, tercios, userContext } = useContext(Context);
   const navigate = useNavigate();
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const playersContainer = useRef(null);
@@ -30,6 +30,14 @@ const PlaysView = () => {
   });
 
   useEffect(() => {
+    if (!userContext.current) {
+      const localUser = JSON.parse(localStorage.getItem("user"));
+      if (localUser) {
+        userContext.current = localUser;
+      } else {
+        navigate("/");
+      }
+    }
     getPlays();
     setContainerMeasure({
       containerWidth: playersContainer.current.clientWidth,
@@ -89,27 +97,32 @@ const PlaysView = () => {
     }
   };
 
-  const handleRedPlayers = (e) => {
-    if (e.target.value > gameState.numPlayers.red) {
-      console.log("añadir");
+  const handlePlayers = (color, e) => {
+    const colorLower = color.toLowerCase();
+    if (e.target.value > gameState.numPlayers[colorLower]) {
       setGameState((prevState) => ({
         ...prevState,
-        players: [...prevState.players, { xCoor: 24, yCoor: 24, color: "Red" }],
+        players: [
+          ...prevState.players,
+          {
+            xCoor: 24,
+            yCoor: 24,
+            color: colorLower.charAt(0).toUpperCase() + colorLower.slice(1),
+          },
+        ],
         numPlayers: {
           ...prevState.numPlayers,
-          red: ++prevState.numPlayers.red,
+          [colorLower]: prevState.numPlayers[colorLower] + 1,
         },
       }));
     } else {
-      const lastRedPlayerIndex = gameState.players
+      const lastIndex = gameState.players
         .slice()
         .reverse()
-        .findIndex(
-          (player) => player.color === "red" || player.color === "Red"
-        );
+        .findIndex((player) => player.color.toLowerCase() === colorLower);
 
-      if (lastRedPlayerIndex !== -1) {
-        const indexToRemove = gameState.players.length - 1 - lastRedPlayerIndex;
+      if (lastIndex !== -1) {
+        const indexToRemove = gameState.players.length - 1 - lastIndex;
         setGameState((prevState) => ({
           ...prevState,
           players: prevState.players.filter(
@@ -117,49 +130,19 @@ const PlaysView = () => {
           ),
           numPlayers: {
             ...prevState.numPlayers,
-            red: prevState.numPlayers.red - 1,
+            [colorLower]: prevState.numPlayers[colorLower] - 1,
           },
         }));
       }
     }
   };
 
-  const handleYellowPlayers = (e) => {
-    if (e.target.value > gameState.numPlayers.yellow) {
-      setGameState((prevState) => ({
-        ...prevState,
-        players: [
-          ...prevState.players,
-          { xCoor: 24, yCoor: 24, color: "Yellow" },
-        ],
-        numPlayers: {
-          ...prevState.numPlayers,
-          yellow: ++prevState.numPlayers.yellow,
-        },
-      }));
-    } else {
-      const lastYellowPlayerIndex = gameState.players
-        .slice()
-        .reverse()
-        .findIndex(
-          (player) => player.color === "yellow" || player.color === "Yellow"
-        );
+  const handleRedPlayers = (e) => {
+    handlePlayers("red", e);
+  };
 
-      if (lastYellowPlayerIndex !== -1) {
-        const indexToRemove =
-          gameState.players.length - 1 - lastYellowPlayerIndex;
-        setGameState((prevState) => ({
-          ...prevState,
-          players: prevState.players.filter(
-            (_, index) => index !== indexToRemove
-          ),
-          numPlayers: {
-            ...prevState.numPlayers,
-            yellow: prevState.numPlayers.yellow - 1,
-          },
-        }));
-      }
-    }
+  const handleYellowPlayers = (e) => {
+    handlePlayers("yellow", e);
   };
 
   const countPlayers = (figureCoordinates) => {
@@ -226,29 +209,67 @@ const PlaysView = () => {
         ...playSelected,
         ...gameState.playPositions,
       };
-      const  playData = {
-          ballX: playUpdated.ballX,
-          ballY: playUpdated.ballY,
-          IdealPositionX: playUpdated.IdealPositionX,
-          IdealPositionY: playUpdated.IdealPositionY,
-          Team: playUpdated.Team,
-      }
-      const figuresData = gameState.players
-      console.log(playData)
-      //await CrudApi.put(`plays/${playUpdated.playsId}`,playData)
-      figuresData.map((figure)=>{
+      const playData = {
+        ballX: playUpdated.ballX,
+        ballY: playUpdated.ballY,
+        IdealPositionX: playUpdated.IdealPositionX,
+        IdealPositionY: playUpdated.IdealPositionY,
+        Team: playUpdated.Team,
+      };
+      //Crear un array que contendra las figuras que esten en playSelected.figureCoordinates pero no en gameState.players para poder eliminarlas
+      const figuresData = gameState.players;
+      await CrudApi.update(`plays/${playUpdated.playsId}`, playData)
+        .then((res) => {})
+        .catch((error) => console.log(error));
+      const figuresToDelete = playSelected.figureCoordinates.filter(
+        (figure) => {
+          return !gameState.players.some(
+            (player) =>
+              player.xCoor === figure.xCoor && player.yCoor === figure.yCoor
+          );
+        }
+      );
+
+      figuresToDelete.map(async (figure) => {
+        await CrudApi.delete(`figCoord/${figure.figureId}`)
+
+          .then((res) => {})
+          .catch((error) => console.log(error));
+      });
+
+      figuresData.map(async (figure) => {
         const figureData = {
           xCoor: figure.xCoor,
-          yCoor:figure.yCoor,
+          yCoor: figure.yCoor,
           color: figure.color,
-        }
-        console.log(figure.figureId,figureData)
-        //await CrudApi.put(`figCoord/${figure.figureId}`,figureData)
-      })
+        };
+        await CrudApi.update(`figCoord/${figure.figureId}`, figureData)
+          .then((res) => {})
+          .catch((error) => console.log(error));
+      });
     } else {
-      console.log(gameState);
       //Crear la jugada y luego crear las figuras
+      await CrudApi.post(`plays`, {
+        ...gameState.playPositions,
+        UserId: userContext.current.userId,
+        SnapshotURL: "",
+      })
+        .then((response) => {
+          gameState.players.map(async (player, index) => {
+            await CrudApi.post("figCoord", {
+              ...player,
+              playsId: response.data.playsId,
+              orderNum: index,
+            })
+              .then((res) => {
+                console.log(res);
+              })
+              .catch((error) => console.log(error));
+          });
+        })
+        .catch((error) => console.log(error));
     }
+    getPlays();
   };
 
   return (

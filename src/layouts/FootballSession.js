@@ -17,7 +17,7 @@ const FootballSession = () => {
     infoSession,
     videoCurrentSession,
     CrudApi,
-    listOfPlayers,
+    listOfPlayers
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
@@ -490,10 +490,6 @@ const FootballSession = () => {
                     infoSession.current?.isRandomSeed?.current || true
                   }
                   onChange={() => {
-                    console.log(
-                      seed.current,
-                      infoSession.current?.isRandomSeed?.current
-                    );
                     isRandomSeed.current = !isRandomSeed.current;
                     if (isRandomSeed.current) {
                       document.getElementById("seed").value =

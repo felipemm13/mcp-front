@@ -12,7 +12,7 @@ import * as htmlToImage from "html-to-image";
 import { Context } from "../services/Context";
 
 const FootballSessionView = ({ view }) => {
-  const { infoSession } = useContext(Context);
+  const { infoSession ,tercios} = useContext(Context);
   const imgRef = useRef(null);
   const teamRef = useRef(null);
   const finalMessageAnimationRef = useSpringRef(null);
@@ -451,7 +451,7 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     let sequenceIndex = 0;
-
+    console.log(infoSession.current.playsFromDb,infoSession.current.sequenceOfPlays)
     const plays = infoSession.current.sequenceOfPlays.current.map(
       (sequence) => {
         let play = infoSession.current.playsFromDb.current.find(
@@ -460,12 +460,14 @@ const FootballSessionView = ({ view }) => {
         return play;
       }
     );
+    console.log(plays);
     let maxPlayersInPlayRed = 0;
     let maxPlayersInPlayYellow = 0;
 
     plays.forEach((play) => {
       let playersInPlayRed = 0;
       let playersInPlayYellow = 0;
+      console.log(play);
 
       play.figureCoordinates.forEach((player) => {
         if (player.color === "Red") {
@@ -786,17 +788,45 @@ const FootballSessionView = ({ view }) => {
       }
       ref={sessionContainer}
     >
-      <img
-        id="ImagePlayerSesion"
-        alt="playerZone"
-        ref={imgRef}
-        src="assets/player-zone.png"
-        style={{
-          height: "100%",
-          width: "100%",
-          aspectRatio: "1/1",
-        }}
-      />
+ <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" fill="#1bfc08" />
+              <line
+                x1="0"
+                y1={`${tercios[0] * 100}%`}
+                x2="100%"
+                y2={`${tercios[0] * 100}%`}
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1="0"
+                y1={`${tercios[1] * 100}%`}
+                x2="100%"
+                y2={`${tercios[1] * 100}%`}
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1={`${tercios[0] * 100}%`}
+                y1="0"
+                x2={`${tercios[0] * 100}%`}
+                y2="100%"
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+              <line
+                x1={`${tercios[1] * 100}%`}
+                y1="0"
+                x2={`${tercios[1] * 100}%`}
+                y2="100%"
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="10"
+              />
+            </svg>
 
       <div id="containerMessages" className="containerMessages">
         {count > 0 && (
