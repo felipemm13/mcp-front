@@ -4,6 +4,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../services/Context";
 import Routes from "../connection/path";
 import Draggable from "react-draggable";
+import { a } from "@react-spring/web";
 
 const PlaysView = () => {
   const { CrudApi, tercios, userContext } = useContext(Context);
@@ -54,7 +55,7 @@ const PlaysView = () => {
   };
 
   const handleChangePlay = (play, e) => {
-    document.getElementById('SavePlayButton').disabled = false;
+    document.getElementById("SavePlayButton").disabled = false;
     if (e.target.options[e.target.selectedIndex].id === "CreateNewPlayOption") {
       document.getElementById("SavePlayButton").innerText =
         "Guardar nueva situación de juego";
@@ -223,26 +224,10 @@ const PlaysView = () => {
         Team: playUpdated.Team,
       };
       //Crear un array que contendra las figuras que esten en playSelected.figureCoordinates pero no en gameState.players para poder eliminarlas
-      const figuresData = gameState.players;
       await CrudApi.update(`plays/${playUpdated.playsId}`, playData)
         .then((res) => {})
         .catch((error) => console.log(error));
-      const figuresToDelete = playSelected.figureCoordinates.filter(
-        (figure) => {
-          return !gameState.players.some(
-            (player) =>
-              player.xCoor === figure.xCoor && player.yCoor === figure.yCoor
-          );
-        }
-      );
-
-      figuresToDelete.map(async (figure) => {
-        await CrudApi.delete(`figCoord/${figure.figureId}`)
-
-          .then((res) => {})
-          .catch((error) => console.log(error));
-      });
-
+      const figuresData = gameState.players;
       figuresData.map(async (figure) => {
         const figureData = {
           xCoor: figure.xCoor,
@@ -254,6 +239,32 @@ const PlaysView = () => {
             document.getElementById("SavePlayButton").innerText =
               "Situacion de juego Actualizada";
           })
+          .catch((error) => console.log(error));
+      });
+      const figuresToDelete = playSelected.figureCoordinates.filter(
+        (figure) =>
+          !figuresData.some(
+            (figureSelected) => figureSelected.figureId === figure.figureId
+          )
+      );
+      figuresToDelete.map(async (figure) => {
+        await CrudApi.delete(`figCoord/${figure.figureId}`)
+          .then((res) => {})
+          .catch((error) => console.log(error));
+      });
+      const figuresToAdd = figuresData.filter(
+        (figure) =>
+          !playSelected.figureCoordinates.some(
+            (figureSelected) => figureSelected.figureId === figure.figureId
+          )
+      );
+      figuresToAdd.map(async (figure) => {
+        await CrudApi.post("figCoord", {
+          ...figure,
+          playsId: playSelected.playsId,
+          orderNum: 0,
+        })
+          .then((res) => {})
           .catch((error) => console.log(error));
       });
     } else {
@@ -278,7 +289,10 @@ const PlaysView = () => {
         })
         .catch((error) => console.log(error));
     }
-    getPlays();
+    setPlaysFromDb([]);
+    setTimeout(() => {
+      getPlays();
+    }, 1000);
   };
 
   return (
