@@ -27,13 +27,6 @@ const AnalizeSession = () => {
     REGION,
     userContext,
   } = useContext(Context);
-  if (!infoSession.current.stimulusTime) {
-    infoSession.current = {
-      stimulusTime: currentSession.current[0].SessionMoves.map(
-        (move) => move.stimulus
-      ),
-    };
-  }
   const navigate = useNavigate();
   const session = useParams().session;
   const FPS = useRef(currentFPS.current ? currentFPS.current : 29.97);
@@ -52,6 +45,19 @@ const AnalizeSession = () => {
   const selectedPlayID = useRef(null);
   const [playingVideo, setPlayingVideo] = useState(false);
   const videoRefs = useRef([]);
+  const [metrics, setMetrics] = useState({
+    totalVisuMotor: 0,
+    averageVisuMotor: 0,
+    standardDeviationVisuMotor: 0,
+    totalMotor: 0,
+    averageMotor: 0,
+    standardDeviationMotor: 0,
+    totalCognitiveMotor: 0,
+    averageCognitiveMotor: 0,
+    standardDeviationCognitiveMotor: 0,
+    correctPercentage: 0,
+    errorPercentage: 0,
+  });
 
   const initialData = Array.from({ length: 0 }, (_, index) => ({
     sequence: index + 1,
@@ -71,6 +77,7 @@ const AnalizeSession = () => {
     const newData = [...tableData];
     newData[index].error = !newData[index].error;
     setTableData(newData);
+    updateMetrics();
   };
 
   const getVideoDuration = (blob) => {
@@ -134,6 +141,10 @@ const AnalizeSession = () => {
         )
       );
     } else {
+      if (currentSession.current === null) {
+        navigate("/other-sessions");
+        return;
+      }
       FPS.current = currentSession.current[0].fps ?? 30;
       infoSession.current = {
         stimulusTime: currentSession.current[0].SessionMoves.map(
@@ -152,6 +163,7 @@ const AnalizeSession = () => {
       preloadImages(infoSession.current.imageSequences);
       getAWSVideo();
     }
+    updateMetrics();
   }, []);
 
   const getAWSVideo = async () => {
@@ -323,6 +335,7 @@ const AnalizeSession = () => {
           );
       }
     }
+    updateMetrics();
   };
 
   const AddArrivalMark = () => {
@@ -368,38 +381,75 @@ const AnalizeSession = () => {
             ).innerHTML
           );
       }
+      updateMetrics();
     }
   };
 
   const getTotalMetrics = useCallback(
     (metric) => {
-      let total = 0;
-      for (let i = 0; i < tableData.length; i++) {
-        total +=
-          document.getElementById(`RowSequence${metric}${i}`) &&
-          parseInt(
-            document.getElementById(`RowSequence${metric}${i}`).innerHTML
-          );
+      if ( session !== "current" &&
+        currentSession.current[0].SessionAnalytics[0] &&
+        currentSession.current[0].SessionAnalytics[0].motorTotal !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].responseTotal !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].visuMotorTotal !== 0
+      ) {
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorTotal;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseTotal;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorTotal;
+          default:
+            return 0;
+        }
+      } else {
+        let total = 0;
+        for (let i = 0; i < tableData.length; i++) {
+          total +=
+            document.getElementById(`RowSequence${metric}${i}`) &&
+            parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            );
+        }
+        return total;
       }
-      return total;
     },
     [selectedRowIndex.current, currentFrame]
   );
 
   const getAverageMetrics = useCallback(
     (metric) => {
-      let total = 0;
-      let average = 0;
-      if (tableData.length > 0) {
-        for (let i = 0; i < tableData.length; i++) {
-          total += parseInt(
-            document.getElementById(`RowSequence${metric}${i}`).innerHTML
-          );
+      if (session !== "current" &&
+        currentSession.current[0].SessionAnalytics[0] &&
+        currentSession.current[0].SessionAnalytics[0].motorMean !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].responseMean !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].visuMotorMean !== 0
+      ) {
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorMean;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseMean;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorMean;
+          default:
+            return 0;
         }
-        average = total / tableData.length;
-        return Math.floor(average);
       } else {
-        return 0;
+        let total = 0;
+        let average = 0;
+        if (tableData.length > 0) {
+          for (let i = 0; i < tableData.length; i++) {
+            total += parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            );
+          }
+          average = total / tableData.length;
+          return Math.floor(average);
+        } else {
+          return 0;
+        }
       }
     },
     [selectedRowIndex.current, currentFrame]
@@ -407,30 +457,48 @@ const AnalizeSession = () => {
 
   const getStandardDeviationMetrics = useCallback(
     (metric) => {
-      let total = 0;
-      let average = 0;
-      let standardDeviation = 0;
-      if (tableData.length > 0) {
-        for (let i = 0; i < tableData.length; i++) {
-          total += parseInt(
-            document.getElementById(`RowSequence${metric}${i}`).innerHTML
-          );
+      if (session !== "current" &&
+        currentSession.current[0].SessionAnalytics[0] &&
+        currentSession.current[0].SessionAnalytics[0].motorSd !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].responseSd !== 0 &&
+        currentSession.current[0].SessionAnalytics[0].visuMotorSd !== 0
+      ) {
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorSd;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseSd;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorSd;
+          default:
+            return 0;
         }
-        average = total / tableData.length;
-        for (let i = 0; i < tableData.length; i++) {
-          standardDeviation += Math.pow(
-            parseInt(
-              document.getElementById(`RowSequence${metric}${i}`).innerHTML
-            ) - average,
-            2
-          );
-        }
-        return (
-          Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
-          100
-        );
       } else {
-        return 0;
+        let total = 0;
+        let average = 0;
+        let standardDeviation = 0;
+        if (tableData.length > 0) {
+          for (let i = 0; i < tableData.length; i++) {
+            total += parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            );
+          }
+          average = total / tableData.length;
+          for (let i = 0; i < tableData.length; i++) {
+            standardDeviation += Math.pow(
+              parseInt(
+                document.getElementById(`RowSequence${metric}${i}`).innerHTML
+              ) - average,
+              2
+            );
+          }
+          return (
+            Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
+            100
+          );
+        } else {
+          return 0;
+        }
       }
     },
     [selectedRowIndex.current, currentFrame]
@@ -643,7 +711,7 @@ const AnalizeSession = () => {
     } else {
       const dataAnalytic = {
         sessionId: currentSession.current[0].sessionId,
-        complete: 0, // Reemplaza con el valor correcto
+        complete: checkSessionCompleteness(),
         correctPercentage: getCorrectPercentage(),
         motorMean: getAverageMetrics("Motor"),
         motorSd: getStandardDeviationMetrics("Motor"),
@@ -656,16 +724,13 @@ const AnalizeSession = () => {
         visuMotorTotal: getTotalMetrics("VisuMotor"),
         wrongPercentage: getErrorPercentage(),
       };
-      //console.log(dataAnalytic);
       document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
       await CrudApi.update(
         `sessionAnalytics/${currentSession.current[0].SessionAnalytics[0].sessionAnalyticId}`,
         dataAnalytic
-      ).then((response) => {
-        //console.log(response);
-      });
+      ).then((response) => {});
       const movesTableRows = document.querySelectorAll(".scrollable-body tr");
       const updatedTableData = Array.from(movesTableRows).map((row, index) => ({
         playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
@@ -691,9 +756,7 @@ const AnalizeSession = () => {
         stimulus: row.estimulo,
         decisionMaking: row.decisionMaking,
       }));
-      //console.log(tableData);
       currentSession.current[0].SessionMoves.map(async (move, index) => {
-        //console.log(dataMoves[index]);
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,
           dataMoves[index]
@@ -706,15 +769,57 @@ const AnalizeSession = () => {
     }
   };
 
-  const handleLoadStart = () => {
-    setLoading(true);
+  const updateMetrics = () => {
+    setMetrics({
+      totalVisuMotor: getTotalMetrics("VisuMotor"),
+      averageVisuMotor: getAverageMetrics("VisuMotor"),
+      standardDeviationVisuMotor: getStandardDeviationMetrics("VisuMotor"),
+      totalMotor: getTotalMetrics("Motor"),
+      averageMotor: getAverageMetrics("Motor"),
+      standardDeviationMotor: getStandardDeviationMetrics("Motor"),
+      totalCognitiveMotor: getTotalMetrics("CognitiveMotor"),
+      averageCognitiveMotor: getAverageMetrics("CognitiveMotor"),
+      standardDeviationCognitiveMotor:
+        getStandardDeviationMetrics("CognitiveMotor"),
+      correctPercentage: getCorrectPercentage(),
+      errorPercentage: getErrorPercentage(),
+    });
   };
 
-  const handleLoadedData = () => {
-    setLoading(false);
+  const checkSessionCompleteness = () => {
+    const tableRows = document.querySelectorAll(".scrollable-body tr");
+    for (let i = 0; i < tableRows.length; i++) {
+      const row = tableRows[i];
+      const visuMotor = parseInt(
+        row.querySelector(`#RowSequenceVisuMotor${i}`).textContent
+      );
+      const motor = parseInt(
+        row.querySelector(`#RowSequenceMotor${i}`).textContent
+      );
+      const cognitiveMotor = parseInt(
+        row.querySelector(`#RowSequenceCognitiveMotor${i}`).textContent
+      );
+      if (visuMotor === 0 || motor === 0 || cognitiveMotor === 0) {
+        return 0;
+      }
+    }
+    return 1;
   };
 
-  useEffect(() => console.log(videoRefs), [videoRefs]);
+  if (!infoSession.current.stimulusTime) {
+    if (session !== "current") {
+      if (currentSession.current === null) {
+        navigate("/other-sessions");
+        return;
+      } else {
+        infoSession.current = {
+          stimulusTime: currentSession.current[0].SessionMoves.map(
+            (move) => move.stimulus
+          ),
+        };
+      }
+    }
+  }
   return (
     <div className="AnalizeSessionContainer">
       <button
@@ -966,14 +1071,17 @@ const AnalizeSession = () => {
                 />
               </div>
             </div>
-            
+
             <ReactPlayer
               onProgress={(e) =>
                 setCurrentFrame(Math.round(e.playedSeconds * FPS.current))
               }
               progressInterval={1}
               ref={(videoRef) => (videoRefs.current[2] = videoRef)}
-              onEnded={() => {setPlayingVideo(false);setVideoState('Play')}}
+              onEnded={() => {
+                setPlayingVideo(false);
+                setVideoState("Play");
+              }}
               onReady={() => setLoading(false)}
               playing={playingVideo}
               id="VideoPlayers"
@@ -1193,7 +1301,11 @@ const AnalizeSession = () => {
                     disabled={true}
                     value={Math.min(
                       Math.round(((currentFrame + 1) / FPS.current) * 1000),
-                      Math.round(Math.round(videoDuration * FPS.current)/FPS.current * 1000)
+                      Math.round(
+                        (Math.round(videoDuration * FPS.current) /
+                          FPS.current) *
+                          1000
+                      )
                     )}
                   />
                 </div>
@@ -1253,7 +1365,11 @@ const AnalizeSession = () => {
                     readOnly={true}
                     value={Math.min(
                       Math.round(((currentFrame + 2) / FPS.current) * 1000),
-                      Math.round(Math.round(videoDuration * FPS.current)/FPS.current * 1000)
+                      Math.round(
+                        (Math.round(videoDuration * FPS.current) /
+                          FPS.current) *
+                          1000
+                      )
                     )}
                   />
                 </div>
@@ -1511,21 +1627,21 @@ const AnalizeSession = () => {
             <tbody>
               <tr className="table-row">
                 <td>Visu-Motor {"[ms]"}</td>
-                <td>{getTotalMetrics("VisuMotor")}</td>
-                <td>{getAverageMetrics("VisuMotor")}</td>
-                <td>{getStandardDeviationMetrics("VisuMotor")}</td>
+                <td>{metrics.totalVisuMotor}</td>
+                <td>{metrics.averageVisuMotor}</td>
+                <td>{metrics.standardDeviationVisuMotor}</td>
               </tr>
               <tr className="table-row">
                 <td>Motor {"[ms]"}</td>
-                <td>{getTotalMetrics("Motor")}</td>
-                <td>{getAverageMetrics("Motor")}</td>
-                <td>{getStandardDeviationMetrics("Motor")}</td>
+                <td>{metrics.totalMotor}</td>
+                <td>{metrics.averageMotor}</td>
+                <td>{metrics.standardDeviationMotor}</td>
               </tr>
               <tr className="table-row">
                 <td>Tiempo Respuesta {"[ms]"}</td>
-                <td>{getTotalMetrics("CognitiveMotor")}</td>
-                <td>{getAverageMetrics("CognitiveMotor")}</td>
-                <td>{getStandardDeviationMetrics("CognitiveMotor")}</td>
+                <td>{metrics.totalCognitiveMotor}</td>
+                <td>{metrics.averageCognitiveMotor}</td>
+                <td>{metrics.standardDeviationCognitiveMotor}</td>
               </tr>
             </tbody>
             <thead>
@@ -1534,8 +1650,8 @@ const AnalizeSession = () => {
                 <th className="table-header">Incorrecto</th>
               </tr>
               <tr className="table-row">
-                <td>{getCorrectPercentage()}%</td>
-                <td>{getErrorPercentage()}%</td>
+                <td>{metrics.correctPercentage}%</td>
+                <td>{metrics.errorPercentage}%</td>
               </tr>
             </thead>
           </table>

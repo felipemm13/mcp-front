@@ -11,21 +11,21 @@ const PlaysView = () => {
   const navigate = useNavigate();
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const playersContainer = useRef(null);
-  const [containerMeasure, setContainerMeasure] = useState({
-    containerWidth: 700,
-    containerHeight: 500,
-  });
+  const [containerMeasure, setContainerMeasure] = useState(null);
   const [gameState, setGameState] = useState({
     playPositions: {
-      IdealPositionX: 10,
-      IdealPositionY: 24,
-      ballX: 25,
-      ballY: 15,
+      IdealPositionX: 8,
+      IdealPositionY: 8,
+      ballX: 24,
+      ballY: 8,
       Team: "Red",
+      attack: true,
+      test: false,
+      enable: true,
     },
     players: [
-      { xCoor: 20, yCoor: 10, color: "Red" },
-      { xCoor: 15, yCoor: 10, color: "Yellow" },
+      { xCoor: 26, yCoor: 8, color: "Red" },
+      { xCoor: 40, yCoor: 8, color: "Yellow" },
     ],
     numPlayers: { red: 1, yellow: 1 },
   });
@@ -72,6 +72,9 @@ const PlaysView = () => {
             ballX: play.playPositions.ballX,
             ballY: play.playPositions.ballY,
             Team: play.playPositions.Team,
+            attack: play.playPositions.attack,
+            test: play.playPositions.test,
+            enable: play.playPositions.enable,
           },
           players: play.players,
           numPlayers: play.numPlayers,
@@ -94,6 +97,9 @@ const PlaysView = () => {
             ballX: play.ballX,
             ballY: play.ballY,
             Team: play.Team,
+            attack: play.attack ? true : false,
+            test: play.test ? true : false,
+            enable: play.enable ? true : false,
             playsId: play.playsId,
           },
           players: play.figureCoordinates,
@@ -104,42 +110,46 @@ const PlaysView = () => {
   };
 
   const handlePlayers = (color, e) => {
-    const colorLower = color.toLowerCase();
-    if (e.target.value > gameState.numPlayers[colorLower]) {
-      setGameState((prevState) => ({
-        ...prevState,
-        players: [
-          ...prevState.players,
-          {
-            xCoor: 24,
-            yCoor: 24,
-            color: colorLower.charAt(0).toUpperCase() + colorLower.slice(1),
-          },
-        ],
-        numPlayers: {
-          ...prevState.numPlayers,
-          [colorLower]: prevState.numPlayers[colorLower] + 1,
-        },
-      }));
-    } else {
-      const lastIndex = gameState.players
-        .slice()
-        .reverse()
-        .findIndex((player) => player.color.toLowerCase() === colorLower);
-
-      if (lastIndex !== -1) {
-        const indexToRemove = gameState.players.length - 1 - lastIndex;
+    if (e.target.value <= 4) {
+      const colorLower = color.toLowerCase();
+      if (e.target.value > gameState.numPlayers[colorLower]) {
         setGameState((prevState) => ({
           ...prevState,
-          players: prevState.players.filter(
-            (_, index) => index !== indexToRemove
-          ),
+          players: [
+            ...prevState.players,
+            {
+              xCoor: 24,
+              yCoor: 24,
+              color: colorLower.charAt(0).toUpperCase() + colorLower.slice(1),
+            },
+          ],
           numPlayers: {
             ...prevState.numPlayers,
-            [colorLower]: prevState.numPlayers[colorLower] - 1,
+            [colorLower]: prevState.numPlayers[colorLower] + 1,
           },
         }));
+      } else {
+        const lastIndex = gameState.players
+          .slice()
+          .reverse()
+          .findIndex((player) => player.color.toLowerCase() === colorLower);
+
+        if (lastIndex !== -1) {
+          const indexToRemove = gameState.players.length - 1 - lastIndex;
+          setGameState((prevState) => ({
+            ...prevState,
+            players: prevState.players.filter(
+              (_, index) => index !== indexToRemove
+            ),
+            numPlayers: {
+              ...prevState.numPlayers,
+              [colorLower]: prevState.numPlayers[colorLower] - 1,
+            },
+          }));
+        }
       }
+    } else {
+      return;
     }
   };
 
@@ -216,14 +226,22 @@ const PlaysView = () => {
         ...playSelected,
         ...gameState.playPositions,
       };
+      const responsePosition = {
+        x: playUpdated.IdealPositionX,
+        y: playUpdated.IdealPositionY,
+      };
+      const quadrant = getQuadrant(responsePosition);
       const playData = {
         ballX: playUpdated.ballX,
         ballY: playUpdated.ballY,
         IdealPositionX: playUpdated.IdealPositionX,
         IdealPositionY: playUpdated.IdealPositionY,
         Team: playUpdated.Team,
+        attack: playUpdated.attack,
+        test: playUpdated.test,
+        responsePosition: quadrant,
+        enable: playUpdated.enable,
       };
-      //Crear un array que contendra las figuras que esten en playSelected.figureCoordinates pero no en gameState.players para poder eliminarlas
       await CrudApi.update(`plays/${playUpdated.playsId}`, playData)
         .then((res) => {})
         .catch((error) => console.log(error));
@@ -234,6 +252,7 @@ const PlaysView = () => {
           yCoor: figure.yCoor,
           color: figure.color,
         };
+
         await CrudApi.update(`figCoord/${figure.figureId}`, figureData)
           .then((res) => {
             document.getElementById("SavePlayButton").innerText =
@@ -247,6 +266,7 @@ const PlaysView = () => {
             (figureSelected) => figureSelected.figureId === figure.figureId
           )
       );
+
       figuresToDelete.map(async (figure) => {
         await CrudApi.delete(`figCoord/${figure.figureId}`)
           .then((res) => {})
@@ -258,6 +278,7 @@ const PlaysView = () => {
             (figureSelected) => figureSelected.figureId === figure.figureId
           )
       );
+
       figuresToAdd.map(async (figure) => {
         await CrudApi.post("figCoord", {
           ...figure,
@@ -268,9 +289,14 @@ const PlaysView = () => {
           .catch((error) => console.log(error));
       });
     } else {
-      //Crear la jugada y luego crear las figuras
+      const responsePosition = {
+        x: gameState.playPositions.IdealPositionX,
+        y: gameState.playPositions.IdealPositionY,
+      };
+      const quadrant = getQuadrant(responsePosition);
       await CrudApi.post(`plays`, {
         ...gameState.playPositions,
+        responsePosition: quadrant,
         UserId: userContext.current.userId,
         SnapshotURL: "",
       })
@@ -292,7 +318,35 @@ const PlaysView = () => {
     setPlaysFromDb([]);
     setTimeout(() => {
       getPlays();
-    }, 1000);
+    }, 500);
+  };
+
+  const getQuadrant = (posicion) => {
+    if (posicion.x <= 16) {
+      if (posicion.y <= 16) {
+        return 1;
+      } else if (posicion.y > 16 && posicion.y <= 32) {
+        return 4;
+      } else if (posicion.y > 32 && posicion.y <= 48) {
+        return 7;
+      }
+    } else if (posicion.x > 16 && posicion.x <= 32) {
+      if (posicion.y <= 16) {
+        return 2;
+      } else if (posicion.y > 16 && posicion.y <= 32) {
+        return 5;
+      } else if (posicion.y > 32 && posicion.y <= 48) {
+        return 8;
+      }
+    } else if (posicion.x > 32 && posicion.x <= 48) {
+      if (posicion.y <= 16) {
+        return 3;
+      } else if (posicion.y > 16 && posicion.y <= 32) {
+        return 6;
+      } else if (posicion.y > 32 && posicion.y <= 48) {
+        return 9;
+      }
+    }
   };
 
   return (
@@ -362,49 +416,146 @@ const PlaysView = () => {
             ref={(ref) => (playersContainer.current = ref)}
             className="PlaysViewPlayPlayersContainer"
           >
-            {gameState.players.map((player, index) => {
-              if (index === 0) {
-                return (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="CenterMarkTeam"
-                      viewBox="0 0 512 512"
-                      fill={gameState.playPositions.Team}
-                    >
-                      <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" />
-                    </svg>
+            {containerMeasure && (
+              <>
+                {gameState.players.map((player, index) => {
+                  if (index === 0) {
+                    return (
+                      <>
+                        <Draggable
+                          bounds="parent"
+                          key={`center${index}`}
+                          disabled
+                          defaultPosition={{
+                            x: containerMeasure.containerWidth * 0.5,
+                            y: containerMeasure.containerHeight * 0.5,
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512"
+                            style={{
+                              position: "absolute",
+                              marginLeft: "-6.5vmin",
+                              marginTop: "-6.5vmin",
+                            }}
+                            width={"13vmin"}
+                            height={"13vmin"}
+                            fill={gameState.playPositions.Team}
+                          >
+                            <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" />
+                          </svg>
+                        </Draggable>
 
+                        <Draggable
+                          bounds="parent"
+                          key={`player${index}`}
+                          defaultPosition={{
+                            x:
+                              containerMeasure.containerWidth *
+                              (gameState.playPositions.IdealPositionX / 48),
+                            y:
+                              containerMeasure.containerHeight *
+                              (gameState.playPositions.IdealPositionY / 48),
+                          }}
+                          onStop={(event) => handleStop(index, event, "green")}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512"
+                            style={{
+                              position: "absolute",
+                              marginLeft: "-5vmin",
+                              marginTop: "-5vmin",
+                            }}
+                            width={"10vmin"}
+                            height={"10vmin"}
+                          >
+                            <circle
+                              cx={"50%"}
+                              cy={"50%"}
+                              r={"50%"}
+                              fill="green"
+                            />
+                          </svg>
+                        </Draggable>
+                        <Draggable
+                          bounds="parent"
+                          key={`first${index}`}
+                          defaultPosition={{
+                            x:
+                              containerMeasure.containerWidth *
+                              (player.xCoor / 48),
+                            y:
+                              containerMeasure.containerHeight *
+                              (player.yCoor / 48),
+                          }}
+                          onStop={(event) =>
+                            handleStop(index, event, player.color)
+                          }
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512"
+                            width={"10vmin"}
+                            style={{
+                              position: "absolute",
+                              marginLeft: "-5vmin",
+                              marginTop: "-5vmin",
+                            }}
+                            height={"10vmin"}
+                          >
+                            <circle
+                              cx={"50%"}
+                              cy={"50%"}
+                              r={"50%"}
+                              fill={player.color}
+                            />
+                          </svg>
+                        </Draggable>
+                        <Draggable
+                          bounds="parent"
+                          key={`ball${index}`}
+                          defaultPosition={{
+                            x:
+                              containerMeasure.containerWidth *
+                              (gameState.playPositions.ballX / 48),
+                            y:
+                              containerMeasure.containerHeight *
+                              (gameState.playPositions.ballY / 48),
+                          }}
+                          onStop={(event) => handleStop(index, event, "ball")}
+                        >
+                          <svg
+                            width={"10vmin"}
+                            height={"10vmin"}
+                            style={{
+                              position: "absolute",
+                              marginLeft: "-5vmin",
+                              marginTop: "-5vmin",
+                            }}
+                            viewBox="-2500 -2500 5000 5000"
+                          >
+                            <g stroke="#000" strokeWidth="24">
+                              <circle fill="#fff" r="2376" />
+                              <path
+                                fill="none"
+                                d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-50 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
+                              />
+                            </g>
+                            <path
+                              fill="#000"
+                              d="m-1624-1700c243-153 498-303 856-424 141 117 253 307 372 492-288 275-562 544-724 756-274-25-410-2-740-60 3-244 84-499 236-764zm2904-40c271 248 537 498 724 788-55 262-105 553-180 704-234-35-536-125-820-200-138-357-231-625-340-924 210-156 417-296 616-368zm-3273 3033a2376 2376 0 0 1-378-1392l59-7c54 342 124 674 311 928-36 179-2 323 51 458zm1197-1125c365 60 717 120 1060 180 106 333 120 667 156 1000-263 218-625 287-944 420-372-240-523-508-736-768 122-281 257-561 464-832zm3013 678a2376 2376 0 0 1-925 1147l-116-5c84-127 114-297 118-488 232-111 464-463 696-772 86 30 159 72 227 118zm-2287 1527a2376 2376 0 0 1-993-251c199 74 367 143 542 83 53 75 176 134 451 168z"
+                            />
+                          </svg>
+                        </Draggable>
+                      </>
+                    );
+                  }
+                  return (
                     <Draggable
                       bounds="parent"
-                      key={`player${index}`}
-                      defaultPosition={{
-                        x:
-                          containerMeasure.containerWidth *
-                          (gameState.playPositions.IdealPositionX / 48),
-                        y:
-                          containerMeasure.containerHeight *
-                          (gameState.playPositions.IdealPositionY / 48),
-                      }}
-                      onStop={(event) => handleStop(index, event, "green")}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                        style={{
-                          position: "absolute",
-                          marginLeft: "-5vmin",
-                          marginTop: "-5vmin",
-                        }}
-                        width={"10vmin"}
-                        height={"10vmin"}
-                      >
-                        <circle cx={"50%"} cy={"50%"} r={"50%"} fill="green" />
-                      </svg>
-                    </Draggable>
-                    <Draggable
-                      bounds="parent"
-                      key={`first${index}`}
+                      key={`${index}`}
                       defaultPosition={{
                         x:
                           containerMeasure.containerWidth * (player.xCoor / 48),
@@ -433,76 +584,10 @@ const PlaysView = () => {
                         />
                       </svg>
                     </Draggable>
-                    <Draggable
-                      bounds="parent"
-                      key={`ball${index}`}
-                      defaultPosition={{
-                        x:
-                          containerMeasure.containerWidth *
-                          (gameState.playPositions.ballX / 48),
-                        y:
-                          containerMeasure.containerHeight *
-                          (gameState.playPositions.ballY / 48),
-                      }}
-                      onStop={(event) => handleStop(index, event, "ball")}
-                    >
-                      <svg
-                        width={"10vmin"}
-                        height={"10vmin"}
-                        style={{
-                          position: "absolute",
-                          marginLeft: "-5vmin",
-                          marginTop: "-5vmin",
-                        }}
-                        viewBox="-2500 -2500 5000 5000"
-                      >
-                        <g stroke="#000" strokeWidth="24">
-                          <circle fill="#fff" r="2376" />
-                          <path
-                            fill="none"
-                            d="m-1643-1716 155 158m-550 2364c231 231 538 195 826 202m-524-2040c-491 351-610 1064-592 1060m1216-1008c-51 373 84 783 364 1220m-107-2289c157-157 466-267 873-329m-528 4112c-50 132-37 315-8 510m62-3883c282 32 792 74 1196 303m-404 2644c310 173 649 247 1060 180m-340-2008c-242 334-534 645-872 936m1109-2119c-111-207-296-375-499-534m1146 1281c100 3 197 44 290 141m-438 495c158 297 181 718 204 1140"
-                          />
-                        </g>
-                        <path
-                          fill="#000"
-                          d="m-1624-1700c243-153 498-303 856-424 141 117 253 307 372 492-288 275-562 544-724 756-274-25-410-2-740-60 3-244 84-499 236-764zm2904-40c271 248 537 498 724 788-55 262-105 553-180 704-234-35-536-125-820-200-138-357-231-625-340-924 210-156 417-296 616-368zm-3273 3033a2376 2376 0 0 1-378-1392l59-7c54 342 124 674 311 928-36 179-2 323 51 458zm1197-1125c365 60 717 120 1060 180 106 333 120 667 156 1000-263 218-625 287-944 420-372-240-523-508-736-768 122-281 257-561 464-832zm3013 678a2376 2376 0 0 1-925 1147l-116-5c84-127 114-297 118-488 232-111 464-463 696-772 86 30 159 72 227 118zm-2287 1527a2376 2376 0 0 1-993-251c199 74 367 143 542 83 53 75 176 134 451 168z"
-                        />
-                      </svg>
-                    </Draggable>
-                  </>
-                );
-              }
-              return (
-                <Draggable
-                  bounds="parent"
-                  key={`${index}`}
-                  defaultPosition={{
-                    x: containerMeasure.containerWidth * (player.xCoor / 48),
-                    y: containerMeasure.containerHeight * (player.yCoor / 48),
-                  }}
-                  onStop={(event) => handleStop(index, event, player.color)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                    width={"10vmin"}
-                    style={{
-                      position: "absolute",
-                      marginLeft: "-5vmin",
-                      marginTop: "-5vmin",
-                    }}
-                    height={"10vmin"}
-                  >
-                    <circle
-                      cx={"50%"}
-                      cy={"50%"}
-                      r={"50%"}
-                      fill={player.color}
-                    />
-                  </svg>
-                </Draggable>
-              );
-            })}
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
         <div className="PlaysViewHandlePlays">
@@ -541,6 +626,8 @@ const PlaysView = () => {
                           ballX: 25,
                           ballY: 15,
                           Team: "Red",
+                          attack: true,
+                          test: false,
                         },
                         players: [
                           { xCoor: 20, yCoor: 10, color: "Red" },
@@ -560,6 +647,15 @@ const PlaysView = () => {
                     })}
                   </select>
                 </div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "1em",
+                  justifyContent: "center",
+                }}
+              >
                 <div>
                   <h4>Equipo del deportista</h4>
                   <select
@@ -578,15 +674,7 @@ const PlaysView = () => {
                     <option value="Yellow">Amarillo</option>
                   </select>
                 </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: "1em",
-                  justifyContent: "center",
-                }}
-              >
+
                 <div>
                   <h4>Deportistas rojos</h4>
                   <input
@@ -611,6 +699,52 @@ const PlaysView = () => {
                     onChange={(e) => handleYellowPlayers(e)}
                   />
                 </div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: "1em",
+                justifyContent: "center",
+              }}
+            >
+              <div>
+                <h4>Tipo de jugada</h4>
+                <select
+                  onChange={(e) =>
+                    setGameState((prevState) => ({
+                      ...prevState,
+                      playPositions: {
+                        ...prevState.playPositions,
+                        attack: e.target.value,
+                      },
+                    }))
+                  }
+                  value={gameState.playPositions.attack}
+                >
+                  <option value={true}>Ofensiva</option>
+                  <option value={false}>Defensiva</option>
+                </select>
+              </div>
+
+              <div>
+                <h4>Modo de jugada</h4>
+                <select
+                  onChange={(e) =>
+                    setGameState((prevState) => ({
+                      ...prevState,
+                      playPositions: {
+                        ...prevState.playPositions,
+                        test: e.target.value,
+                      },
+                    }))
+                  }
+                  value={gameState.playPositions.test}
+                >
+                  <option value={true}>Evaluacion</option>
+                  <option value={false}>Entrenamiento</option>
+                </select>
               </div>
             </div>
             <div

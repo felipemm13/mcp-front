@@ -12,7 +12,7 @@ import * as htmlToImage from "html-to-image";
 import { Context } from "../services/Context";
 
 const FootballSessionView = ({ view }) => {
-  const { infoSession ,tercios} = useContext(Context);
+  const { infoSession, tercios } = useContext(Context);
   const imgRef = useRef(null);
   const teamRef = useRef(null);
   const finalMessageAnimationRef = useSpringRef(null);
@@ -198,7 +198,10 @@ const FootballSessionView = ({ view }) => {
       htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
         imageSequences.current.push(dataUrl);
       });
-    }, [infoSession.current.secondsForPlayTransition.current * 750]);
+    }, [
+      infoSession.current.secondsToNextPlay.current * 250 +
+        infoSession.current.secondsForPlayTransition.current * 1000,
+    ]);
     ballAnimationRef.update({
       from: ballAnimationMoves[0],
       to: [
@@ -370,7 +373,7 @@ const FootballSessionView = ({ view }) => {
       }
     );
     let sequenceIndex = 0;
-    console.log(distractorsMoves);
+
     apiDiscriminativeAnimation.update((i) => {
       if (distractorsMoves[i]) {
         let distractorsInitialPosition = distractorsMoves[i].shift();
@@ -386,7 +389,10 @@ const FootballSessionView = ({ view }) => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                 imageSequences.current.push(dataUrl);
               });
-            }, [infoSession.current.secondsForPlayTransition.current * 750]);
+            }, [
+              infoSession.current.secondsToNextPlay.current * 250 +
+                infoSession.current.secondsForPlayTransition.current * 1000,
+            ]);
             indexSequence++;
           }
         }
@@ -691,7 +697,10 @@ const FootballSessionView = ({ view }) => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
-          }, [infoSession.current.secondsForPlayTransition.current * 750]);
+          }, [
+            infoSession.current.secondsToNextPlay.current * 250 +
+              infoSession.current.secondsForPlayTransition.current * 1000,
+          ]);
           sequenceIndex++;
         }
       }
@@ -743,11 +752,6 @@ const FootballSessionView = ({ view }) => {
     }
     let time = new Date().getTime();
     stimulusTimeSequence.current.push(0);
-    setTimeout(() => {
-      htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
-        imageSequences.current.push(dataUrl);
-      });
-    }, [infoSession.current.secondsForPlayTransition.current * 750]);
     ballAnimationRef.start();
     idealPlayerAnimationRef.start();
     apiRedPlayersAnimation.start();
@@ -787,45 +791,45 @@ const FootballSessionView = ({ view }) => {
       }
       ref={sessionContainer}
     >
- <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-              <rect width="100%" height="100%" fill="#1bfc08" />
-              <line
-                x1="0"
-                y1={`${tercios[0] * 100}%`}
-                x2="100%"
-                y2={`${tercios[0] * 100}%`}
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="10"
-              />
-              <line
-                x1="0"
-                y1={`${tercios[1] * 100}%`}
-                x2="100%"
-                y2={`${tercios[1] * 100}%`}
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="10"
-              />
-              <line
-                x1={`${tercios[0] * 100}%`}
-                y1="0"
-                x2={`${tercios[0] * 100}%`}
-                y2="100%"
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="10"
-              />
-              <line
-                x1={`${tercios[1] * 100}%`}
-                y1="0"
-                x2={`${tercios[1] * 100}%`}
-                y2="100%"
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="10"
-              />
-            </svg>
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#1bfc08" />
+        <line
+          x1="0"
+          y1={`${tercios[0] * 100}%`}
+          x2="100%"
+          y2={`${tercios[0] * 100}%`}
+          stroke="white"
+          strokeWidth="2"
+          strokeDasharray="10"
+        />
+        <line
+          x1="0"
+          y1={`${tercios[1] * 100}%`}
+          x2="100%"
+          y2={`${tercios[1] * 100}%`}
+          stroke="white"
+          strokeWidth="2"
+          strokeDasharray="10"
+        />
+        <line
+          x1={`${tercios[0] * 100}%`}
+          y1="0"
+          x2={`${tercios[0] * 100}%`}
+          y2="100%"
+          stroke="white"
+          strokeWidth="2"
+          strokeDasharray="10"
+        />
+        <line
+          x1={`${tercios[1] * 100}%`}
+          y1="0"
+          x2={`${tercios[1] * 100}%`}
+          y2="100%"
+          stroke="white"
+          strokeWidth="2"
+          strokeDasharray="10"
+        />
+      </svg>
 
       <div id="containerMessages" className="containerMessages">
         {count > 0 && (

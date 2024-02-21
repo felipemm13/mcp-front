@@ -87,7 +87,6 @@ const OtherSessions = () => {
     // Actualiza el estado con la sesión seleccionada
     setSelectedSession([session, currentPlayer]);
   };
-  useEffect(() => console.log(selectedSession), [selectedSession]);
   const calculateAge = (birthday) => {
     let today = new Date();
     let birthDate = new Date(birthday);

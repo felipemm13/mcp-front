@@ -5,19 +5,6 @@ class FirebaseService {
     this.firestore = firestore;
   }
 
-  async getIdsStudySportGroup(email) {
-    let sportsGroup = [];
-    const query = await this.firestore
-      .collection("Users")
-      .doc(email)
-      .collection("studySportGroup")
-      .get();
-    query.forEach(function (childSnapshot) {
-      sportsGroup.push(childSnapshot.id);
-    });
-    return sportsGroup;
-  }
-
   async getSportsPersonIdByIdGroup(idArray) {
     let sportsPersons = [];
     const query = await firestore

@@ -10,6 +10,7 @@ import OtherSessions from "./layouts/OtherSessions";
 import AnalizeSession from "./layouts/AnalizeSession";
 import { ProviderContext } from "./services/Context";
 import PlaysView from "./layouts/PlaysView";
+import ListOfPlays from "./layouts/ListOfPlays";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,7 @@ const router = createBrowserRouter([
   {
     path: "plays-view",
     element: <PlaysView />,
-  },
+  },{path:"list-of-plays",element:<ListOfPlays/>},
   {
     path: "other-sessions",
     element: <OtherSessions />,

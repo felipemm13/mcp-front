@@ -32,20 +32,18 @@ const ProviderContext = ({ children }) => {
     "assets/reactions/reaction-red.jpg",
     "assets/reactions/reaction-white.jpg",
     "assets/reactions/reaction-yellow.jpg",
-    "assets/teams/team-Red.jpg",
-    "assets/teams/team-Yellow.jpg",
-    "assets/player-zone.png",
   ];
   const preloadImage = (src) => {
+    console.log('preloadImage', src)
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.src = src;
       img.onload = () => {
         resolve(img);
       };
       img.onerror = img.onabort = () => {
         reject(src);
       };
-      img.src = src;
     });
   };
 

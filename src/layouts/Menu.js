@@ -60,7 +60,7 @@ const Menu = (props) => {
             </svg>
             Crear/Editar Jugadas Futbol
           </button>
-          <button className="button">
+          <button className="button" onClick={() => navigate("list-of-plays")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="25"
