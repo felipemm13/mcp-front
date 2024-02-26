@@ -178,12 +178,14 @@ const PlaysView = () => {
 
   const handleStop = (index, event, color) => {
     const containerRect = playersContainer.current.getBoundingClientRect();
-    const newPositionX = Math.round(
-      ((event.pageX - containerRect.left) / containerRect.width) * 48
+    const newPositionX = (
+      ((event.pageX - containerRect.left ) / containerRect.width) * 48
     );
-    const newPositionY = Math.round(
-      ((event.pageY - containerRect.top) / containerRect.height) * 48
+    console.log(newPositionX, "newPositionX");
+    const newPositionY = (
+      ((event.pageY - containerRect.top ) / containerRect.height) * 48
     );
+    console.log(newPositionY, "newPositionY");
     if (color === "green") {
       setGameState((prevState) => {
         return {

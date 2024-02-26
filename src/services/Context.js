@@ -34,7 +34,6 @@ const ProviderContext = ({ children }) => {
     "assets/reactions/reaction-yellow.jpg",
   ];
   const preloadImage = (src) => {
-    console.log('preloadImage', src)
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = src;

@@ -19,6 +19,7 @@ const FootballSessionView = ({ view }) => {
   const ballAnimationRef = useSpringRef(null);
   const idealPlayerAnimationRef = useSpringRef(null);
   const sessionContainer = useRef(null);
+  const [fieldColor, setFieldColor] = useState({background:"#1bfc08", stroke:"#fff"});
 
   const containerWidth = useRef(
     sessionContainer.current ? sessionContainer.current.clientWidth : 0
@@ -792,13 +793,13 @@ const FootballSessionView = ({ view }) => {
       ref={sessionContainer}
     >
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#1bfc08" />
+        <rect width="100%" height="100%" fill={fieldColor.background} />
         <line
           x1="0"
           y1={`${tercios[0] * 100}%`}
           x2="100%"
           y2={`${tercios[0] * 100}%`}
-          stroke="white"
+          stroke={fieldColor.stroke}
           strokeWidth="2"
           strokeDasharray="10"
         />
@@ -807,7 +808,7 @@ const FootballSessionView = ({ view }) => {
           y1={`${tercios[1] * 100}%`}
           x2="100%"
           y2={`${tercios[1] * 100}%`}
-          stroke="white"
+          stroke={fieldColor.stroke}
           strokeWidth="2"
           strokeDasharray="10"
         />
@@ -816,7 +817,7 @@ const FootballSessionView = ({ view }) => {
           y1="0"
           x2={`${tercios[0] * 100}%`}
           y2="100%"
-          stroke="white"
+          stroke={fieldColor.stroke}
           strokeWidth="2"
           strokeDasharray="10"
         />
@@ -825,7 +826,7 @@ const FootballSessionView = ({ view }) => {
           y1="0"
           x2={`${tercios[1] * 100}%`}
           y2="100%"
-          stroke="white"
+          stroke={fieldColor.stroke}
           strokeWidth="2"
           strokeDasharray="10"
         />

@@ -17,7 +17,7 @@ const FootballSession = () => {
     infoSession,
     videoCurrentSession,
     CrudApi,
-    listOfPlayers
+    listOfPlayers,
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
@@ -42,6 +42,16 @@ const FootballSession = () => {
   const [playsFromDbLoaded, setPlaysFromDbLoaded] = useState(true);
   const [formPlayerModal, setFormPlayerModal] = useState(false);
   const [formPlayerModalTitle, setFormPlayerModalTitle] = useState("");
+  const [appliedMode, setAppliedMode] = useState("aleatorioTotal");
+  const [playsInfo, setPlaysInfo] = useState({
+    maxOffensive: 0,
+    maxDefensive: 0,
+    maxTotal: 0,
+    evaluative: 0,
+    evaluativeOptions: [],
+  });
+  const offensiveRandomPlays = useRef(0);
+  const defensiveRandomPlays = useRef(0);
 
   useEffect(() => {
     if (!userContext.current) {
@@ -75,16 +85,77 @@ const FootballSession = () => {
     getPlayers();
   }, []);
 
+  const getPlaysInfo = (plays) => {
+    let maxOffensive = 0;
+    let maxDefensive = 0;
+    let maxTotal = 0;
+    let evaluative = 0;
+    let evaluativeOptions = [];
+    for (var play of plays) {
+      if (play.attack) {
+        maxOffensive++;
+      } else {
+        maxDefensive++;
+      }
+      if (play.test) {
+        evaluative++;
+      }
+      maxTotal++;
+    }
+    if (evaluative >= 8) {
+      const multiplos = [];
+      for (let i = 8; i <= evaluative; i += 8) {
+        if(maxOffensive >= i/2 && maxDefensive >= i/2){
+          multiplos.push(i);
+        }
+      }
+      evaluativeOptions = multiplos;
+    }
+    setPlaysInfo({
+      maxOffensive,
+      maxDefensive,
+      maxTotal,
+      evaluative,
+      evaluativeOptions,
+    });
+  };
+
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
     let seedSequence = seed.current;
-    if (typeOfSession.current === "applied") {
-      sequenceGenerated = n_rand(
-        playsFromDb.current.length,
-        numberOfPlays.current,
-        seed.current
-      );
-      console.log(sequenceGenerated);
+    if (currentSesionInfo.typeOfSession.current === "applied") {
+      if (appliedMode === "aleatorioTotal") {
+        sequenceGenerated = n_rand(
+          playsFromDb.current.length,
+          numberOfPlays.current,
+          seed.current
+        );
+        console.log(sequenceGenerated);
+      } else if (appliedMode === "aleatorioTipo") {
+        sequenceGenerated = [];
+        let offensivePlays = [];
+        let defensivePlays = [];
+        for (let play of playsFromDb.current) {
+          if (play.attack) {
+            offensivePlays.push(play);
+          } else {
+            defensivePlays.push(play);
+          }
+        }
+        for (let i = 0; i < offensiveRandomPlays.current; i++) {
+          let sr = seedrandom(seedSequence * (i + 1));
+          let randomIndex = Math.ceil(sr() * offensivePlays.length) - 1;
+          sequenceGenerated.push(offensivePlays[randomIndex].playsId);
+        }
+        for (let i = 0; i < defensiveRandomPlays.current; i++) {
+          let sr = seedrandom(seedSequence * (i + 1));
+          let randomIndex = Math.ceil(sr() * defensivePlays.length) - 1;
+          sequenceGenerated.push(defensivePlays[randomIndex].playsId);
+        }
+        console.log(sequenceGenerated);
+      } else if (appliedMode === "evaluacion") {
+        
+      }
     } else {
       sequenceGenerated = [];
       for (var i = 0; i < numberOfPlays.current; i++) {
@@ -105,7 +176,7 @@ const FootballSession = () => {
         sequenceGenerated.push(numRand);
       }
     }
-    
+
     setSequenceLabel(sequenceGenerated);
   };
 
@@ -116,19 +187,16 @@ const FootballSession = () => {
         typeOfSession.current === "applied" ||
         infoSession.current?.typeOfSession?.current === "applied"
       ) {
-        if (number <= defaultPlays.current) {
-          //strSequence.push(parseInt(playsFromDb.current[number - 1].id));
+        if (appliedMode === "aleatorioTotal") {
           strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
-        } else {
-          //strSequence.push("U-" + parseInt(playsFromDb.current[number - 1].id));
-          strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+        } else if (appliedMode === "aleatorioTipo") {
+          strSequence.push(parseInt(number));
         }
       } else {
         strSequence.push(number);
       }
     }
     sequenceOfPlays.current = strSequence;
-    console.log(strSequence);
     document.getElementById("showSessionSequence").value =
       strSequence.join(" → ");
   };
@@ -138,6 +206,7 @@ const FootballSession = () => {
       .then((response) => {
         defaultPlays.current = response.length;
         playsFromDb.current = response;
+        getPlaysInfo(response);
         setCurrentSesionInfo({
           ...currentSesionInfo,
           playsFromDb: playsFromDb,
@@ -329,12 +398,6 @@ const FootballSession = () => {
                   typeOfSession.current === "reactive"
                 }
                 onClick={(e) => {
-                  document
-                    .getElementById("distractors")
-                    .setAttribute("hidden", "true");
-                  document
-                    .getElementById("distractorsLabel")
-                    .setAttribute("hidden", "true");
                   typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
@@ -359,21 +422,6 @@ const FootballSession = () => {
                   "discriminative"
                 }
                 onChange={(e) => {
-                  if (e.target.select) {
-                    document
-                      .getElementById("distractors")
-                      .removeAttribute("hidden");
-                    document
-                      .getElementById("distractorsLabel")
-                      .removeAttribute("hidden");
-                  } else {
-                    document
-                      .getElementById("distractors")
-                      .setAttribute("hidden", "true");
-                    document
-                      .getElementById("distractorsLabel")
-                      .setAttribute("hidden", "true");
-                  }
                   typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
@@ -386,45 +434,37 @@ const FootballSession = () => {
                   <h5>Velocidad Cognitiva-Motriz Discriminativa</h5>
                 </b>
               </label>
-              <div className="distractorsSelect">
-                <label
-                  id="distractorsLabel"
-                  htmlFor="distractors"
-                  hidden={
-                    infoSession.current?.typeOfSession?.current !==
-                    "discriminative"
-                  }
-                >
-                  <b>
-                    <h5>Distractores</h5>
-                  </b>
-                </label>
-                <input
-                  hidden={
-                    infoSession.current?.typeOfSession?.current !==
-                    "discriminative"
-                  }
-                  type="number"
-                  name="distractors"
-                  id="distractors"
-                  min="1"
-                  max="7"
-                  step="1"
-                  defaultValue={
-                    infoSession.current?.numOfDistractors?.current || 1
-                  }
-                  onChange={(e) => {
-                    if (e.target.value > 7) {
-                      e.target.value = 7;
+              {currentSesionInfo?.typeOfSession?.current ===
+                "discriminative" && (
+                <div className="distractorsSelect">
+                  <label id="distractorsLabel" htmlFor="distractors">
+                    <b>
+                      <h5>Distractores</h5>
+                    </b>
+                  </label>
+                  <input
+                    type="number"
+                    name="distractors"
+                    id="distractors"
+                    min="1"
+                    max="7"
+                    step="1"
+                    defaultValue={
+                      infoSession.current?.numOfDistractors?.current || 1
                     }
-                    numOfDistractors.current = e.target.value;
-                    setCurrentSesionInfo({
-                      ...currentSesionInfo,
-                      numOfDistractors: numOfDistractors,
-                    });
-                  }}
-                ></input>
-              </div>
+                    onChange={(e) => {
+                      if (e.target.value > 7) {
+                        e.target.value = 7;
+                      }
+                      numOfDistractors.current = e.target.value;
+                      setCurrentSesionInfo({
+                        ...currentSesionInfo,
+                        numOfDistractors: numOfDistractors,
+                      });
+                    }}
+                  ></input>
+                </div>
+              )}
             </div>
             <div className="selectorTypeTest">
               <input
@@ -436,12 +476,6 @@ const FootballSession = () => {
                   infoSession.current?.typeOfSession?.current === "applied"
                 }
                 onClick={(e) => {
-                  document
-                    .getElementById("distractors")
-                    .setAttribute("hidden", "true");
-                  document
-                    .getElementById("distractorsLabel")
-                    .setAttribute("hidden", "true");
                   typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
@@ -454,35 +488,131 @@ const FootballSession = () => {
                   <h5>Velocidad Cognitiva-Motriz Aplicada</h5>
                 </b>
               </label>
-              <br></br>
+              {currentSesionInfo?.typeOfSession?.current === "applied" && (
+                <div className="distractorsSelect">
+                  <label id="distractorsLabel" htmlFor="distractors">
+                    <b>
+                      <h5>Modo generacion secuencia</h5>
+                    </b>
+                  </label>
+                  <select
+                    defaultValue={appliedMode}
+                    onChange={(e) => setAppliedMode(e.target.value)}
+                  >
+                    <option value="aleatorioTotal">Aleatorio Total</option>
+                    <option value="aleatorioTipo">Aleatorio por Tipo</option>
+                    {/*<option value="evaluacion">Evaluación</option>*/}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
           <div className="sessionInfo">
             <div className="sessionPlaysInfo">
-              <div className="sessionPlaysValues">
-                <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
-                  <b>
-                    <h5>Número de Jugadas</h5>
-                  </b>
-                </label>
-                <input
-                  type="number"
-                  name="numberOfPlays"
-                  id="numberOfPlays"
-                  defaultValue={
-                    infoSession.current?.numberOfPlays?.current || 3
-                  }
-                  min="1"
-                  step="1"
-                  onChange={(e) => {
-                    numberOfPlays.current = e.target.value;
-                    setCurrentSesionInfo({
-                      ...currentSesionInfo,
-                      numberOfPlays: numberOfPlays,
-                    });
-                  }}
-                />
-              </div>
+              {(appliedMode === "aleatorioTotal" ||
+                currentSesionInfo?.typeOfSession?.current !== "applied") && (
+                <div className="sessionPlaysValues">
+                  <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
+                    <b>
+                      <h5>Número de Jugadas</h5>
+                    </b>
+                  </label>
+                  <input
+                    type="number"
+                    name="numberOfPlays"
+                    id="numberOfPlays"
+                    defaultValue={
+                      infoSession.current?.numberOfPlays?.current || 3
+                    }
+                    min="1"
+                    max={
+                      currentSesionInfo?.typeOfSession?.current === "applied" &&
+                      defaultPlays.current
+                    }
+                    step="1"
+                    onChange={(e) => {
+                      if (
+                        currentSesionInfo?.typeOfSession?.current ===
+                          "applied" &&
+                        e.target.value > defaultPlays.current
+                      ) {
+                        e.target.value = defaultPlays.current;
+                      }
+                      numberOfPlays.current = e.target.value;
+                      setCurrentSesionInfo({
+                        ...currentSesionInfo,
+                        numberOfPlays: numberOfPlays,
+                      });
+                    }}
+                  />
+                </div>
+              )}
+              {currentSesionInfo?.typeOfSession?.current === "applied" &&
+                appliedMode === "aleatorioTipo" && (
+                  <div className="sessionPlaysValues">
+                    <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
+                      <b>
+                        <h5>Jugadas Ofensivas</h5>
+                      </b>
+                    </label>
+                    <input
+                      type="number"
+                      name="numberOfPlays"
+                      id="numberOfPlays"
+                      defaultValue={0}
+                      min="0"
+                      max={playsInfo?.maxOffensive}
+                      step="1"
+                      onChange={(e) => {
+                        if (e.target.value > playsInfo?.maxOffensive) {
+                          e.target.value = playsInfo?.maxOffensive;
+                        }
+                        offensiveRandomPlays.current = e.target.value;
+                      }}
+                    />
+                    <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
+                      <b>
+                        <h5>Jugadas Defensivas</h5>
+                      </b>
+                    </label>
+                    <input
+                      type="number"
+                      name="numberOfPlays"
+                      id="numberOfPlays"
+                      defaultValue={0}
+                      min="0"
+                      max={playsInfo?.maxDefensive}
+                      step="1"
+                      onChange={(e) => {
+                        if (e.target.value > playsInfo?.maxDefensive) {
+                          e.target.value = playsInfo?.maxDefensive;
+                        }
+                        defensiveRandomPlays.current = e.target.value;
+                      }}
+                    />
+                  </div>
+                )}
+              {currentSesionInfo?.typeOfSession?.current === "applied" &&
+                appliedMode === "evaluacion" && (
+                  <div className="playsTestSelect">
+                    <label id="distractorsLabel" htmlFor="distractors">
+                      <b>
+                        <h5>Jugadas</h5>
+                      </b>
+                    </label>
+                    <select>
+                      {playsInfo.evaluativeOptions.length ? (
+                        playsInfo.evaluativeOptions.map((option) => (
+                          <option value={option}>{option}</option>
+                        ))
+                      ) : (
+                        <option value="0">
+                          No hay suficientes jugadas para evaluación
+                        </option>
+                      )}
+                    </select>
+                  </div>
+                )}
               <div className="sessionPlaysValues">
                 <input
                   className="sessionRandomSeed"

@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "../styles/Calibration.css";
 import Swal from "sweetalert2";
 import firebaseService from "../services/firebaseService2";
+import Draggable from "react-draggable";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
-  const [squares, setSquares] = useState(null);
+  const [stains, setStains] = useState(null);
   const [calibrated, setCalibrated] = useState(false);
   const [imgSrc, setImgSrc] = useState(null);
   const [correctCalibration, setCorrectCalibration] = useState(true);
@@ -16,13 +17,16 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   );
   const [startPositions, setStartPositions] = useState([]);
   const [semiAutoCalibration, setSemiAutoCalibration] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState("Intentando calibración automática");
+  const [currentMessage, setCurrentMessage] = useState(
+    "Intentando calibración automática"
+  );
+  const [proportions, setProportions] = useState({ width: null, height: null });
 
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
-    console.log(imgTemp);
-    await fetch("https://200.1.17.171:3000/calibration_automatic", {
+    await fetch("http://localhost:3001/calibration_automatic", {
+      //await fetch("https://200.1.17.171:3000/calibration_automatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
@@ -36,7 +40,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       .then((data) => {
         setCalibrated(true);
         console.log(data.response);
-        setTimeout(() => setSquares(data.response), [100]);
+        setTimeout(() => setStains(data.response.points), [100]);
       })
       .catch((err) => {
         console.log(err);
@@ -61,52 +65,60 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
         }
       });
   };
-
-  const manualCalibration = () => {
-    setSemiAutoCalibration(true);
-    const currentSquaresMark = squares.Floor.map((rectangle, index) => {
-      return {
-        x:
-          ((((rectangle.vertices[2].x + rectangle.vertices[0].x) / 2) *
-            (calibrationImageRef.current.width / squares.Width) +
-            positions[index].x) *
-            squares.Wcalib) /
-          calibrationImageRef.current.width,
-        y:
-          ((((rectangle.vertices[2].y + rectangle.vertices[0].y) / 2) *
-            (calibrationImageRef.current.height / squares.Height) +
-            positions[index].y) *
-            squares.Hcalib) /
-          calibrationImageRef.current.height,
-      };
+  const handleDrag = (index, newPosition) => {
+    setStains((prevStains) => {
+      const updatedStains = [...prevStains];
+      if (
+        prevStains[index].x !== updatedStains[index].x ||
+        prevStains[index].y !== updatedStains[index].y
+      ) {
+        updatedStains[index].x += newPosition.x;
+        updatedStains[index].y += newPosition.y;
+      }
+      return updatedStains;
     });
-    fetch("https://200.1.17.171:3000/calibration_semiautomatic", {
+  };
+
+  const manualCalibration = async () => {
+    setSemiAutoCalibration(true);
+    const circulosPequenos = document.querySelectorAll('circle[r="1"]');
+    const centros = [];
+
+    circulosPequenos.forEach((circulo) => {
+      const cx = circulo.getAttribute("cx") / proportions.width;
+      const cy = circulo.getAttribute("cy") / proportions.height;
+      centros.push({ x: parseFloat(cx), y: parseFloat(cy) });
+    });
+    console.log(centros);
+    await fetch("http://localhost:3001/calibration_semiautomatic", {
+      //await fetch("https://200.1.17.171:3000/calibration_semiautomatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
         Screenshot: imgSrc,
         email: "admin@admin.com",
-        mark_1_x: currentSquaresMark[0].x,
-        mark_1_y: currentSquaresMark[0].y,
-        mark_2_x: currentSquaresMark[1].x,
-        mark_2_y: currentSquaresMark[1].y,
-        mark_3_x: currentSquaresMark[2].x,
-        mark_3_y: currentSquaresMark[2].y,
-        mark_4_x: currentSquaresMark[3].x,
-        mark_4_y: currentSquaresMark[3].y,
-        mark_5_x: currentSquaresMark[4].x,
-        mark_5_y: currentSquaresMark[4].y,
-        mark_6_x: currentSquaresMark[5].x,
-        mark_6_y: currentSquaresMark[5].y,
+        mark_1_x: centros[0].x,
+        mark_1_y: centros[0].y,
+        mark_2_x: centros[1].x,
+        mark_2_y: centros[1].y,
+        mark_3_x: centros[2].x,
+        mark_3_y: centros[2].y,
+        mark_4_x: centros[3].x,
+        mark_4_y: centros[3].y,
+        mark_5_x: centros[4].x,
+        mark_5_y: centros[4].y,
+        mark_6_x: centros[5].x,
+        mark_6_y: centros[5].y,
       }),
       headers: { "Content-Type": "application/json" },
       //x-www-form-urlencoded
     })
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
+        console.log(data);
         setCorrectCalibration(true);
         setCurrentMark(1);
-        setTimeout(() => setSquares(data.response), [100]);
+        setTimeout(() => setStains(data.response.points), [100]);
         setSemiAutoCalibration(false);
       })
       .catch((err) => {
@@ -120,10 +132,10 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     firebaseService
       .updateUserCalibration(
         userEmail,
-        squares.Hcalib,
-        squares.Wcalib,
-        squares.Homography,
-        squares.backgroundImage
+        stains.Hcalib,
+        stains.Wcalib,
+        stains.Homography,
+        stains.backgroundImage
       )
       .then(() => {
         document.getElementById("messageState").innerHTML =
@@ -135,38 +147,18 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       });
   });
 
-  const handleMouseDown = (index, event) => {
-    setDragging(true);
-    const updatedStartPositions = [...startPositions];
-    updatedStartPositions[index] = {
-      x: event.clientX - positions[index].x,
-      y: event.clientY - positions[index].y,
-    };
-    setStartPositions(updatedStartPositions);
-  };
-
-  const handleMouseMove = (index, event) => {
-    if (dragging) {
-      const newPositions = [...positions];
-      newPositions[index] = {
-        x: event.clientX - startPositions[index].x,
-        y: event.clientY - startPositions[index].y,
-      };
-      setPositions(newPositions);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setDragging(false);
-    setStartPositions([]);
-  };
-
   useEffect(() => {
     document.addEventListener("click", (e) => {
       if (document.getElementById("myModal") == e.target) {
         setOpenModal(false);
       }
     });
+    if (document.getElementById("StainsContainer")) {
+      setProportions({
+        width: document.getElementById("StainsContainer").clientWidth / 1280,
+        height: document.getElementById("StainsContainer").clientHeight / 720,
+      });
+    }
     autoCalibration();
   }, []);
 
@@ -195,173 +187,101 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                   />
                   {correctCalibration ? (
                     <svg
-                      id="squaresContainer"
+                      id="StainsContainer"
                       height="100%"
                       width="100%"
                       style={{ marginLeft: "-100%" }}
                     >
-                      {squares &&
-                        squares.Floor.map((rectangle, index) => (
-                          <g key={`g ${index}`}>
-                            <polygon
-                              key={`p ${index}`}
-                              points={
-                                (rectangle.vertices[0].x *
-                                  calibrationImageRef.current.width) /
-                                  squares.Width +
-                                "," +
-                                (rectangle.vertices[0].y *
-                                  calibrationImageRef.current.height) /
-                                  squares.Height +
-                                " " +
-                                (rectangle.vertices[1].x *
-                                  calibrationImageRef.current.width) /
-                                  squares.Width +
-                                "," +
-                                (rectangle.vertices[1].y *
-                                  calibrationImageRef.current.height) /
-                                  squares.Height +
-                                " " +
-                                (rectangle.vertices[2].x *
-                                  calibrationImageRef.current.width) /
-                                  squares.Width +
-                                "," +
-                                (rectangle.vertices[2].y *
-                                  calibrationImageRef.current.height) /
-                                  squares.Height +
-                                " " +
-                                (rectangle.vertices[3].x *
-                                  calibrationImageRef.current.width) /
-                                  squares.Width +
-                                "," +
-                                (rectangle.vertices[3].y *
-                                  calibrationImageRef.current.height) /
-                                  squares.Height
-                              }
-                              style={{ fill: "#00F545", opacity: 0.6 }}
-                            />
-                            <text
-                              key={`t ${index}`}
-                              style={{ userSelect: "none" }}
-                              x={
-                                ((rectangle.vertices[2].x +
-                                  rectangle.vertices[0].x) /
-                                  2) *
-                                  (calibrationImageRef.current.width /
-                                    squares.Width) -
-                                4.4
-                              }
-                              y={
-                                ((rectangle.vertices[2].y +
-                                  rectangle.vertices[0].y) /
-                                  2) *
-                                  (calibrationImageRef.current.height /
-                                    squares.Height) +
-                                4.4
-                              }
-                              fontFamily="Verdana"
-                              fontSize="12"
-                              fontWeight={"bold"}
-                              fill="#F50000"
-                            >
-                              {rectangle.id}
-                            </text>
-                          </g>
-                        ))}
+                      {stains &&
+                        stains.map((stain, index) => {
+                          if (
+                            proportions.width === null &&
+                            proportions.height === null
+                          ) {
+                            setProportions({
+                              width:
+                                document.getElementById("StainsContainer")
+                                  .clientWidth / 1280,
+                              height:
+                                document.getElementById("StainsContainer")
+                                  .clientHeight / 720,
+                            });
+                          }
+                          return (
+                            <g>
+                              <polygon
+                                key={`p ${index}`}
+                                points={stain.contorno
+                                  .map(
+                                    (point) =>
+                                      `${point.x * proportions.width},${
+                                        point.y * proportions.height
+                                      }`
+                                  )
+                                  .join(" ")}
+                                style={{ fill: "#00F545", opacity: 0.6 }}
+                              />
+                              <text
+                                key={`t ${index}`}
+                                style={{ userSelect: "none" }}
+                                x={(stain.x - 5) * proportions.width}
+                                y={(stain.y + 5) * proportions.height}
+                                fontFamily="Verdana"
+                                fontSize="11"
+                                fontWeight={"bold"}
+                                fill="#F50000"
+                              >
+                                {stain.z}
+                              </text>
+                            </g>
+                          );
+                        })}
                     </svg>
                   ) : (
                     <svg
-                      id="squaresContainer"
+                      id="StainsContainer"
                       height="100%"
                       width="100%"
                       style={{ marginLeft: "-100%" }}
-                      onMouseUp={handleMouseUp}
                     >
-                      {squares &&
-                        squares.Floor.map(
-                          (rectangle, index) =>
-                            index < currentMark && (
-                              <g
-                                key={`g ${index}`}
-                                transform={`translate(${
-                                  positions[index]?.x || 0
-                                }, ${positions[index]?.y || 0})`}
-                                onMouseDown={(event) =>
-                                  handleMouseDown(index, event)
-                                }
-                                onMouseMove={(event) =>
-                                  handleMouseMove(index, event)
-                                }
-                                className="draggable"
+                      {stains &&
+                        stains.slice(0, currentMark).map((stain, index) => (
+                          <Draggable
+                            key={`draggable-${index}`}
+                            onStop={(e, data) => handleDrag(index, data)}
+                            bounds={document.getElementById("StainsContainer")}
+                          >
+                            <g key={`g ${index}`}>
+                              <circle
+                                key={`cm ${index}`}
+                                cx={stain.x * proportions.width}
+                                cy={stain.y * proportions.height}
+                                r={12}
+                                fill="#00F545"
+                                style={{ opacity: 0.4 }}
+                              />
+                              <text
+                                key={`t ${index}`}
+                                style={{ userSelect: "none" }}
+                                x={(stain.x + 5) * proportions.width}
+                                y={(stain.y - 15) * proportions.height}
+                                fontFamily="Verdana"
+                                fontSize="12"
+                                fontWeight={"bold"}
+                                fill="#F50000"
                               >
-                                <circle
-                                  key={`cm ${index}`}
-                                  cx={
-                                    ((rectangle.vertices[2].x +
-                                      rectangle.vertices[0].x) /
-                                      2) *
-                                    (calibrationImageRef.current.width /
-                                      squares.Width)
-                                  }
-                                  cy={
-                                    ((rectangle.vertices[2].y +
-                                      rectangle.vertices[0].y) /
-                                      2) *
-                                    (calibrationImageRef.current.height /
-                                      squares.Height)
-                                  }
-                                  r={12}
-                                  fill="#00F545"
-                                  style={{ opacity: 0.4 }}
-                                />
-                                <text
-                                  key={`t ${index}`}
-                                  style={{ userSelect: "none" }}
-                                  x={
-                                    ((rectangle.vertices[2].x +
-                                      rectangle.vertices[0].x) /
-                                      2) *
-                                      (calibrationImageRef.current.width /
-                                        squares.Width) +
-                                    8
-                                  }
-                                  y={
-                                    ((rectangle.vertices[2].y +
-                                      rectangle.vertices[0].y) /
-                                      2) *
-                                      (calibrationImageRef.current.height /
-                                        squares.Height) -
-                                    8
-                                  }
-                                  fontFamily="Verdana"
-                                  fontSize="12"
-                                  fontWeight={"bold"}
-                                  fill="#F50000"
-                                >
-                                  {rectangle.id}
-                                </text>
-                                <circle
-                                  key={`c ${index}`}
-                                  cx={
-                                    ((rectangle.vertices[2].x +
-                                      rectangle.vertices[0].x) /
-                                      2) *
-                                    (calibrationImageRef.current.width /
-                                      squares.Width)
-                                  }
-                                  cy={
-                                    ((rectangle.vertices[2].y +
-                                      rectangle.vertices[0].y) /
-                                      2) *
-                                    (calibrationImageRef.current.height /
-                                      squares.Height)
-                                  }
-                                  r={1} // Tamaño del punto
-                                  fill="red"
-                                />
-                              </g>
-                            )
-                        )}
+                                {stain.z}
+                              </text>
+                              <circle
+                                key={`c ${index}`}
+                                cx={stain.x * proportions.width}
+                                cy={stain.y * proportions.height}
+                                r={1} // Tamaño del punto
+                                fill="red"
+                              />
+                            </g>
+                          </Draggable>
+                        ))}
                     </svg>
                   )}
                 </div>
@@ -453,7 +373,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                               viewBox="0 0 24 24"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <g class="spinner_V8m1">
+                              <g className="spinner_V8m1">
                                 <circle
                                   cx="12"
                                   cy="12"
@@ -484,15 +404,15 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                     fill="#fff"
                     style={{ marginLeft: "1em" }}
                   >
-                    <circle class="spinner_b2T7" cx="4" cy="12" r="3" />
+                    <circle className="spinner_b2T7" cx="4" cy="12" r="3" />
                     <circle
-                      class="spinner_b2T7 spinner_YRVV"
+                      className="spinner_b2T7 spinner_YRVV"
                       cx="12"
                       cy="12"
                       r="3"
                     />
                     <circle
-                      class="spinner_b2T7 spinner_c9oY"
+                      className="spinner_b2T7 spinner_c9oY"
                       cx="20"
                       cy="12"
                       r="3"
