@@ -49,6 +49,7 @@ const PlaysView = () => {
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
+        response.sort((a, b) => a.playsId - b.playsId);
         setPlaysFromDb(response);
       })
       .catch((error) => console.log(error));

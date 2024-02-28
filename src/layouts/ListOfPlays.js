@@ -45,6 +45,15 @@ const ListOfPlays = () => {
       setSelectedPlay(play);
     }
   };
+  const handlePlays = async () => {
+    const play = selectedPlay;
+    play.enable = !play.enable;
+    await CrudApi.update(`plays/${play.playsId}` , play)
+      .then(() => {
+        getPlays();
+      })
+      .catch((error) => console.log(error));
+  }
   return (
     <div className="ListOfPlaysContainer">
       <div className="ListOfPlaysBackButton">
@@ -65,9 +74,9 @@ const ListOfPlays = () => {
           Volver
         </button>
       </div>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "50%" }}>
-          <table>
+      <div style={{ display: "flex", height: "100%",gap:'1em' }}>
+        <div className="ListOfPlaysTable">
+          <table className="custom-table">
             <thead>
               <tr>
                 <th>Jugada</th>
@@ -77,18 +86,22 @@ const ListOfPlays = () => {
                 <th>Habilitada</th>
               </tr>
             </thead>
-            <tbody>
-              {playsFromDb.map((play) => (
-                <tr key={play.playsId} onClick={() => handleSelectRow(play)}>
-                  <td>{play.playsId}</td>
-                  <td>{play.attack ? "Ofensiva" : "Defensiva"}</td>
-                  <td>{play.test ? "Evaluacion" : "Prueba"}</td>
-                  <td>{play.responsePosition}</td>
-                  <td>{play.enable ? "Habilitada" : "Deshabilitada"}</td>
-                </tr>
-              ))}
-            </tbody>
           </table>
+          <div className="table-container">
+            <table className="custom-table">
+              <tbody>
+                {playsFromDb.map((play) => (
+                  <tr key={play.playsId} onClick={() => handleSelectRow(play)}>
+                    <td>{play.playsId}</td>
+                    <td>{play.attack ? "Ofensiva" : "Defensiva"}</td>
+                    <td>{play.test ? "Evaluacion" : "Prueba"}</td>
+                    <td>{play.responsePosition}</td>
+                    <td>{play.enable ? "Habilitada" : "Deshabilitada"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div
           style={{
@@ -146,7 +159,7 @@ const ListOfPlays = () => {
             {selectedPlay && (
               <>
                 <Draggable
-                disabled
+                  disabled
                   bounds="parent"
                   defaultPosition={{
                     x: containerMeasure.containerWidth * 0.5,
@@ -157,19 +170,19 @@ const ListOfPlays = () => {
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512"
                     style={{
-                        position: "absolute",
-                        marginLeft: "-6.5vmin",
-                        marginTop: "-6.5vmin",
-                      }}
-                      width={"13vmin"}
-                      height={"13vmin"}
+                      position: "absolute",
+                      marginLeft: "-6.5vmin",
+                      marginTop: "-6.5vmin",
+                    }}
+                    width={"13vmin"}
+                    height={"13vmin"}
                     fill={selectedPlay.Team}
                   >
                     <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" />
                   </svg>
                 </Draggable>
                 <Draggable
-                disabled
+                  disabled
                   bounds="parent"
                   defaultPosition={{
                     x:
@@ -195,7 +208,7 @@ const ListOfPlays = () => {
                   </svg>
                 </Draggable>
                 <Draggable
-                disabled
+                  disabled
                   bounds="parent"
                   defaultPosition={{
                     x:
@@ -234,7 +247,7 @@ const ListOfPlays = () => {
                   return (
                     <>
                       <Draggable
-                      disabled
+                        disabled
                         bounds="parent"
                         key={`first${index}`}
                         defaultPosition={{
@@ -279,8 +292,8 @@ const ListOfPlays = () => {
               justifyContent: "center",
             }}
           >
-            <button className="ListOfPlaysButton">
-              {selectedPlay?.enable ? 'deshabilitar':'habilitar'} Jugada
+            <button className="ListOfPlaysButton" onClick={handlePlays}>
+              {selectedPlay?.enable ? "deshabilitar" : "habilitar"} Jugada
             </button>
           </div>
         </div>

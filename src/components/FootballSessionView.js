@@ -466,14 +466,12 @@ const FootballSessionView = ({ view }) => {
         return play;
       }
     );
-    console.log(plays);
     let maxPlayersInPlayRed = 0;
     let maxPlayersInPlayYellow = 0;
 
     plays.forEach((play) => {
       let playersInPlayRed = 0;
       let playersInPlayYellow = 0;
-      console.log(play);
 
       play.figureCoordinates.forEach((player) => {
         if (player.color === "Red") {

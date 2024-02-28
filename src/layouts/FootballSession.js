@@ -49,6 +49,7 @@ const FootballSession = () => {
     maxTotal: 0,
     evaluative: 0,
     evaluativeOptions: [],
+    evaluativeList: [],
   });
   const offensiveRandomPlays = useRef(0);
   const defensiveRandomPlays = useRef(0);
@@ -91,6 +92,7 @@ const FootballSession = () => {
     let maxTotal = 0;
     let evaluative = 0;
     let evaluativeOptions = [];
+    let evaluativeList = [];
     for (var play of plays) {
       if (play.attack) {
         maxOffensive++;
@@ -105,11 +107,14 @@ const FootballSession = () => {
     if (evaluative >= 8) {
       const multiplos = [];
       for (let i = 8; i <= evaluative; i += 8) {
-        if(maxOffensive >= i/2 && maxDefensive >= i/2){
+        if (maxOffensive >= i / 2 && maxDefensive >= i / 2) {
           multiplos.push(i);
         }
       }
-      evaluativeOptions = multiplos;
+      if (multiplos.length) {
+        evaluativeOptions = multiplos;
+        evaluativeList = generateListOfPlays(plays, multiplos);
+      }
     }
     setPlaysInfo({
       maxOffensive,
@@ -117,7 +122,87 @@ const FootballSession = () => {
       maxTotal,
       evaluative,
       evaluativeOptions,
+      evaluativeList,
     });
+  };
+
+  const generateListOfPlays = (plays, options) => {
+    const playsByPosition = {};
+
+    // Agrupar las jugadas por posición
+    plays.forEach((play) => {
+      const position = play.responsePosition;
+      if (!playsByPosition[position]) {
+        playsByPosition[position] = [];
+      }
+      playsByPosition[position].push(play);
+    });
+
+    const sequences = [];
+    const positions = Object.keys(playsByPosition);
+    let positionsForLength = [];
+    const isPermutation = (sequences, newSequence) => {
+      function compararArreglosSinOrden(arr1, arr2) {
+        arr1 = arr1.sort((a, b) => a.playsId - b.playsId);
+        arr2 = arr2.sort((a, b) => a.playsId - b.playsId);
+        if(arr1.length !== arr2.length) return false;
+        return arr1.every((elemento, indice) => elemento === arr2[indice]);
+      }
+      let esPermutacion = false;
+      sequences.forEach((sequence) => {
+        if(!esPermutacion){
+        if(compararArreglosSinOrden(sequence, newSequence)){
+          esPermutacion = true;
+        };}
+      });
+      return esPermutacion;
+    };
+
+    const generateCombinations = (sequence, index, length) => {
+      // Verificar si la secuencia está completa
+      if (sequence.length === length) {
+        // Verificar si cumple con las condiciones
+        const numOffensive = sequence.filter((play) => play.attack).length;
+        const numDefensive = sequence.filter((play) => !play.attack).length;
+
+        if (numOffensive === numDefensive) {
+          const positionsInSequence = sequence.map(
+            (play) => play.responsePosition
+          );
+          // Verificar si todas las posiciones requeridas están presentes
+          const allPositionsPresent = positionsForLength.every((position) =>
+            positionsInSequence.includes(position)
+          );
+          if (allPositionsPresent) {
+            // Verificar si la secuencia ya existe en sequences
+            const esPermutacion = isPermutation(sequences, sequence);
+            if (!esPermutacion) {
+              sequences.push(sequence);
+            }
+          }
+        }
+        return;
+      }
+
+      // Generar la siguiente jugada para esta posición
+      const position = positionsForLength[index];
+      const playsAtPosition = playsByPosition[position];
+      playsAtPosition?.forEach((play) => {
+        // Verificar si la jugada ya está en la secuencia
+        if (!sequence.some((p) => p === play)) {
+          generateCombinations([...sequence, play], index + 1, length);
+        }
+      });
+    };
+
+    // Generar combinaciones para cada longitud especificada en options
+    options.forEach((length) => {
+      positionsForLength = Array.from({ length: length }, (_, i) =>
+        parseInt(positions[i % 8])
+      );
+      generateCombinations([], 0, length);
+    });
+    return sequences;
   };
 
   const handleRegenerateSequence = () => {
@@ -126,11 +211,10 @@ const FootballSession = () => {
     if (currentSesionInfo.typeOfSession.current === "applied") {
       if (appliedMode === "aleatorioTotal") {
         sequenceGenerated = n_rand(
-          playsFromDb.current.length,
+          playsInfo.maxTotal,
           numberOfPlays.current,
           seed.current
         );
-        console.log(sequenceGenerated);
       } else if (appliedMode === "aleatorioTipo") {
         sequenceGenerated = [];
         let offensivePlays = [];
@@ -146,15 +230,31 @@ const FootballSession = () => {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * offensivePlays.length) - 1;
           sequenceGenerated.push(offensivePlays[randomIndex].playsId);
+          offensivePlays.splice(randomIndex, 1);
         }
         for (let i = 0; i < defensiveRandomPlays.current; i++) {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * defensivePlays.length) - 1;
           sequenceGenerated.push(defensivePlays[randomIndex].playsId);
+          defensivePlays.splice(randomIndex, 1);
         }
-        console.log(sequenceGenerated);
+        sequenceGenerated = sequenceGenerated.sort((a, b) => {
+          const rng = seedrandom(seedSequence + a.toString() + b.toString());
+          return rng() - 0.5;
+        });
       } else if (appliedMode === "evaluacion") {
-        
+        if (playsInfo.evaluativeOptions.length && playsInfo.evaluativeList.length) {
+          let sr = seedrandom(seedSequence);
+          let randomIndex = Math.ceil(sr() * playsInfo.evaluativeOptions.length) - 1;
+          sequenceGenerated = playsInfo.evaluativeList[randomIndex].map((play) => play.playsId);
+          sequenceGenerated = sequenceGenerated.sort((a, b) => {
+            const rng = seedrandom(seedSequence + a.toString() + b.toString());
+            return rng() - 0.5;
+          });
+          console.log(sequenceGenerated);
+        } else {
+          sequenceGenerated = [];
+        }
       }
     } else {
       sequenceGenerated = [];
@@ -176,7 +276,6 @@ const FootballSession = () => {
         sequenceGenerated.push(numRand);
       }
     }
-
     setSequenceLabel(sequenceGenerated);
   };
 
@@ -189,7 +288,7 @@ const FootballSession = () => {
       ) {
         if (appliedMode === "aleatorioTotal") {
           strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
-        } else if (appliedMode === "aleatorioTipo") {
+        } else if (appliedMode === "aleatorioTipo" || appliedMode === "evaluacion") {
           strSequence.push(parseInt(number));
         }
       } else {
@@ -205,8 +304,13 @@ const FootballSession = () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
         defaultPlays.current = response.length;
-        playsFromDb.current = response;
-        getPlaysInfo(response);
+        playsFromDb.current = [];
+        for (var play of response) {
+          if (play.enable) {
+            playsFromDb.current.push(play);
+          }
+        }
+        getPlaysInfo(playsFromDb.current);
         setCurrentSesionInfo({
           ...currentSesionInfo,
           playsFromDb: playsFromDb,
@@ -501,7 +605,7 @@ const FootballSession = () => {
                   >
                     <option value="aleatorioTotal">Aleatorio Total</option>
                     <option value="aleatorioTipo">Aleatorio por Tipo</option>
-                    {/*<option value="evaluacion">Evaluación</option>*/}
+                    <option value="evaluacion">Evaluación</option>
                   </select>
                 </div>
               )}
@@ -527,16 +631,16 @@ const FootballSession = () => {
                     min="1"
                     max={
                       currentSesionInfo?.typeOfSession?.current === "applied" &&
-                      defaultPlays.current
+                      playsInfo?.maxTotal
                     }
                     step="1"
                     onChange={(e) => {
                       if (
                         currentSesionInfo?.typeOfSession?.current ===
                           "applied" &&
-                        e.target.value > defaultPlays.current
+                        e.target.value > playsInfo?.maxTotal
                       ) {
-                        e.target.value = defaultPlays.current;
+                        e.target.value = playsInfo?.maxTotal;
                       }
                       numberOfPlays.current = e.target.value;
                       setCurrentSesionInfo({
@@ -602,9 +706,15 @@ const FootballSession = () => {
                     </label>
                     <select>
                       {playsInfo.evaluativeOptions.length ? (
-                        playsInfo.evaluativeOptions.map((option) => (
-                          <option value={option}>{option}</option>
-                        ))
+                        playsInfo.evaluativeList.length ? (
+                          playsInfo.evaluativeOptions.map((option) => (
+                            <option value={option}>{option}</option>
+                          ))
+                        ) : (
+                          <option value="0">
+                            No hay posibles secuencias para evaluación
+                          </option>
+                        )
                       ) : (
                         <option value="0">
                           No hay suficientes jugadas para evaluación

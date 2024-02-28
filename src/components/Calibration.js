@@ -89,7 +89,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       const cy = circulo.getAttribute("cy") / proportions.height;
       centros.push({ x: parseFloat(cx), y: parseFloat(cy) });
     });
-    console.log(centros);
     await fetch("http://localhost:3001/calibration_semiautomatic", {
       //await fetch("https://200.1.17.171:3000/calibration_semiautomatic", {
       method: "POST",
