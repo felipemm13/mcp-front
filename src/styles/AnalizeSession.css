@@ -196,7 +196,7 @@
 }
 
 /* Estilos CSS para la tabla */
-.table-container {
+.table-containerA {
     max-height: 35vh;
     /* Altura máxima para mostrar el scroll */
     overflow-y: auto;

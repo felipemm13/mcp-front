@@ -249,7 +249,7 @@ const OtherSessions = () => {
               </tr>
             </thead>
           </table>
-          <div className="table-container">
+          <div className="table-containerA">
             <table className="custom-table">
               <tbody>
                 {isSorted ? (

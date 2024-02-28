@@ -53,6 +53,7 @@ const FootballSession = () => {
   });
   const offensiveRandomPlays = useRef(0);
   const defensiveRandomPlays = useRef(0);
+  const lengthEvalSequence = useRef(0);
 
   useEffect(() => {
     if (!userContext.current) {
@@ -143,17 +144,18 @@ const FootballSession = () => {
     let positionsForLength = [];
     const isPermutation = (sequences, newSequence) => {
       function compararArreglosSinOrden(arr1, arr2) {
+        if (arr1.length !== arr2.length) return false;
         arr1 = arr1.sort((a, b) => a.playsId - b.playsId);
         arr2 = arr2.sort((a, b) => a.playsId - b.playsId);
-        if(arr1.length !== arr2.length) return false;
         return arr1.every((elemento, indice) => elemento === arr2[indice]);
       }
       let esPermutacion = false;
       sequences.forEach((sequence) => {
-        if(!esPermutacion){
-        if(compararArreglosSinOrden(sequence, newSequence)){
-          esPermutacion = true;
-        };}
+        if (!esPermutacion) {
+          if (compararArreglosSinOrden(sequence, newSequence)) {
+            esPermutacion = true;
+          }
+        }
       });
       return esPermutacion;
     };
@@ -202,7 +204,25 @@ const FootballSession = () => {
       );
       generateCombinations([], 0, length);
     });
-    return sequences;
+    const groupedSequences = [];
+
+    sequences.forEach((sequence) => {
+      const length = sequence.length;
+      let group = groupedSequences.find(
+        (item) => item.lengthSequences === length
+      );
+
+      if (!group) {
+        group = {
+          lengthSequences: length,
+          sequences: [],
+        };
+        groupedSequences.push(group);
+      }
+
+      group.sequences.push(sequence);
+    });
+    return groupedSequences;
   };
 
   const handleRegenerateSequence = () => {
@@ -243,15 +263,28 @@ const FootballSession = () => {
           return rng() - 0.5;
         });
       } else if (appliedMode === "evaluacion") {
-        if (playsInfo.evaluativeOptions.length && playsInfo.evaluativeList.length) {
+        if (
+          playsInfo.evaluativeOptions.length &&
+          playsInfo.evaluativeList.length
+        ) {
+          let sequenceList = [];
+          playsInfo.evaluativeList.forEach((item) => {
+            if (item.lengthSequences === lengthEvalSequence.current) {
+              sequenceList = item.sequences;
+            }
+          });
           let sr = seedrandom(seedSequence);
-          let randomIndex = Math.ceil(sr() * playsInfo.evaluativeOptions.length) - 1;
-          sequenceGenerated = playsInfo.evaluativeList[randomIndex].map((play) => play.playsId);
+          let randomIndex =
+            sequenceList.length > 1
+              ? Math.ceil(sr() * sequenceList.length) - 1
+              : 0;
+          sequenceGenerated = sequenceList[randomIndex].map(
+            (play) => play.playsId
+          );
           sequenceGenerated = sequenceGenerated.sort((a, b) => {
             const rng = seedrandom(seedSequence + a.toString() + b.toString());
             return rng() - 0.5;
           });
-          console.log(sequenceGenerated);
         } else {
           sequenceGenerated = [];
         }
@@ -288,7 +321,10 @@ const FootballSession = () => {
       ) {
         if (appliedMode === "aleatorioTotal") {
           strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
-        } else if (appliedMode === "aleatorioTipo" || appliedMode === "evaluacion") {
+        } else if (
+          appliedMode === "aleatorioTipo" ||
+          appliedMode === "evaluacion"
+        ) {
           strSequence.push(parseInt(number));
         }
       } else {
@@ -704,12 +740,19 @@ const FootballSession = () => {
                         <h5>Jugadas</h5>
                       </b>
                     </label>
-                    <select>
+                    <select
+                      onChange={(e) => {
+                        lengthEvalSequence.current = parseInt(e.target.value);
+                      }}
+                    >
                       {playsInfo.evaluativeOptions.length ? (
                         playsInfo.evaluativeList.length ? (
-                          playsInfo.evaluativeOptions.map((option) => (
-                            <option value={option}>{option}</option>
-                          ))
+                          playsInfo.evaluativeOptions.map((option, index) => {
+                            if (index === 0) {
+                              lengthEvalSequence.current = parseInt(option);
+                            }
+                            return <option value={option}>{option}</option>;
+                          })
                         ) : (
                           <option value="0">
                             No hay posibles secuencias para evaluación

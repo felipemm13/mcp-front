@@ -99,18 +99,24 @@ const AnalizeSession = () => {
       typeof blob === "string" || blob instanceof String
         ? blob
         : window.URL.createObjectURL(blob);
-    durationP.then((d) => setVideoDuration(d));
+    durationP.then((d) => setVideoDuration(d)).catch((e) => console.log(e));
   };
 
   useEffect(() => {
     videoRefs.current = Array(5)
       .fill()
-      .map((_, index) => videoRefs.current[index] || createRef());
-    videoRefs.current[0].seekTo(-2 / FPS.current, "seconds");
-    videoRefs.current[1].seekTo(-1 / FPS.current, "seconds");
-    videoRefs.current[2].seekTo(0 / FPS.current, "seconds");
-    videoRefs.current[3].seekTo(1 / FPS.current, "seconds");
-    videoRefs.current[4].seekTo(2 / FPS.current, "seconds");
+      .map((_, index) => videoRefs.current[index]);
+    console.log(videoRefs.current);
+    if (videoRefs.current.some((ref) => ref === undefined)) {
+      navigate("/football-session");
+      return;
+    }
+    videoRefs.current[0]?.seekTo(-2 / FPS.current, "seconds");
+    videoRefs.current[1]?.seekTo(-1 / FPS.current, "seconds");
+    videoRefs.current[2]?.seekTo(0 / FPS.current, "seconds");
+    videoRefs.current[3]?.seekTo(1 / FPS.current, "seconds");
+    videoRefs.current[4]?.seekTo(2 / FPS.current, "seconds");
+
     if (session === "current" && videoCurrentSession.current) {
       //infoSession.current.imageSequences.pop()
       const url = URL.createObjectURL(videoCurrentSession.current);
@@ -173,10 +179,13 @@ const AnalizeSession = () => {
     });
     let blob = await fetch(
       `https://mcp-wildsense.s3.us-east-2.amazonaws.com/${currentSession.current[0].videoURL}`
-    ).then((r) => r.blob());
+    )
+      .then((r) => r.blob())
+      .catch((err) => console.log(err));
+    console.log(blob);
     const url = URL.createObjectURL(blob);
+    console.log(url);
     getVideoDuration(url);
-    //console.log(videoDuration);
     setVideoSession(url);
     if (currentPlay.current && prevPlay.current) {
       currentPlay.current.src = infoSession.current.imageSequences[0];
@@ -258,11 +267,11 @@ const AnalizeSession = () => {
           );
         }
       } else {
-        videoRefs.current[0].seekTo(0);
-        videoRefs.current[1].seekTo(0);
-        videoRefs.current[2].seekTo(0);
-        videoRefs.current[3].seekTo(0);
-        videoRefs.current[4].seekTo(0);
+        videoRefs.current[0]?.seekTo(0);
+        videoRefs.current[1]?.seekTo(0);
+        videoRefs.current[2]?.seekTo(0);
+        videoRefs.current[3]?.seekTo(0);
+        videoRefs.current[4]?.seekTo(0);
         currentStimulus.current = 0;
       }
     }
@@ -387,7 +396,8 @@ const AnalizeSession = () => {
 
   const getTotalMetrics = useCallback(
     (metric) => {
-      if ( session !== "current" &&
+      if (
+        session !== "current" &&
         currentSession.current[0].SessionAnalytics[0] &&
         currentSession.current[0].SessionAnalytics[0].motorTotal !== 0 &&
         currentSession.current[0].SessionAnalytics[0].responseTotal !== 0 &&
@@ -420,7 +430,8 @@ const AnalizeSession = () => {
 
   const getAverageMetrics = useCallback(
     (metric) => {
-      if (session !== "current" &&
+      if (
+        session !== "current" &&
         currentSession.current[0].SessionAnalytics[0] &&
         currentSession.current[0].SessionAnalytics[0].motorMean !== 0 &&
         currentSession.current[0].SessionAnalytics[0].responseMean !== 0 &&
@@ -457,7 +468,8 @@ const AnalizeSession = () => {
 
   const getStandardDeviationMetrics = useCallback(
     (metric) => {
-      if (session !== "current" &&
+      if (
+        session !== "current" &&
         currentSession.current[0].SessionAnalytics[0] &&
         currentSession.current[0].SessionAnalytics[0].motorSd !== 0 &&
         currentSession.current[0].SessionAnalytics[0].responseSd !== 0 &&
@@ -1413,7 +1425,6 @@ const AnalizeSession = () => {
               <thead>
                 <tr>
                   <th className="table-header">Secuencia</th>
-                  <th className="table-header">Cuadro</th>
                   <th className="table-header">Error</th>
                   <th className="table-header">Estímulo</th>
                   <th className="table-header">Decision-Making</th>
@@ -1424,7 +1435,7 @@ const AnalizeSession = () => {
                 </tr>
               </thead>
             </table>
-            <div className="table-container">
+            <div className="table-containerA">
               <table className="custom-table">
                 <tbody className="scrollable-body">
                   {tableData.map((row, index) => (
@@ -1442,7 +1453,6 @@ const AnalizeSession = () => {
                       onClick={() => handleRowClick(index, row.playID)}
                     >
                       <td id={`RowSequenceSequence${index}`}>{row.sequence}</td>
-                      <td id={`RowSequencePlayId${index}`}>{row.playID}</td>
                       <td>
                         <input
                           type="checkbox"
