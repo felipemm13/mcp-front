@@ -21,7 +21,7 @@ const FootballSession = () => {
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
-  const numberOfPlays = useRef(3);
+  const numberOfPlays = useRef(4);
   const isRandomSeed = useRef(true);
   const seed = useRef(
     infoSession.current?.seed?.current ||
@@ -140,10 +140,10 @@ const FootballSession = () => {
     });
 
     const sequences = [];
-    const positions = Object.keys(playsByPosition);
+    const positions = [1,2,3,4,6,7,8,9];
     let positionsForLength = [];
     const isPermutation = (sequences, newSequence) => {
-      function compararArreglosSinOrden(arr1, arr2) {
+      const compararArreglosSinOrden =(arr1, arr2)=> {
         if (arr1.length !== arr2.length) return false;
         arr1 = arr1.sort((a, b) => a.playsId - b.playsId);
         arr2 = arr2.sort((a, b) => a.playsId - b.playsId);
@@ -200,8 +200,9 @@ const FootballSession = () => {
     // Generar combinaciones para cada longitud especificada en options
     options.forEach((length) => {
       positionsForLength = Array.from({ length: length }, (_, i) =>
-        parseInt(positions[i % 8])
+        (positions[i % 8])
       );
+      console.log(positionsForLength);
       generateCombinations([], 0, length);
     });
     const groupedSequences = [];
@@ -534,7 +535,6 @@ const FootballSession = () => {
                 name="typeGame"
                 value="reactive"
                 defaultChecked={
-                  infoSession.current?.typeOfSession?.current === "reactive" ||
                   typeOfSession.current === "reactive"
                 }
                 onClick={(e) => {
@@ -557,10 +557,6 @@ const FootballSession = () => {
                 id="discriminative"
                 name="typeGame"
                 value="discriminative"
-                defaultChecked={
-                  infoSession.current?.typeOfSession?.current ===
-                  "discriminative"
-                }
                 onChange={(e) => {
                   typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
@@ -612,9 +608,7 @@ const FootballSession = () => {
                 id="applied"
                 name="typeGame"
                 value="applied"
-                defaultChecked={
-                  infoSession.current?.typeOfSession?.current === "applied"
-                }
+
                 onClick={(e) => {
                   typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
@@ -662,7 +656,7 @@ const FootballSession = () => {
                     name="numberOfPlays"
                     id="numberOfPlays"
                     defaultValue={
-                      infoSession.current?.numberOfPlays?.current || 3
+                       4
                     }
                     min="1"
                     max={

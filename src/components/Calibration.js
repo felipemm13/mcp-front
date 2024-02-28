@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "../styles/Calibration.css";
 import Swal from "sweetalert2";
-import firebaseService from "../services/firebaseService2";
 import Draggable from "react-draggable";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
@@ -11,11 +10,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   const [correctCalibration, setCorrectCalibration] = useState(true);
   const [currentMark, setCurrentMark] = useState(1);
   const calibrationImageRef = useRef(null);
-  const [dragging, setDragging] = useState(false);
-  const [positions, setPositions] = useState(
-    Array.from({ length: 9 }, () => ({ x: 0, y: 0 }))
-  );
-  const [startPositions, setStartPositions] = useState([]);
   const [semiAutoCalibration, setSemiAutoCalibration] = useState(false);
   const [currentMessage, setCurrentMessage] = useState(
     "Intentando calibración automática"
@@ -39,7 +33,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
         setCalibrated(true);
-        console.log(data.response);
+        console.log(data.response.points);
         setTimeout(() => setStains(data.response.points), [100]);
       })
       .catch((err) => {
@@ -49,12 +43,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
             icon: "error",
             title: "Error...",
             text: `El servidor esta caido, contacte al administrador`,
-          });
-        } else if (err.name === "TypeError") {
-          Swal.fire({
-            icon: "error",
-            title: "Error...",
-            text: `Falta el certificado de seguridad! Aceptarlo en: https://200.1.17.171:3000/`,
           });
         } else {
           Swal.fire({
@@ -114,7 +102,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     })
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
-        console.log(data);
+        console.log(data.response);
         setCorrectCalibration(true);
         setCurrentMark(1);
         setTimeout(() => setStains(data.response.points), [100]);
@@ -128,22 +116,8 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   const saveCalibration = useCallback(() => {
     setCalibrated(false);
     setCurrentMessage("Guardando calibración");
-    firebaseService
-      .updateUserCalibration(
-        userEmail,
-        stains.Hcalib,
-        stains.Wcalib,
-        stains.Homography,
-        stains.backgroundImage
-      )
-      .then(() => {
-        document.getElementById("messageState").innerHTML =
-          "Calibración Guardada";
-        setTimeout(() => document.getElementById("myModal").click(), [1500]);
-      })
-      .catch((error) => {
-        alert(error);
-      });
+    //document.getElementById("messageState").innerHTML = "Calibración Guardada";
+    setTimeout(() => document.getElementById("myModal").click(), [1500]);
   });
 
   useEffect(() => {
@@ -269,7 +243,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                                 fontWeight={"bold"}
                                 fill="#F50000"
                               >
-                                {stain.z}
+                                {index + 1}
                               </text>
                               <circle
                                 key={`c ${index}`}

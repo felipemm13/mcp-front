@@ -38,9 +38,10 @@ const AnalizeSession = () => {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [imagePlay, setImagePlay] = useState({currentPlay:null, prevPlay:null});
   const currentPlay = useRef(null);
   const prevPlay = useRef(null);
-  const currentStimulus = useRef(0);
+  const [currentStimulus, setCurrentStimulus] = useState(0);
   const selectedRowIndex = useRef(0);
   const selectedPlayID = useRef(null);
   const [playingVideo, setPlayingVideo] = useState(false);
@@ -106,7 +107,6 @@ const AnalizeSession = () => {
     videoRefs.current = Array(5)
       .fill()
       .map((_, index) => videoRefs.current[index]);
-    console.log(videoRefs.current);
     if (videoRefs.current.some((ref) => ref === undefined)) {
       navigate("/football-session");
       return;
@@ -126,10 +126,13 @@ const AnalizeSession = () => {
       getVideoDuration(url);
       //console.log(videoDuration);
       setVideoSession(url);
-      if (currentPlay.current && prevPlay.current) {
-        currentPlay.current.src = infoSession.current.imageSequences[0];
-        prevPlay.current.src = infoSession.current.imageSequences[0];
-      }
+
+        setImagePlay({
+          currentPlay:infoSession.current.imageSequences[0],
+          prevPlay: infoSession.current.imageSequences[0],
+        });
+
+      
       setTableData(
         Array.from(
           { length: infoSession.current.numberOfPlays.current },
@@ -182,15 +185,14 @@ const AnalizeSession = () => {
     )
       .then((r) => r.blob())
       .catch((err) => console.log(err));
-    console.log(blob);
     const url = URL.createObjectURL(blob);
-    console.log(url);
     getVideoDuration(url);
     setVideoSession(url);
-    if (currentPlay.current && prevPlay.current) {
-      currentPlay.current.src = infoSession.current.imageSequences[0];
-      prevPlay.current.src = infoSession.current.imageSequences[0];
-    }
+      setImagePlay({
+        currentPlay:infoSession.current.imageSequences[0],
+        prevPlay: infoSession.current.imageSequences[0],
+      });
+
     infoSession.current.stimulusTime.sort((a, b) => a - b);
     setTableData(
       Array.from(
@@ -215,37 +217,40 @@ const AnalizeSession = () => {
   useEffect(() => {
     if (videoRefs.current.length) {
       if (currentFrame > 0) {
-        if (
-          Math.round(videoRefs.current[2].getCurrentTime() * 1000) >=
-          infoSession.current.stimulusTime[currentStimulus.current]
-        ) {
-          currentStimulus.current =
-            currentStimulus.current + 1 <=
-            infoSession.current.stimulusTime.length - 1
-              ? currentStimulus.current + 1
-              : currentStimulus.current;
-          currentPlay.current.src =
-            infoSession.current.imageSequences[currentStimulus.current];
-          prevPlay.current.src =
-            infoSession.current.imageSequences[
-              currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
-            ];
+        const currentTime = Math.round((currentFrame / FPS.current)*1000);
+        const stimulusTime = infoSession.current.stimulusTime;
+        let newStimulus = currentStimulus;
+        if (currentTime >= stimulusTime[currentStimulus + 1] && currentStimulus + 1 < stimulusTime.length) {
+          newStimulus = currentStimulus + 1;
+        } else if (currentTime < stimulusTime[currentStimulus] && currentStimulus > 0 && 
+          currentTime >= stimulusTime[currentStimulus - 1]) {
+          newStimulus = currentStimulus - 1;
         }
+      
+        setCurrentStimulus(newStimulus);
+      
+        setTimeout(() => {
+          setImagePlay({
+            currentPlay: infoSession.current.imageSequences[newStimulus],
+            prevPlay: infoSession.current.imageSequences[Math.max(0, newStimulus - 1)],
+          });
+        }, 0);
+        /*
         if (
-          Math.round(videoRefs.current[2].getCurrentTime() * 1000) <
-            infoSession.current.stimulusTime[currentStimulus.current] &&
-          currentStimulus.current > 0 &&
-          Math.round(videoRefs.current[2].getCurrentTime() * 1000) >=
-            infoSession.current.stimulusTime[currentStimulus.current - 1]
+          videoRefs.current[2].getCurrentTime() * 1000 <
+            infoSession.current.stimulusTime[currentStimulus] &&
+          currentStimulus > 0 &&
+          videoRefs.current[2].getCurrentTime() * 1000 >=
+            infoSession.current.stimulusTime[currentStimulus - 1]
         ) {
-          currentStimulus.current -= 1;
-          currentPlay.current.src =
-            infoSession.current.imageSequences[currentStimulus.current];
-          prevPlay.current.src =
-            infoSession.current.imageSequences[
-              currentStimulus.current - 1 > 0 ? currentStimulus.current - 1 : 0
-            ];
-        }
+          setCurrentStimulus(currentStimulus - 1);
+          setImagePlay({
+            currentPlay: infoSession.current.imageSequences[currentStimulus],
+            prevPlay: infoSession.current.imageSequences[
+              currentStimulus - 1 > 0 ? currentStimulus - 1 : 0
+            ],
+          });
+        }*/
 
         if (videoState === "Play") {
           videoRefs.current[0].seekTo(
@@ -272,7 +277,7 @@ const AnalizeSession = () => {
         videoRefs.current[2]?.seekTo(0);
         videoRefs.current[3]?.seekTo(0);
         videoRefs.current[4]?.seekTo(0);
-        currentStimulus.current = 0;
+        setCurrentStimulus(0)
       }
     }
   }, [currentFrame]);
@@ -1107,10 +1112,10 @@ const AnalizeSession = () => {
               data-tooltip={`Retroceder Estimulo`}
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
-                if (currentStimulus.current - 1 > 0) {
+                if (currentStimulus - 1 > 0) {
                   videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
-                      currentStimulus.current - 1
+                      currentStimulus- 1
                     ] / 1000
                   );
                   setCurrentTime(videoRefs.current[2].getCurrentTime());
@@ -1242,12 +1247,12 @@ const AnalizeSession = () => {
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
                 if (
-                  currentStimulus.current + 1 <
+                  currentStimulus + 1 <
                   infoSession.current.stimulusTime.length - 1
                 ) {
                   videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
-                      currentStimulus.current + 1
+                      currentStimulus + 1
                     ] / 1000
                   );
                   setCurrentTime(videoRefs.current[2].getCurrentTime());
@@ -1495,22 +1500,22 @@ const AnalizeSession = () => {
               <img
                 style={{ width: "100%" }}
                 className="AnalizeSessionCurrentPlayImg"
-                ref={prevPlay}
-                src=""
+
+                src={imagePlay.prevPlay}
               />
               <div style={{ display: "flex", gap: "1em" }}>
                 <div>
                   Tiempo [ms]:{" "}
-                  {infoSession.current.stimulusTime[currentStimulus.current - 1]
+                  {infoSession.current.stimulusTime[currentStimulus - 1]
                     ? infoSession.current.stimulusTime[
-                        currentStimulus.current - 1
+                        currentStimulus - 1
                       ]
                     : 0}
                 </div>
                 <div>
                   Jugada:{" "}
-                  {infoSession.current.stimulusTime[currentStimulus.current - 1]
-                    ? currentStimulus.current
+                  {infoSession.current.stimulusTime[currentStimulus - 1]
+                    ? currentStimulus
                     : 1}
                 </div>
               </div>
@@ -1520,15 +1525,15 @@ const AnalizeSession = () => {
               <img
                 style={{ width: "100%" }}
                 className="AnalizeSessionCurrentPlayImg"
-                ref={currentPlay}
-                src=""
+
+                src={imagePlay.currentPlay}
               />
               <div style={{ display: "flex", gap: "1em" }}>
                 <div>
                   Tiempo [ms]:{" "}
-                  {infoSession.current.stimulusTime[currentStimulus.current]}
+                  {infoSession.current.stimulusTime[currentStimulus]}
                 </div>
-                <div>Jugada: {currentStimulus.current + 1}</div>
+                <div>Jugada: {currentStimulus + 1}</div>
               </div>
             </div>
           </div>
