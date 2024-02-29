@@ -27,9 +27,10 @@ const router = createBrowserRouter([
     element: <FootballSessionView />,
   },
   {
-    path: "plays-view",
+    path: "plays-view/:play",
     element: <PlaysView />,
-  },{path:"list-of-plays",element:<ListOfPlays/>},
+  },
+  { path: "list-of-plays", element: <ListOfPlays /> },
   {
     path: "other-sessions",
     element: <OtherSessions />,

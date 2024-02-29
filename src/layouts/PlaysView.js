@@ -1,13 +1,13 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../styles/PlaysView.css";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../services/Context";
 import Routes from "../connection/path";
 import Draggable from "react-draggable";
-import { a } from "@react-spring/web";
 
 const PlaysView = () => {
-  const { CrudApi, tercios, userContext } = useContext(Context);
+  const { CrudApi, tercios, userContext, currentPlay } = useContext(Context);
+  const isNewPlay = useParams().play === "create";
   const navigate = useNavigate();
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const playersContainer = useRef(null);
@@ -31,15 +31,36 @@ const PlaysView = () => {
   });
 
   useEffect(() => {
-    if (!userContext.current) {
+    if (!userContext.current || !currentPlay.current) {
       const localUser = JSON.parse(localStorage.getItem("user"));
-      if (localUser) {
+      if (localUser && currentPlay.current) {
         userContext.current = localUser;
       } else {
         navigate("/");
+        return;
       }
     }
-    getPlays();
+    //getPlays();
+    if (!isNewPlay) {
+      const numPlayers = countPlayers(currentPlay.current.figureCoordinates);
+      setGameState({
+        playPositions: {
+          IdealPositionX: currentPlay.current.IdealPositionX,
+          IdealPositionY: currentPlay.current.IdealPositionY,
+          ballX: currentPlay.current.ballX,
+          ballY: currentPlay.current.ballY,
+          Team: currentPlay.current.Team,
+          attack: currentPlay.current.attack,
+          test: currentPlay.current.test,
+          enable: currentPlay.current.enable,
+          playsId: currentPlay.current.playsId,
+        },
+        players: currentPlay.current.figureCoordinates,
+        numPlayers: numPlayers,
+      });
+    } else {
+      setGameState(currentPlay.current);
+    }
     setContainerMeasure({
       containerWidth: playersContainer.current.clientWidth,
       containerHeight: playersContainer.current.clientHeight,
@@ -98,9 +119,9 @@ const PlaysView = () => {
             ballX: play.ballX,
             ballY: play.ballY,
             Team: play.Team,
-            attack: play.attack ? true : false,
-            test: play.test ? true : false,
-            enable: play.enable ? true : false,
+            attack: play.attack,
+            test: play.test,
+            enable: play.enable,
             playsId: play.playsId,
           },
           players: play.figureCoordinates,
@@ -179,14 +200,10 @@ const PlaysView = () => {
 
   const handleStop = (index, event, color) => {
     const containerRect = playersContainer.current.getBoundingClientRect();
-    const newPositionX = (
-      ((event.pageX - containerRect.left ) / containerRect.width) * 48
-    );
-    console.log(newPositionX, "newPositionX");
-    const newPositionY = (
-      ((event.pageY - containerRect.top ) / containerRect.height) * 48
-    );
-    console.log(newPositionY, "newPositionY");
+    const newPositionX =
+      ((event.pageX - containerRect.left) / containerRect.width) * 48;
+    const newPositionY =
+      ((event.pageY - containerRect.top) / containerRect.height) * 48;
     if (color === "green") {
       setGameState((prevState) => {
         return {
@@ -220,11 +237,9 @@ const PlaysView = () => {
   };
 
   const handleSavePlay = async () => {
-    const playSelected = JSON.parse(
-      document.getElementById("PlaySelected").value
-    );
+    const playSelected = currentPlay.current;
     document.getElementById("SavePlayButton").disabled = true;
-    if (gameState.playPositions.playsId) {
+    if (!isNewPlay) {
       const playUpdated = {
         ...playSelected,
         ...gameState.playPositions,
@@ -318,10 +333,11 @@ const PlaysView = () => {
         })
         .catch((error) => console.log(error));
     }
+    /*
     setPlaysFromDb([]);
     setTimeout(() => {
       getPlays();
-    }, 500);
+    }, 500);*/
   };
 
   const getQuadrant = (posicion) => {
@@ -358,7 +374,7 @@ const PlaysView = () => {
         <button
           className="PlaysViewButtonBack"
           onClick={() => {
-            navigate("/");
+            navigate("/list-of-plays");
           }}
         >
           <svg
@@ -596,10 +612,17 @@ const PlaysView = () => {
         <div className="PlaysViewHandlePlays">
           <div>
             <div>
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignContent: "center",
+                }}
+              >
                 <h2>
-                  Puede agregar nuevas situaciones de juego o editar una creada
-                  anteriormente
+                  {isNewPlay
+                    ? "Crear nueva situación de juego"
+                    : "Editar situación de juego"}
                 </h2>
               </div>
               <div
@@ -610,6 +633,7 @@ const PlaysView = () => {
                   justifyContent: "center",
                 }}
               >
+                {/*
                 <div>
                   <h4>Jugada base</h4>
                   <select
@@ -649,7 +673,7 @@ const PlaysView = () => {
                       );
                     })}
                   </select>
-                </div>
+                </div>*/}
               </div>
               <div
                 style={{
@@ -762,7 +786,7 @@ const PlaysView = () => {
                 id="SavePlayButton"
                 onClick={() => handleSavePlay()}
               >
-                Guardar nueva situación de juego
+                {isNewPlay ? 'Guardar nueva situación de juego':'Actualizar situación de juego'}
               </button>
             </div>
           </div>

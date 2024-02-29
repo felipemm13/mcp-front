@@ -19,7 +19,10 @@ const FootballSessionView = ({ view }) => {
   const ballAnimationRef = useSpringRef(null);
   const idealPlayerAnimationRef = useSpringRef(null);
   const sessionContainer = useRef(null);
-  const [fieldColor, setFieldColor] = useState({background:"#1bfc08", stroke:"#fff"});
+  const [fieldColor, setFieldColor] = useState({
+    background: "#1bfc08",
+    stroke: "#fff",
+  });
 
   const containerWidth = useRef(
     sessionContainer.current ? sessionContainer.current.clientWidth : 0
@@ -34,7 +37,7 @@ const FootballSessionView = ({ view }) => {
   const [numberOfDistractors, setNumberOfDistractors] = useState(null);
   const imageSequences = useRef([]);
   const stimulusTimeSequence = useRef([]);
-
+  const animationStarted = useRef(false);
   const finish = useSpring({
     ref: finalMessageAnimationRef,
   });
@@ -93,6 +96,9 @@ const FootballSessionView = ({ view }) => {
         handleDiscriminativeAnimation();
         break;
       case "applied":
+        handleAppliedAnimation();
+        break;
+      case "evaluative":
         handleAppliedAnimation();
         break;
       default:
@@ -681,6 +687,29 @@ const FootballSessionView = ({ view }) => {
       config: {
         duration: infoSession.current.secondsForPlayTransition.current * 1000,
       },
+      onStart: () => {
+        if (playerTeams.length > teamIndex) {
+          teamRef.current.style.fill =
+            playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
+        }
+        if (view === "coach") {
+          if (
+            sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+          ) {
+            stimulusTimeSequence.current.push(new Date().getTime() - time);
+            setTimeout(() => {
+              htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
+                imageSequences.current.push(dataUrl);
+              });
+            }, [
+              infoSession.current.secondsToNextPlay.current * 250 +
+              infoSession.current.secondsForPlayTransition.current * 1000,
+            ]);
+            sequenceIndex++;
+          }
+        }
+      },
+      onResolve: () => handleFinishAnimation(),
     });
 
     //Actualizar animaciones ball
@@ -717,30 +746,6 @@ const FootballSessionView = ({ view }) => {
         config: {
           duration: infoSession.current.secondsForPlayTransition.current * 1000,
         },
-        onResolve: () => handleFinishAnimation(),
-
-        onStart: () => {
-          if (playerTeams.length > teamIndex) {
-            teamRef.current.style.fill =
-              playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
-          }
-          if (view === "coach") {
-            if (
-              sequenceIndex < infoSession.current.sequenceOfPlays.current.length
-            ) {
-              stimulusTimeSequence.current.push(new Date().getTime() - time);
-              setTimeout(() => {
-                htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
-                  imageSequences.current.push(dataUrl);
-                });
-              }, [
-                infoSession.current.secondsToNextPlay.current * 1000 +
-                  infoSession.current.secondsForPlayTransition.current * 250,
-              ]);
-              sequenceIndex++;
-            }
-          }
-        },
       };
     });
 
@@ -749,12 +754,28 @@ const FootballSessionView = ({ view }) => {
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("startRecord"));
     }
+    const animateAll = async () => {
+      const promises = [
+        apiRedPlayersAnimation.start(),
+        apiYellowPlayersAnimation.start(),
+        idealPlayerAnimationRef.start(),
+        ballAnimationRef.start(),
+      ];
+
+      await Promise.all(promises);
+    };
     let time = new Date().getTime();
     stimulusTimeSequence.current.push(0);
-    ballAnimationRef.start();
+
+    if (!animationStarted.current) {
+      animationStarted.current = true;
+      animateAll();
+    }
+    /*
     idealPlayerAnimationRef.start();
     apiRedPlayersAnimation.start();
-    apiYellowPlayersAnimation.start();
+    ballAnimationRef.start();
+    apiYellowPlayersAnimation.start();*/
   };
 
   const handleStartSesion = () => {

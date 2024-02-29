@@ -137,7 +137,8 @@
 
 /* Estilos CSS para la tabla */
 .table-container {
-    max-height: 80vh;
+    height: 72.5vh;
+    margin-bottom: 1em;
     /* Altura máxima para mostrar el scroll */
     overflow-y: auto;
     /* Agrega scroll vertical al tbody */

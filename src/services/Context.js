@@ -12,6 +12,7 @@ const ProviderContext = ({ children }) => {
   const CrudApi = new Connect();
   const listOfPlayers = useRef([]);
   const currentSession = useRef(null);
+  const currentPlay = useRef(null)
   const S3_BUCKET = "mcp-wildsense";
   const REGION = "us-east-2";
   const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
@@ -66,6 +67,7 @@ const ProviderContext = ({ children }) => {
         CrudApi,
         listOfPlayers,
         currentSession,
+        currentPlay,
         S3_BUCKET,
         REGION,
         AWS_ACCESS_KEY_ID,

@@ -15,25 +15,31 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     "Intentando calibración automática"
   );
   const [proportions, setProportions] = useState({ width: null, height: null });
+  const calib_measures = useRef({ calib_h: 0, calib_w: 0 });
+  const semiCalibMarks = useRef([])
 
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
+
     await fetch("http://localhost:3001/calibration_automatic", {
       //await fetch("https://200.1.17.171:3000/calibration_automatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
         Screenshot: imgTemp,
-        email: "admin@admin.com",
       }),
       headers: { "Content-Type": "application/json" },
       //x-www-form-urlencoded
     })
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
+        calib_measures.current = {
+          calib_h: data.response.calib_h,
+          calib_w: data.response.calib_w,
+        };
+        console.log(data.response.calib_h, data.response.calib_w)
         setCalibrated(true);
-        console.log(data.response.points);
         setTimeout(() => setStains(data.response.points), [100]);
       })
       .catch((err) => {
@@ -53,59 +59,49 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
         }
       });
   };
-  const handleDrag = (index, newPosition) => {
-    setStains((prevStains) => {
-      const updatedStains = [...prevStains];
-      if (
-        prevStains[index].x !== updatedStains[index].x ||
-        prevStains[index].y !== updatedStains[index].y
-      ) {
-        updatedStains[index].x += newPosition.x;
-        updatedStains[index].y += newPosition.y;
-      }
-      return updatedStains;
-    });
+  const handleDrag = (index, data) => {
+    const svgRect = document
+      .getElementById("StainsContainer")
+      .getBoundingClientRect();
+    const { x, y } = data;
+    const updatedStains = [...stains];
+    updatedStains[index] = {
+      ...updatedStains[index],
+      x: stains[index].x + (x - svgRect.left) / svgRect.width,
+      y: stains[index].y + (y - svgRect.top) / svgRect.height,
+    };
+    setStains(updatedStains);
   };
 
   const manualCalibration = async () => {
     setSemiAutoCalibration(true);
     const circulosPequenos = document.querySelectorAll('circle[r="1"]');
     const centros = [];
-
     circulosPequenos.forEach((circulo) => {
+      const mark = circulo.getAttribute('id')
       const cx = circulo.getAttribute("cx") / proportions.width;
       const cy = circulo.getAttribute("cy") / proportions.height;
-      centros.push({ x: parseFloat(cx), y: parseFloat(cy) });
+      console.log(mark,cx,circulo.getAttribute("cx"),cy,circulo.getAttribute("cy"))
+      centros.push({x: parseFloat(cx), y: parseFloat(cy) });
     });
+    console.log(centros);
     await fetch("http://localhost:3001/calibration_semiautomatic", {
       //await fetch("https://200.1.17.171:3000/calibration_semiautomatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
         Screenshot: imgSrc,
-        email: "admin@admin.com",
-        mark_1_x: centros[0].x,
-        mark_1_y: centros[0].y,
-        mark_2_x: centros[1].x,
-        mark_2_y: centros[1].y,
-        mark_3_x: centros[2].x,
-        mark_3_y: centros[2].y,
-        mark_4_x: centros[3].x,
-        mark_4_y: centros[3].y,
-        mark_5_x: centros[4].x,
-        mark_5_y: centros[4].y,
-        mark_6_x: centros[5].x,
-        mark_6_y: centros[5].y,
+        marks: centros,
       }),
       headers: { "Content-Type": "application/json" },
       //x-www-form-urlencoded
     })
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
-        console.log(data.response);
-        setCorrectCalibration(true);
         setCurrentMark(1);
-        setTimeout(() => setStains(data.response.points), [100]);
+        setCorrectCalibration(true);
+        console.log(data.response.points)
+        setTimeout(() => setStains(data.response.points), [0]);
         setSemiAutoCalibration(false);
       })
       .catch((err) => {
@@ -126,12 +122,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
         setOpenModal(false);
       }
     });
-    if (document.getElementById("StainsContainer")) {
-      setProportions({
-        width: document.getElementById("StainsContainer").clientWidth / 1280,
-        height: document.getElementById("StainsContainer").clientHeight / 720,
-      });
-    }
     autoCalibration();
   }, []);
 
@@ -174,10 +164,11 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                             setProportions({
                               width:
                                 document.getElementById("StainsContainer")
-                                  .clientWidth / 1280,
+                                  .clientWidth / calib_measures.current.calib_w,
                               height:
                                 document.getElementById("StainsContainer")
-                                  .clientHeight / 720,
+                                  .clientHeight /
+                                calib_measures.current.calib_h,
                             });
                           }
                           return (
@@ -247,6 +238,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                               </text>
                               <circle
                                 key={`c ${index}`}
+                                id={index+1}
                                 cx={stain.x * proportions.width}
                                 cy={stain.y * proportions.height}
                                 r={1} // Tamaño del punto

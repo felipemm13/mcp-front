@@ -7,7 +7,8 @@ import Draggable from "react-draggable";
 
 const ListOfPlays = () => {
   const navigate = useNavigate();
-  const { tercios, CrudApi, userContext } = useContext(Context);
+
+  const { tercios, CrudApi, userContext, currentPlay } = useContext(Context);
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const [selectedPlay, setSelectedPlay] = useState(null);
   const playersContainer = useRef(null);
@@ -15,6 +16,8 @@ const ListOfPlays = () => {
     containerWidth: 700,
     containerHeight: 500,
   });
+  const selectedPlayCurrent = useRef(null);
+  const [isNewPlay, setIsNewPlay] = useState(false);
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
@@ -38,23 +41,101 @@ const ListOfPlays = () => {
       containerHeight: playersContainer.current.clientHeight,
     });
   }, []);
-  const handleSelectRow = (play) => {
-    if (selectedPlay) {
-      setSelectedPlay(null);
-      setTimeout(() => setSelectedPlay(play), 50);
-    } else {
-      setSelectedPlay(play);
+  const handleSelectRow = (play, index) => {
+    const previousSelectedRow = document.getElementById(
+      `Play${selectedPlayCurrent.current}`
+    );
+    const selectedRow = document.getElementById(`Play${index}`);
+    if (previousSelectedRow) {
+      previousSelectedRow.style.background = "#1a1a1a";
+      previousSelectedRow.style.color = "white";
     }
+    if (
+      selectedPlayCurrent.current !== null &&
+      selectedPlayCurrent.current === index
+    ) {
+      selectedPlayCurrent.current = null;
+      setIsNewPlay(false);
+      setSelectedPlay(null);
+    } else {
+      selectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+      selectedRow.style.color = "black";
+      selectedPlayCurrent.current = index;
+      if (selectedPlay !== play) {
+        setSelectedPlay(null);
+        setTimeout(() => setSelectedPlay(play), 0);
+      } else {
+        setSelectedPlay(play);
+      }
+      setIsNewPlay(true);
+    }
+  };
+  const countPlayers = (figureCoordinates) => {
+    const resultado = figureCoordinates.reduce(
+      (contador, figura) => {
+        if (figura.color === "Red") {
+          contador.red++;
+        } else if (figura.color === "Yellow") {
+          contador.yellow++;
+        }
+        return contador;
+      },
+      { red: 0, yellow: 0 } // Inicializar el contador
+    );
+    return resultado;
   };
   const handlePlays = async () => {
     const play = selectedPlay;
     play.enable = !play.enable;
-    await CrudApi.update(`plays/${play.playsId}` , play)
+    await CrudApi.update(`plays/${play.playsId}`, play)
       .then(() => {
         getPlays();
       })
       .catch((error) => console.log(error));
-  }
+  };
+  const handleEditPlay = (play) => {
+    if (play === selectedPlay) {
+      currentPlay.current = play;
+      navigate("/plays-view/edit");
+    }else if(selectedPlay){
+      console.log(selectedPlay)
+      const numPlayers = countPlayers(selectedPlay.figureCoordinates);
+      currentPlay.current = {
+        playPositions: {
+          IdealPositionX: selectedPlay.IdealPositionX,
+          IdealPositionY: selectedPlay.IdealPositionY,
+          ballX: selectedPlay.ballX,
+          ballY: selectedPlay.ballY,
+          Team: selectedPlay.Team,
+          attack: selectedPlay.attack,
+          test: selectedPlay.test,
+          enable: selectedPlay.enable,
+        },
+        players: selectedPlay.figureCoordinates,
+        numPlayers: numPlayers,
+      };
+      navigate("/plays-view/create");
+    }else{
+      currentPlay.current ={
+        playPositions: {
+          IdealPositionX: 8,
+          IdealPositionY: 8,
+          ballX: 24,
+          ballY: 8,
+          Team: "Red",
+          attack: true,
+          test: false,
+          enable: true,
+        },
+        players: [
+          { xCoor: 26, yCoor: 8, color: "Red" },
+          { xCoor: 40, yCoor: 8, color: "Yellow" },
+        ],
+        numPlayers: { red: 1, yellow: 1 },
+      }
+      navigate("/plays-view/create");
+    }
+  };
   return (
     <div className="ListOfPlaysContainer">
       <div className="ListOfPlaysBackButton">
@@ -75,7 +156,7 @@ const ListOfPlays = () => {
           Volver
         </button>
       </div>
-      <div style={{ display: "flex", height: "100%",gap:'1em' }}>
+      <div style={{ display: "flex", height: "100%", gap: "1em" }}>
         <div className="ListOfPlaysTable">
           <table className="custom-table">
             <thead>
@@ -85,23 +166,68 @@ const ListOfPlays = () => {
                 <th>Modo de Jugada</th>
                 <th>Posicion de Respuesta</th>
                 <th>Habilitada</th>
+                <th>Editar</th>
               </tr>
             </thead>
           </table>
           <div className="table-container">
             <table className="custom-table">
               <tbody>
-                {playsFromDb.map((play) => (
-                  <tr key={play.playsId} onClick={() => handleSelectRow(play)}>
-                    <td>{play.playsId}</td>
-                    <td>{play.attack ? "Ofensiva" : "Defensiva"}</td>
-                    <td>{play.test ? "Evaluacion" : "Prueba"}</td>
-                    <td>{play.responsePosition}</td>
-                    <td>{play.enable ? "Habilitada" : "Deshabilitada"}</td>
+                {playsFromDb.map((play, index) => (
+                  <tr key={play.playsId} id={"Play" + index}>
+                    <td onClick={() => handleSelectRow(play, index)}>
+                      {play.playsId}
+                    </td>
+                    <td onClick={() => handleSelectRow(play, index)}>
+                      {play.attack ? "Ofensiva" : "Defensiva"}
+                    </td>
+                    <td onClick={() => handleSelectRow(play, index)}>
+                      {play.test ? "Evaluacion" : "Prueba"}
+                    </td>
+                    <td onClick={() => handleSelectRow(play, index)}>
+                      {play.responsePosition}
+                    </td>
+                    <td onClick={() => handleSelectRow(play, index)}>
+                      {play.enable ? "Habilitada" : "Deshabilitada"}
+                    </td>
+                    <td>
+                      <button
+                        onFocus={() => handleEditPlay(play)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                          width={"2em"}
+                          fill={selectedPlay === play ? "white" : "#1a1a1a"}
+                        >
+                          <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+          <div
+            style={{
+              height: "7.5%",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <button className="ListOfPlaysButton" onClick={handleEditPlay}>
+              {isNewPlay
+                ? "crear basada en jugada actual"
+                : "crear nueva jugada"}
+            </button>
           </div>
         </div>
         <div
@@ -294,7 +420,10 @@ const ListOfPlays = () => {
             }}
           >
             <button className="ListOfPlaysButton" onClick={handlePlays}>
-              {selectedPlay?.enable ? "deshabilitar" : "habilitar"} Jugada
+              {selectedPlay && !selectedPlay?.enable
+                ? "habilitar"
+                : "deshabilitar"}{" "}
+              Jugada
             </button>
           </div>
         </div>

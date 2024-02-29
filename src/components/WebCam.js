@@ -278,7 +278,8 @@ const WebCam = (props) => {
       props.showWindowPortal &&
       cameraIsAvailable &&
       props.infoSession &&
-      props.infoSession.playerSelected
+      props.infoSession.playerSelected &&
+      props.infoSession.sequenceOfPlays.current.length
     ) {
       document.getElementById("StartCaptureVideo").removeAttribute("disabled");
     } else {
