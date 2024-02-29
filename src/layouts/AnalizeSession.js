@@ -217,20 +217,18 @@ const AnalizeSession = () => {
   };
 
   useEffect(() => {
-    console.log(currentFrame);
     if (videoRefs.current.length) {
       if (currentFrame > 0) {
         const currentTime = Math.round((currentFrame / FPS.current) * 1000);
         const stimulusTime = infoSession.current.stimulusTime;
         let newStimulus = currentStimulus;
 
-          for (let i = 0; i < stimulusTime.length; i++) {
-            if (currentTime >= stimulusTime[i]) {
-              newStimulus = i;
-            } else {
-              break;
-            }
-          
+        for (let i = 0; i < stimulusTime.length; i++) {
+          if (currentTime >= stimulusTime[i]) {
+            newStimulus = i;
+          } else {
+            break;
+          }
         }
         setCurrentStimulus(newStimulus);
         setTimeout(() => {
@@ -313,7 +311,7 @@ const AnalizeSession = () => {
     ) {
       document.getElementById(
         `RowSequenceDecisionMaking${selectedRowIndex.current}`
-      ).innerHTML = Math.round(videoRefs.current[2].getCurrentTime() * 1000);
+      ).innerHTML = Math.round((currentFrame / FPS.current) * 1000);
       document.getElementById(
         `RowSequenceVisuMotor${selectedRowIndex.current}`
       ).innerHTML =
@@ -353,7 +351,7 @@ const AnalizeSession = () => {
     ) {
       document.getElementById(
         `RowSequenceArrival${selectedRowIndex.current}`
-      ).innerHTML = Math.round(videoRefs.current[2].getCurrentTime() * 1000);
+      ).innerHTML = Math.round((currentFrame / FPS.current) * 1000);
       if (
         document.getElementById(
           `RowSequenceDecisionMaking${selectedRowIndex.current}`
@@ -992,7 +990,7 @@ const AnalizeSession = () => {
                 width={"90%"}
                 height={"100%"}
                 url={videoSession}
-                playDelay={-66}
+                playdelay={-66}
               />
             </div>
 
@@ -1052,7 +1050,7 @@ const AnalizeSession = () => {
                 width={"90%"}
                 height={"100%"}
                 url={videoSession}
-                playDelay={-33}
+                playdelay={-33}
               />
             </div>
           </div>
@@ -1486,11 +1484,16 @@ const AnalizeSession = () => {
                                 `RowSequenceDecisionMaking${index}`
                               ).innerText
                             );
+                            if (value !== 0) {
+                              setCurrentFrame(
+                                Math.round((value * FPS.current) / 1000)
+                              );
+                            }
+                          } else if (value > 0) {
+                            setCurrentFrame(
+                              Math.round((value * FPS.current) / 1000)
+                            );
                           }
-                          console.log(value);
-                          setCurrentFrame(
-                            Math.round((value * FPS.current) / 1000)
-                          );
                           if (selectedRowIndex.current !== index) {
                             handleRowClick(index, row.playID);
                           }
@@ -1508,11 +1511,16 @@ const AnalizeSession = () => {
                                 `RowSequenceArrival${index}`
                               ).innerText
                             );
+                            if (value !== 0) {
+                              setCurrentFrame(
+                                Math.round((value * FPS.current) / 1000)
+                              );
+                            }
+                          } else if (value > 0) {
+                            setCurrentFrame(
+                              Math.round((value * FPS.current) / 1000)
+                            );
                           }
-                          console.log(value);
-                          setCurrentFrame(
-                            Math.round((value * FPS.current) / 1000)
-                          );
                           if (selectedRowIndex.current !== index) {
                             handleRowClick(index, row.playID);
                           }
