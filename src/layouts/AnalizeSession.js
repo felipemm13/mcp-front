@@ -129,7 +129,7 @@ const AnalizeSession = () => {
       getVideoDuration(url);
       //console.log(videoDuration);
       setVideoSession(url);
-        console.log(infoSession.current.sequenceOfPlays.current)
+      console.log(infoSession.current.sequenceOfPlays.current);
       setImagePlay({
         currentPlay: infoSession.current.imageSequences[0],
         prevPlay: infoSession.current.imageSequences[0],
@@ -217,26 +217,22 @@ const AnalizeSession = () => {
   };
 
   useEffect(() => {
+    console.log(currentFrame);
     if (videoRefs.current.length) {
       if (currentFrame > 0) {
         const currentTime = Math.round((currentFrame / FPS.current) * 1000);
         const stimulusTime = infoSession.current.stimulusTime;
         let newStimulus = currentStimulus;
-        if (
-          currentTime >= stimulusTime[currentStimulus + 1] &&
-          currentStimulus + 1 < stimulusTime.length
-        ) {
-          newStimulus = currentStimulus + 1;
-        } else if (
-          currentTime < stimulusTime[currentStimulus] &&
-          currentStimulus > 0 &&
-          currentTime >= stimulusTime[currentStimulus - 1]
-        ) {
-          newStimulus = currentStimulus - 1;
+
+          for (let i = 0; i < stimulusTime.length; i++) {
+            if (currentTime >= stimulusTime[i]) {
+              newStimulus = i;
+            } else {
+              break;
+            }
+          
         }
-
         setCurrentStimulus(newStimulus);
-
         setTimeout(() => {
           setImagePlay({
             currentPlay: infoSession.current.imageSequences[newStimulus],
@@ -271,6 +267,12 @@ const AnalizeSession = () => {
         videoRefs.current[3]?.seekTo(0);
         videoRefs.current[4]?.seekTo(0);
         setCurrentStimulus(0);
+        setTimeout(() => {
+          setImagePlay({
+            currentPlay: infoSession.current.imageSequences[0],
+            prevPlay: infoSession.current.imageSequences[0],
+          });
+        }, 0);
       }
     }
   }, [currentFrame]);
@@ -1444,9 +1446,13 @@ const AnalizeSession = () => {
                           : {}
                       }
                       key={index}
-                      onClick={() => handleRowClick(index, row.playID)}
                     >
-                      <td id={`RowSequenceSequence${index}`}>{row.sequence}</td>
+                      <td
+                        id={`RowSequenceSequence${index}`}
+                        onClick={() => handleRowClick(index, row.playID)}
+                      >
+                        {row.sequence}
+                      </td>
                       <td>
                         <input
                           type="checkbox"
@@ -1455,16 +1461,81 @@ const AnalizeSession = () => {
                           onChange={() => handleCheckboxChange(index)}
                         />
                       </td>
-                      <td id={`RowSequenceStimul${index}`}>{row.estimulo}</td>
-                      <td id={`RowSequenceDecisionMaking${index}`}>
+                      <td
+                        id={`RowSequenceStimul${index}`}
+                        onClick={() => {
+                          setCurrentFrame(
+                            Math.round(
+                              (parseInt(row.estimulo) * FPS.current) / 1000
+                            )
+                          );
+                          if (selectedRowIndex.current !== index) {
+                            handleRowClick(index, row.playID);
+                          }
+                        }}
+                      >
+                        {row.estimulo}
+                      </td>
+                      <td
+                        id={`RowSequenceDecisionMaking${index}`}
+                        onClick={() => {
+                          let value = parseInt(row.decisionMaking);
+                          if (value === 0) {
+                            value = parseInt(
+                              document.getElementById(
+                                `RowSequenceDecisionMaking${index}`
+                              ).innerText
+                            );
+                          }
+                          console.log(value);
+                          setCurrentFrame(
+                            Math.round((value * FPS.current) / 1000)
+                          );
+                          if (selectedRowIndex.current !== index) {
+                            handleRowClick(index, row.playID);
+                          }
+                        }}
+                      >
                         {row.decisionMaking}
                       </td>
-                      <td id={`RowSequenceArrival${index}`}>{row.arrival}</td>
-                      <td id={`RowSequenceVisuMotor${index}`}>
+                      <td
+                        id={`RowSequenceArrival${index}`}
+                        onClick={() => {
+                          let value = parseInt(row.arrival);
+                          if (value === 0) {
+                            value = parseInt(
+                              document.getElementById(
+                                `RowSequenceArrival${index}`
+                              ).innerText
+                            );
+                          }
+                          console.log(value);
+                          setCurrentFrame(
+                            Math.round((value * FPS.current) / 1000)
+                          );
+                          if (selectedRowIndex.current !== index) {
+                            handleRowClick(index, row.playID);
+                          }
+                        }}
+                      >
+                        {row.arrival}
+                      </td>
+                      <td
+                        id={`RowSequenceVisuMotor${index}`}
+                        onClick={() => handleRowClick(index, row.playID)}
+                      >
                         {row.visuMotor}
                       </td>
-                      <td id={`RowSequenceMotor${index}`}>{row.motor}</td>
-                      <td id={`RowSequenceCognitiveMotor${index}`}>
+                      <td
+                        id={`RowSequenceMotor${index}`}
+                        onClick={() => handleRowClick(index, row.playID)}
+                      >
+                        {row.motor}
+                      </td>
+                      <td
+                        id={`RowSequenceCognitiveMotor${index}`}
+                        onClick={() => handleRowClick(index, row.playID)}
+                      >
                         {row.cognitiveMotor}
                       </td>
                     </tr>
