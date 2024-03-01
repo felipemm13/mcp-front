@@ -21,23 +21,11 @@ const FootballSession = () => {
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
-  const numberOfPlays = useRef(4);
-  const isRandomSeed = useRef(true);
-  const seed = useRef(
-    infoSession.current?.seed?.current ||
-      Math.floor(Math.random() * (6000 - 1)) + 1
-  );
-  const secondsToNextPlay = useRef(2);
-  const secondsForPlayTransition = useRef(0);
-  const playsFromDb = useRef([]);
   const defaultPlays = useRef(0);
-  const sequenceOfPlays = useRef([]);
-  const typeOfSession = useRef("reactive");
-  const numOfDistractors = useRef(1);
   const listOfPLayers = useRef([]);
   const currentPlayer = useRef(null);
   const [playersList, setPlayersList] = useState([]);
-  const [currentSesionInfo, setCurrentSesionInfo] = useState(null);
+  const [currentSesionInfo, setCurrentSesionInfo] = useState();
   const [openWindowdDisabled, setOpenWindowDisabled] = useState(true);
   const [playsFromDbLoaded, setPlaysFromDbLoaded] = useState(true);
   const [formPlayerModal, setFormPlayerModal] = useState(false);
@@ -64,26 +52,36 @@ const FootballSession = () => {
         navigate("/");
       }
     }
-    listOfPLayers.current = [];
+
     window.addEventListener("beforeunload", () => {
       setShowWindowPortal(false);
-    });
-    document.getElementById("randomSeed").addEventListener("click", () => {
-      if (!isRandomSeed.current) {
-        document
-          .getElementById("seed")
-          .setAttribute("readonly", `${isRandomSeed.current}`);
-      } else {
-        document.getElementById("seed").removeAttribute("readonly");
-      }
     });
     document
       .getElementById("OpenAnalizerView")
       .addEventListener("click", openAnalizerView);
     document.getElementById("BackToHome").addEventListener("click", () => {
+      console.log(videoCurrentSession.current);
       navigate("/");
     });
-    getPlays();
+    if (infoSession.current) {
+      setCurrentSesionInfo({...infoSession.current,playerSelected:'default'});
+      getPlaysInfo(infoSession.current.playsFromDb);
+      setPlaysFromDbLoaded(false);
+    } else {
+      infoSession.current = {
+        typeOfSession: "reactive",
+        numOfDistractors: 1,
+        numberOfPlays: 4,
+        seed: Math.floor(Math.random() * (6000 - 1)) + 1,
+        isRandomSeed: true,
+        secondsToNextPlay: 2,
+        secondsForPlayTransition: 0,
+        sequenceOfPlays: [],
+        playerSelected:'default'
+      };
+      getPlays();
+    }
+    listOfPLayers.current = [];
     getPlayers();
   }, []);
 
@@ -228,19 +226,19 @@ const FootballSession = () => {
 
   const handleRegenerateSequence = () => {
     let sequenceGenerated = null;
-    let seedSequence = seed.current;
-    if (currentSesionInfo.typeOfSession?.current === "applied") {
+    let seedSequence = currentSesionInfo.seed;
+    if (currentSesionInfo.typeOfSession === "applied") {
       if (appliedMode === "aleatorioTotal") {
         sequenceGenerated = n_rand(
           playsInfo.maxTotal,
-          numberOfPlays.current,
-          seed.current
+          currentSesionInfo.numberOfPlays,
+          seedSequence
         );
       } else if (appliedMode === "aleatorioTipo") {
         sequenceGenerated = [];
         let offensivePlays = [];
         let defensivePlays = [];
-        for (let play of playsFromDb.current) {
+        for (let play of currentSesionInfo.playsFromDb) {
           if (play.attack) {
             offensivePlays.push(play);
           } else {
@@ -264,7 +262,7 @@ const FootballSession = () => {
           return rng() - 0.5;
         });
       }
-    }else if(currentSesionInfo.typeOfSession?.current === 'evaluative') {
+    } else if (currentSesionInfo.typeOfSession === "evaluative") {
       if (
         playsInfo.evaluativeOptions.length &&
         playsInfo.evaluativeList.length
@@ -292,7 +290,7 @@ const FootballSession = () => {
       }
     } else {
       sequenceGenerated = [];
-      for (var i = 0; i < numberOfPlays.current; i++) {
+      for (var i = 0; i < currentSesionInfo.numberOfPlays; i++) {
         let sr = seedrandom(seedSequence * (i + 1));
         let numRand = Math.ceil(sr() * 8);
         if (numRand >= 5) {
@@ -316,12 +314,11 @@ const FootballSession = () => {
   const setSequenceLabel = (sequenceArray) => {
     var strSequence = [];
     for (var number of sequenceArray) {
-      if (
-        typeOfSession.current === "applied" ||
-        infoSession.current?.typeOfSession?.current === "applied"
-      ) {
+      if (currentSesionInfo?.typeOfSession === "applied") {
         if (appliedMode === "aleatorioTotal") {
-          strSequence.push(parseInt(playsFromDb.current[number - 1].playsId));
+          strSequence.push(
+            parseInt(currentSesionInfo.playsFromDb[number - 1].playsId)
+          );
         } else if (
           appliedMode === "aleatorioTipo" ||
           appliedMode === "evaluative"
@@ -332,34 +329,29 @@ const FootballSession = () => {
         strSequence.push(number);
       }
     }
-    sequenceOfPlays.current = strSequence;
+    if (strSequence.length === 0) {
+      strSequence = ["No se genero ninguna secuencia, vuelva a intentar"];
+    }
     setCurrentSesionInfo({
       ...currentSesionInfo,
-      sequenceOfPlays: sequenceOfPlays,
+      sequenceOfPlays: strSequence,
     });
-    if (strSequence.length === 0) {
-      document.getElementById("showSessionSequence").value =
-        "No se genero ninguna secuencia, vuelva a intentar";
-    } else {
-      document.getElementById("showSessionSequence").value =
-        strSequence.join(" → ");
-    }
   };
 
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
         defaultPlays.current = response.length;
-        playsFromDb.current = [];
+        let playsFromDbCurrent = [];
         for (var play of response) {
           if (play.enable) {
-            playsFromDb.current.push(play);
+            playsFromDbCurrent.push(play);
           }
         }
-        getPlaysInfo(playsFromDb.current);
+        getPlaysInfo(playsFromDbCurrent);
         setCurrentSesionInfo({
-          ...currentSesionInfo,
-          playsFromDb: playsFromDb,
+          ...infoSession.current,
+          playsFromDb: playsFromDbCurrent,
         });
         setPlaysFromDbLoaded(false);
       })
@@ -435,8 +427,14 @@ const FootballSession = () => {
   };
 
   useEffect(() => {
-    infoSession.current = { ...infoSession.current, ...currentSesionInfo };
-    //console.log(infoSession.current);
+    setTimeout(
+      () =>
+        (infoSession.current = {
+          ...infoSession.current,
+          ...currentSesionInfo,
+        }),
+      0
+    );
   }, [currentSesionInfo]);
 
   return (
@@ -543,12 +541,11 @@ const FootballSession = () => {
                 id="reactive"
                 name="typeGame"
                 value="reactive"
-                defaultChecked={typeOfSession.current === "reactive"}
+                checked={currentSesionInfo?.typeOfSession === "reactive"}
                 onClick={(e) => {
-                  typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
-                    typeOfSession: typeOfSession,
+                    typeOfSession: e.target.value,
                   });
                 }}
               />
@@ -564,11 +561,11 @@ const FootballSession = () => {
                 id="discriminative"
                 name="typeGame"
                 value="discriminative"
+                checked={currentSesionInfo?.typeOfSession === "discriminative"}
                 onChange={(e) => {
-                  typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
-                    typeOfSession: typeOfSession,
+                    typeOfSession: e.target.value,
                   });
                 }}
               />
@@ -577,8 +574,7 @@ const FootballSession = () => {
                   <h5>Velocidad Cognitiva-Motriz Discriminativa</h5>
                 </b>
               </label>
-              {currentSesionInfo?.typeOfSession?.current ===
-                "discriminative" && (
+              {currentSesionInfo?.typeOfSession === "discriminative" && (
                 <div className="distractorsSelect">
                   <label id="distractorsLabel" htmlFor="distractors">
                     <b>
@@ -592,17 +588,18 @@ const FootballSession = () => {
                     min="1"
                     max="7"
                     step="1"
-                    defaultValue={
-                      infoSession.current?.numOfDistractors?.current || 1
-                    }
+                    value={currentSesionInfo?.numOfDistractors}
                     onChange={(e) => {
-                      if (e.target.value > 7) {
-                        e.target.value = 7;
+                      if (e.target.value) {
+                        if (parseFloat(e.target.value) > 7) {
+                          e.target.value = 7;
+                        }
+                      } else {
+                        e.target.value = currentSesionInfo.numOfDistractors;
                       }
-                      numOfDistractors.current = e.target.value;
                       setCurrentSesionInfo({
                         ...currentSesionInfo,
-                        numOfDistractors: numOfDistractors,
+                        numOfDistractors: parseInt(e.target.value),
                       });
                     }}
                   ></input>
@@ -615,11 +612,14 @@ const FootballSession = () => {
                 id="applied"
                 name="typeGame"
                 value="applied"
+                checked={
+                  currentSesionInfo?.typeOfSession === "applied" ||
+                  currentSesionInfo?.typeOfSession === "evaluative"
+                }
                 onClick={(e) => {
-                  typeOfSession.current = e.target.value;
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
-                    typeOfSession: typeOfSession,
+                    typeOfSession: e.target.value,
                   });
                 }}
               />
@@ -628,7 +628,8 @@ const FootballSession = () => {
                   <h5>Velocidad Cognitiva-Motriz Aplicada</h5>
                 </b>
               </label>
-              {currentSesionInfo?.typeOfSession?.current === "applied" && (
+              {(currentSesionInfo?.typeOfSession === "applied" ||
+                currentSesionInfo?.typeOfSession == "evaluative") && (
                 <div className="distractorsSelect">
                   <label id="distractorsLabel" htmlFor="distractors">
                     <b>
@@ -639,10 +640,14 @@ const FootballSession = () => {
                     defaultValue={appliedMode}
                     onChange={(e) => {
                       if (e.target.value === "evaluative") {
-                        typeOfSession.current = e.target.value;
                         setCurrentSesionInfo({
                           ...currentSesionInfo,
-                          typeOfSession: typeOfSession,
+                          typeOfSession: e.target.value,
+                        });
+                      } else {
+                        setCurrentSesionInfo({
+                          ...currentSesionInfo,
+                          typeOfSession: "applied",
                         });
                       }
                       setAppliedMode(e.target.value);
@@ -659,7 +664,8 @@ const FootballSession = () => {
           <div className="sessionInfo">
             <div className="sessionPlaysInfo">
               {(appliedMode === "aleatorioTotal" ||
-                (currentSesionInfo?.typeOfSession?.current !== "applied" && currentSesionInfo?.typeOfSession?.current !== "evaluative") ) && (
+                (currentSesionInfo?.typeOfSession !== "applied" &&
+                  currentSesionInfo?.typeOfSession !== "evaluative")) && (
                 <div className="sessionPlaysValues">
                   <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
                     <b>
@@ -670,31 +676,30 @@ const FootballSession = () => {
                     type="number"
                     name="numberOfPlays"
                     id="numberOfPlays"
-                    defaultValue={4}
+                    defaultValue={currentSesionInfo?.numberOfPlays}
                     min="1"
                     max={
-                      currentSesionInfo?.typeOfSession?.current === "applied" &&
+                      currentSesionInfo?.typeOfSession === "applied" &&
                       playsInfo?.maxTotal
                     }
                     step="1"
                     onChange={(e) => {
                       if (
-                        currentSesionInfo?.typeOfSession?.current ===
-                          "applied" &&
+                        currentSesionInfo?.typeOfSession === "applied" &&
                         e.target.value > playsInfo?.maxTotal
                       ) {
                         e.target.value = playsInfo?.maxTotal;
                       }
-                      numberOfPlays.current = e.target.value;
+
                       setCurrentSesionInfo({
                         ...currentSesionInfo,
-                        numberOfPlays: numberOfPlays,
+                        numberOfPlays: e.target.value,
                       });
                     }}
                   />
                 </div>
               )}
-              {currentSesionInfo?.typeOfSession?.current === "applied" &&
+              {currentSesionInfo?.typeOfSession === "applied" &&
                 appliedMode === "aleatorioTipo" && (
                   <div className="sessionPlaysValues">
                     <label id="numberOfPlaysLabel" htmlFor="numberOfPlays">
@@ -739,7 +744,7 @@ const FootballSession = () => {
                     />
                   </div>
                 )}
-              {currentSesionInfo?.typeOfSession?.current === "evaluative" &&
+              {currentSesionInfo?.typeOfSession === "evaluative" &&
                 appliedMode === "evaluative" && (
                   <div className="playsTestSelect">
                     <label id="distractorsLabel" htmlFor="distractors">
@@ -750,6 +755,10 @@ const FootballSession = () => {
                     <select
                       onChange={(e) => {
                         lengthEvalSequence.current = parseInt(e.target.value);
+                        setCurrentSesionInfo({
+                          ...currentSesionInfo,
+                          numberOfPlays: e.target.value,
+                        });
                       }}
                     >
                       {playsInfo.evaluativeOptions.length ? (
@@ -779,18 +788,19 @@ const FootballSession = () => {
                   type="checkbox"
                   id="randomSeed"
                   name="randomSeed"
-                  defaultChecked={
-                    infoSession.current?.isRandomSeed?.current || true
-                  }
-                  onChange={() => {
-                    isRandomSeed.current = !isRandomSeed.current;
-                    if (isRandomSeed.current) {
-                      document.getElementById("seed").value =
-                        Math.floor(Math.random() * (6000 - 1)) + 1;
-                      seed.current = document.getElementById("seed").value;
+                  checked={currentSesionInfo?.isRandomSeed}
+                  onClick={() => {
+                    let checked = currentSesionInfo.isRandomSeed;
+                    if (!checked) {
                       setCurrentSesionInfo({
                         ...currentSesionInfo,
-                        seed: seed,
+                        seed: Math.floor(Math.random() * (6000 - 1)) + 1,
+                        isRandomSeed: !checked,
+                      });
+                    } else {
+                      setCurrentSesionInfo({
+                        ...currentSesionInfo,
+                        isRandomSeed: !checked,
                       });
                     }
                   }}
@@ -806,12 +816,13 @@ const FootballSession = () => {
                   id="seed"
                   min="1"
                   step="1"
-                  defaultValue={
-                    infoSession.current?.seed?.current || seed.current
-                  }
-                  readOnly
+                  value={currentSesionInfo?.seed}
+                  readOnly={currentSesionInfo?.isRandomSeed}
                   onChange={(e) => {
-                    seed.current = e.target.value;
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      seed: parseInt(e.target.value),
+                    });
                   }}
                 />
               </div>
@@ -827,14 +838,11 @@ const FootballSession = () => {
                   id="secondsToNextPlay"
                   min="1"
                   step="0.5"
-                  defaultValue={
-                    infoSession.current?.secondsToNextPlay?.current || 2
-                  }
+                  value={currentSesionInfo?.secondsToNextPlay}
                   onChange={(e) => {
-                    secondsToNextPlay.current = e.target.value;
                     setCurrentSesionInfo({
                       ...currentSesionInfo,
-                      secondsToNextPlay: secondsToNextPlay,
+                      secondsToNextPlay: parseFloat(e.target.value),
                     });
                   }}
                 ></input>
@@ -855,13 +863,12 @@ const FootballSession = () => {
                   min="0"
                   step="0.05"
                   defaultValue={
-                    infoSession.current?.secondsForPlayTransition?.current || 0
+                    currentSesionInfo?.secondsForPlayTransition || 0
                   }
                   onChange={(e) => {
-                    secondsForPlayTransition.current = e.target.value;
                     setCurrentSesionInfo({
                       ...currentSesionInfo,
-                      secondsForPlayTransition: secondsForPlayTransition,
+                      secondsForPlayTransition: parseFloat(e.target.value),
                     });
                   }}
                 ></input>
@@ -885,19 +892,6 @@ const FootballSession = () => {
               </button>
               <button
                 onClick={() => {
-                  if (!showWindowPortal) {
-                    setCurrentSesionInfo({
-                      ...currentSesionInfo,
-                      numberOfPlays: numberOfPlays,
-                      seed: seed,
-                      secondsToNextPlay: secondsToNextPlay,
-                      secondsForPlayTransition: secondsForPlayTransition,
-                      typeOfSession: typeOfSession,
-                      numOfDistractors: numOfDistractors,
-                      playsFromDb: playsFromDb,
-                      sequenceOfPlays: sequenceOfPlays,
-                    });
-                  }
                   setShowWindowPortal(!showWindowPortal);
                 }}
                 className="sessionOpenPlayerWindow"
@@ -931,6 +925,11 @@ const FootballSession = () => {
                 id="showSessionSequence"
                 className="sessionSequence"
                 placeholder="Secuencia de la sesión"
+                value={
+                  currentSesionInfo?.sequenceOfPlays.length
+                    ? currentSesionInfo?.sequenceOfPlays.join(" → ")
+                    : ""
+                }
               />
             </div>
             <div className="sessionPlayer">
@@ -945,7 +944,7 @@ const FootballSession = () => {
                     });
                   }}
                   defaultValue={
-                    infoSession.current?.playerSelected?.current || "default"
+                   currentSesionInfo?.playerSelected
                   }
                 >
                   {playersList.length ? (

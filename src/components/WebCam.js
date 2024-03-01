@@ -136,13 +136,13 @@ const WebCam = (props) => {
       playerId: parseInt(infoSession.current.playerSelected),
       timestamp: currentDate.toISOString(),
       duration: Math.floor(recorderVideo.current.size / 1000),
-      numPlays: infoSession.current.numberOfPlays.current,
-      seed: infoSession.current.seed.current,
-      sessionType: infoSession.current.typeOfSession.current,
-      timeBetweenPlays: infoSession.current.secondsToNextPlay.current,
-      transitionTime: infoSession.current.secondsForPlayTransition.current,
+      numPlays: infoSession.current.numberOfPlays,
+      seed: infoSession.current.seed,
+      sessionType: infoSession.current.typeOfSession,
+      timeBetweenPlays: infoSession.current.secondsToNextPlay,
+      transitionTime: infoSession.current.secondsForPlayTransition,
       videoURL: videoURL,
-      numDistractors: infoSession.current.numOfDistractors.current,
+      numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
     };
     const sessionAnalyticData = {
@@ -159,7 +159,7 @@ const WebCam = (props) => {
       visuMotorTotal: 0,
       wrongPercentage: 0,
     };
-    const sessionMovesData = infoSession.current.sequenceOfPlays.current.map(
+    const sessionMovesData = infoSession.current.sequenceOfPlays.map(
       (play, index) => {
         return {
           moveNum: index + 1,
@@ -278,8 +278,8 @@ const WebCam = (props) => {
       props.showWindowPortal &&
       cameraIsAvailable &&
       props.infoSession &&
-      props.infoSession.playerSelected &&
-      props.infoSession.sequenceOfPlays.current.length
+      props.infoSession.playerSelected!=='default' &&
+      (props.infoSession.sequenceOfPlays.length && typeof props.infoSession.sequenceOfPlays[0] === 'number')
     ) {
       document.getElementById("StartCaptureVideo").removeAttribute("disabled");
     } else {

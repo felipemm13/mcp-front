@@ -88,7 +88,7 @@ const FootballSessionView = ({ view }) => {
     sessionContainer.current.style.border = "5px solid #FF0000";
     containerWidth.current = sessionContainer.current.clientWidth;
     containerHeight.current = sessionContainer.current.clientHeight;
-    switch (infoSession.current.typeOfSession.current) {
+    switch (infoSession.current.typeOfSession) {
       case "reactive":
         handleReactiveAnimation();
         break;
@@ -111,6 +111,7 @@ const FootballSessionView = ({ view }) => {
       document
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("stopRecord"));
+
       infoSession.current = {
         ...infoSession.current,
         imageSequences: imageSequences.current,
@@ -171,7 +172,7 @@ const FootballSessionView = ({ view }) => {
         cy: containerHeight.current * (5 / 6),
       },
     ];
-    const ballAnimationMoves = infoSession.current.sequenceOfPlays.current.map(
+    const ballAnimationMoves = infoSession.current.sequenceOfPlays.map(
       (sequence) => {
         let ballPosition;
         if (sequence > 4) {
@@ -188,14 +189,14 @@ const FootballSessionView = ({ view }) => {
             x: positions[ballPosition].cx + 0.1,
             y: positions[ballPosition].cy,
             opacity: 1,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           };
         } else {
           return {
             x: positions[ballPosition].cx,
             y: positions[ballPosition].cy,
             opacity: 1,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           };
         }
       }
@@ -206,8 +207,8 @@ const FootballSessionView = ({ view }) => {
         imageSequences.current.push(dataUrl);
       });
     }, [
-      infoSession.current.secondsToNextPlay.current * 250 +
-        infoSession.current.secondsForPlayTransition.current * 1000,
+      infoSession.current.secondsToNextPlay * 250 +
+        infoSession.current.secondsForPlayTransition * 1000,
     ]);
     ballAnimationRef.update({
       from: ballAnimationMoves[0],
@@ -217,18 +218,18 @@ const FootballSessionView = ({ view }) => {
           x: containerWidth.current * 0.5,
           y: containerHeight.current * 0.5,
           opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
+          delay: infoSession.current.secondsToNextPlay * 1000,
         },
       ],
       config: {
-        duration: infoSession.current.secondsForPlayTransition.current * 1000,
+        duration: infoSession.current.secondsForPlayTransition * 1000,
       },
       onResolve: () => handleFinishAnimation(),
       onStart: () => {
         if (view === "coach") {
           if (
             sequenceIndex <
-            infoSession.current.sequenceOfPlays.current.length - 1
+            infoSession.current.sequenceOfPlays.length - 1
           ) {
             stimulusTimeSequence.current.push(new Date().getTime() - time);
             setTimeout(() => {
@@ -236,8 +237,8 @@ const FootballSessionView = ({ view }) => {
                 imageSequences.current.push(dataUrl);
               });
             }, [
-              infoSession.current.secondsToNextPlay.current * 250 +
-                infoSession.current.secondsForPlayTransition.current * 1000,
+              infoSession.current.secondsToNextPlay * 250 +
+                infoSession.current.secondsForPlayTransition * 1000,
             ]);
             sequenceIndex++;
           }
@@ -249,15 +250,14 @@ const FootballSessionView = ({ view }) => {
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("startRecord"));
     }
-    let time = new Date().getTime();
     stimulusTimeSequence.current.push(0);
+    let time = new Date().getTime();
     ballAnimationRef.start();
   };
 
   const handleDiscriminativeAnimation = () => {
     let seed = new Date().getSeconds();
-    let checkbox = document.getElementById("randomSeed").isChecked;
-    if (checkbox) {
+    if (infoSession.current.isRandoomSeed) {
       if (infoSession.current.seed) {
         seed = infoSession.current.seed;
       }
@@ -268,9 +268,9 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     setShowAnimation("discriminative");
-    setNumberOfDistractors(infoSession.current.numOfDistractors.current + 1);
+    setNumberOfDistractors(infoSession.current.numOfDistractors + 1);
     let distractorsMoves = [[], [], [], [], [], [], [], []];
-    infoSession.current.sequenceOfPlays.current.forEach(
+    infoSession.current.sequenceOfPlays.forEach(
       (sequence, iteracion) => {
         colors = [
           "black",
@@ -320,7 +320,7 @@ const FootballSessionView = ({ view }) => {
         let indexPosition;
         for (
           let i = 0;
-          i <= infoSession.current.numOfDistractors.current;
+          i <= infoSession.current.numOfDistractors;
           i++
         ) {
           if (colors.length - 1 > 0) {
@@ -333,12 +333,12 @@ const FootballSessionView = ({ view }) => {
             indexColor = 0;
           }
           if (i === 0) {
-            if (infoSession.current.sequenceOfPlays.current[iteracion] > 4) {
+            if (infoSession.current.sequenceOfPlays[iteracion] > 4) {
               indexPosition =
-                infoSession.current.sequenceOfPlays.current[iteracion] - 2;
+                infoSession.current.sequenceOfPlays[iteracion] - 2;
             } else {
               indexPosition =
-                infoSession.current.sequenceOfPlays.current[iteracion] - 1;
+                infoSession.current.sequenceOfPlays[iteracion] - 1;
             }
           } else {
             if (positions.length - 1 > 0) {
@@ -363,7 +363,7 @@ const FootballSessionView = ({ view }) => {
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: infoSession.current.secondsToNextPlay * 1000,
             };
           } else {
             distractorsMoves[i][iteracion] = {
@@ -371,7 +371,7 @@ const FootballSessionView = ({ view }) => {
               cy: positions[indexPosition].cy,
               opacity: 1,
               fill: colors[indexColor],
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: infoSession.current.secondsToNextPlay * 1000,
             };
           }
           colors.splice(indexColor, 1);
@@ -390,15 +390,15 @@ const FootballSessionView = ({ view }) => {
           teamRef.current.style.fill = color;
           //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
           if (
-            indexSequence < infoSession.current.sequenceOfPlays.current.length
+            indexSequence < infoSession.current.sequenceOfPlays.length
           ) {
             setTimeout(() => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                 imageSequences.current.push(dataUrl);
               });
             }, [
-              infoSession.current.secondsToNextPlay.current * 250 +
-                infoSession.current.secondsForPlayTransition.current * 1000,
+              infoSession.current.secondsToNextPlay * 250 +
+                infoSession.current.secondsForPlayTransition * 1000,
             ]);
             indexSequence++;
           }
@@ -411,12 +411,12 @@ const FootballSessionView = ({ view }) => {
               cx: containerWidth.current * 0.5,
               cy: containerHeight.current * 0.5,
               opacity: 0,
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: infoSession.current.secondsToNextPlay * 1000,
             },
           ],
           config: {
             duration:
-              infoSession.current.secondsForPlayTransition.current * 1000,
+              infoSession.current.secondsForPlayTransition * 1000,
           },
           onStart: () => {
             if (i === 0 && distractorsMoves[i][sequenceIndex]) {
@@ -425,7 +425,7 @@ const FootballSessionView = ({ view }) => {
               teamRef.current.style.fill = color;
               if (
                 indexSequence <
-                infoSession.current.sequenceOfPlays.current.length
+                infoSession.current.sequenceOfPlays.length
               ) {
                 stimulusTimeSequence.current.push(new Date().getTime() - time);
                 setTimeout(() => {
@@ -435,8 +435,8 @@ const FootballSessionView = ({ view }) => {
                       imageSequences.current.push(dataUrl);
                     });
                 }, [
-                  infoSession.current.secondsToNextPlay.current * 250 +
-                    infoSession.current.secondsForPlayTransition.current * 1000,
+                  infoSession.current.secondsToNextPlay * 250 +
+                    infoSession.current.secondsForPlayTransition * 1000,
                 ]);
                 indexSequence++;
               }
@@ -464,9 +464,9 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     let sequenceIndex = 0;
-    const plays = infoSession.current.sequenceOfPlays.current.map(
+    const plays = infoSession.current.sequenceOfPlays.map(
       (sequence) => {
-        let play = infoSession.current.playsFromDb.current.find(
+        let play = infoSession.current.playsFromDb.find(
           (play) => play.playsId === sequence
         );
         return play;
@@ -513,7 +513,7 @@ const FootballSessionView = ({ view }) => {
             cx: (player.xCoor / 48) * containerWidth.current,
             cy: (player.yCoor / 48) * containerHeight.current,
             opacity: 1,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           };
         } else {
           return undefined;
@@ -535,7 +535,7 @@ const FootballSessionView = ({ view }) => {
               cx: containerWidth.current * 0.5 + j / 10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: infoSession.current.secondsToNextPlay * 1000,
             };
           }
         })
@@ -550,7 +550,7 @@ const FootballSessionView = ({ view }) => {
             cx: (player.xCoor / 48) * containerWidth.current,
             cy: (player.yCoor / 48) * containerHeight.current,
             opacity: 1,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           };
         } else {
           return undefined;
@@ -571,7 +571,7 @@ const FootballSessionView = ({ view }) => {
               cx: containerWidth.current * 0.5 + j / 10,
               cy: containerHeight.current * 0.5,
               opacity: 0,
-              delay: infoSession.current.secondsToNextPlay.current * 1000,
+              delay: infoSession.current.secondsToNextPlay * 1000,
             };
           }
         })
@@ -584,7 +584,7 @@ const FootballSessionView = ({ view }) => {
         cx: (play.IdealPositionX / 48) * containerWidth.current,
         cy: (play.IdealPositionY / 48) * containerHeight.current,
         opacity: 1,
-        delay: infoSession.current.secondsToNextPlay.current * 1000,
+        delay: infoSession.current.secondsToNextPlay * 1000,
       };
     });
 
@@ -594,7 +594,7 @@ const FootballSessionView = ({ view }) => {
         x: (play.ballX / 48) * containerWidth.current,
         y: (play.ballY / 48) * containerHeight.current,
         opacity: 1,
-        delay: infoSession.current.secondsToNextPlay.current * 1000,
+        delay: infoSession.current.secondsToNextPlay * 1000,
       };
     });
 
@@ -644,11 +644,11 @@ const FootballSessionView = ({ view }) => {
             cx: containerWidth.current * 0.5,
             cy: containerHeight.current * 0.5,
             opacity: 0,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           },
         ],
         config: {
-          duration: infoSession.current.secondsForPlayTransition.current * 1000,
+          duration: infoSession.current.secondsForPlayTransition * 1000,
         },
       };
     }, []);
@@ -663,11 +663,11 @@ const FootballSessionView = ({ view }) => {
             cx: containerWidth.current * 0.5,
             cy: containerHeight.current * 0.5,
             opacity: 0,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           },
         ],
         config: {
-          duration: infoSession.current.secondsForPlayTransition.current * 1000,
+          duration: infoSession.current.secondsForPlayTransition * 1000,
         },
       };
     }, []);
@@ -681,11 +681,11 @@ const FootballSessionView = ({ view }) => {
           cx: containerWidth.current * 0.5,
           cy: containerHeight.current * 0.5,
           opacity: 0,
-          delay: infoSession.current.secondsToNextPlay.current * 1000,
+          delay: infoSession.current.secondsToNextPlay * 1000,
         },
       ],
       config: {
-        duration: infoSession.current.secondsForPlayTransition.current * 1000,
+        duration: infoSession.current.secondsForPlayTransition * 1000,
       },
       onStart: () => {
         if (playerTeams.length > teamIndex) {
@@ -694,7 +694,7 @@ const FootballSessionView = ({ view }) => {
         }
         if (view === "coach") {
           if (
-            sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+            sequenceIndex < infoSession.current.sequenceOfPlays.length
           ) {
             stimulusTimeSequence.current.push(new Date().getTime() - time);
             setTimeout(() => {
@@ -702,8 +702,8 @@ const FootballSessionView = ({ view }) => {
                 imageSequences.current.push(dataUrl);
               });
             }, [
-              infoSession.current.secondsToNextPlay.current * 250 +
-              infoSession.current.secondsForPlayTransition.current * 1000,
+              infoSession.current.secondsToNextPlay * 250 +
+              infoSession.current.secondsForPlayTransition * 1000,
             ]);
             sequenceIndex++;
           }
@@ -719,15 +719,15 @@ const FootballSessionView = ({ view }) => {
         playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
       if (view === "coach") {
         if (
-          sequenceIndex < infoSession.current.sequenceOfPlays.current.length
+          sequenceIndex < infoSession.current.sequenceOfPlays.length
         ) {
           setTimeout(() => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
             });
           }, [
-            infoSession.current.secondsToNextPlay.current * 250 +
-              infoSession.current.secondsForPlayTransition.current * 1000,
+            infoSession.current.secondsToNextPlay * 250 +
+              infoSession.current.secondsForPlayTransition * 1000,
           ]);
           sequenceIndex++;
         }
@@ -740,11 +740,11 @@ const FootballSessionView = ({ view }) => {
             x: containerWidth.current * 0.5,
             y: containerHeight.current * 0.5,
             opacity: 0,
-            delay: infoSession.current.secondsToNextPlay.current * 1000,
+            delay: infoSession.current.secondsToNextPlay * 1000,
           },
         ],
         config: {
-          duration: infoSession.current.secondsForPlayTransition.current * 1000,
+          duration: infoSession.current.secondsForPlayTransition * 1000,
         },
       };
     });

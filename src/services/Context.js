@@ -7,7 +7,7 @@ const ProviderContext = ({ children }) => {
   const tercios = [1 / 3, 2 / 3, 3 / 3];
   const userContext = useRef(null);
   const videoCurrentSession = useRef(null);
-  const infoSession = useRef({});
+  const infoSession = useRef(null);
   const currentFPS = useRef(null);
   const CrudApi = new Connect();
   const listOfPlayers = useRef([]);

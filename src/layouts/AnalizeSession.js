@@ -129,7 +129,6 @@ const AnalizeSession = () => {
       getVideoDuration(url);
       //console.log(videoDuration);
       setVideoSession(url);
-      console.log(infoSession.current.sequenceOfPlays.current);
       setImagePlay({
         currentPlay: infoSession.current.imageSequences[0],
         prevPlay: infoSession.current.imageSequences[0],
@@ -137,10 +136,10 @@ const AnalizeSession = () => {
 
       setTableData(
         Array.from(
-          { length: infoSession.current.sequenceOfPlays.current.length},
+          { length: infoSession.current.sequenceOfPlays.length},
           (element, index) => ({
             sequence: index + 1,
-            playID: infoSession.current.sequenceOfPlays.current[index],
+            playID: infoSession.current.sequenceOfPlays[index],
             error: false,
             estimulo: infoSession.current.stimulusTime[index],
             decisionMaking: 0,
@@ -617,13 +616,13 @@ const AnalizeSession = () => {
       playerId: parseInt(infoSession.current.playerSelected),
       timestamp: currentDate.toISOString(),
       duration: 0,
-      numPlays: infoSession.current.numberOfPlays.current,
-      seed: infoSession.current.seed.current,
-      sessionType: infoSession.current.typeOfSession.current,
-      timeBetweenPlays: infoSession.current.secondsToNextPlay.current,
-      transitionTime: infoSession.current.secondsForPlayTransition.current,
+      numPlays: infoSession.current.numberOfPlays,
+      seed: infoSession.current.seed,
+      sessionType: infoSession.current.typeOfSession,
+      timeBetweenPlays: infoSession.current.secondsToNextPlay,
+      transitionTime: infoSession.current.secondsForPlayTransition,
       videoURL: videoURL,
-      numDistractors: infoSession.current.numOfDistractors.current,
+      numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
     };
     const sessionAnalyticData = {
@@ -865,7 +864,7 @@ const AnalizeSession = () => {
                     ? currentSession.current[0]
                       ? currentSession.current[0].sessionType
                       : ""
-                    : infoSession.current.typeOfSession.current
+                    : infoSession.current.typeOfSession
                 }
               ></input>
               <label>Grupo: </label>
