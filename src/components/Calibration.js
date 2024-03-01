@@ -22,14 +22,13 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
 
-    await fetch("http://localhost:3001/calibration_automatic", {
-      //await fetch("https://200.1.17.171:3000/calibration_automatic", {
+    await fetch("http://host.docker.internal:3001/calibration_automatic", {
       method: "POST",
-      mode: "no-cors",
+      mode: "cors",
       body: JSON.stringify({
         Screenshot: imgTemp,
       }),
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*","Acces-ControlAllow-Methods":'GET'},
       //x-www-form-urlencoded
     })
       .then((response) => response.json()) //obtener las marcas
@@ -84,15 +83,14 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       console.log(mark,cx,circulo.getAttribute("cx"),cy,circulo.getAttribute("cy"))
       centros.push({x: parseFloat(cx), y: parseFloat(cy) });
     });
-    await fetch("http://localhost:3001/calibration_semiautomatic", {
-      //await fetch("https://200.1.17.171:3000/calibration_semiautomatic", {
+    await fetch("http://host.docker.internal:3001/calibration_semiautomatic", {
       method: "POST",
-      mode: "no-cors",
+      mode: "cors",
       body: JSON.stringify({
         Screenshot: imgSrc,
         marks: centros,
       }),
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*","Acces-ControlAllow-Methods":'POST'},
       //x-www-form-urlencoded
     })
       .then((response) => response.json()) //obtener las marcas
