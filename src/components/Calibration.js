@@ -16,13 +16,11 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   );
   const [proportions, setProportions] = useState({ width: null, height: null });
   const calib_measures = useRef({ calib_h: 0, calib_w: 0 });
-  const semiCalibMarks = useRef([])
 
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
-
-    await fetch("http://localhost:3001/calibration_automatic", {
+    await fetch("http://mcp_vision:3001/calibration_automatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
@@ -83,7 +81,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       console.log(mark,cx,circulo.getAttribute("cx"),cy,circulo.getAttribute("cy"))
       centros.push({x: parseFloat(cx), y: parseFloat(cy) });
     });
-    await fetch("http://localhost:3001/calibration_semiautomatic", {
+    await fetch("http://mcp_vision:3001/calibration_semiautomatic", {
       method: "POST",
       mode: "cors",
       body: JSON.stringify({
