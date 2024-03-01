@@ -137,7 +137,7 @@ const AnalizeSession = () => {
 
       setTableData(
         Array.from(
-          { length: infoSession.current.numberOfPlays.current },
+          { length: infoSession.current.sequenceOfPlays.current.length},
           (element, index) => ({
             sequence: index + 1,
             playID: infoSession.current.sequenceOfPlays.current[index],
