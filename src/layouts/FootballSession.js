@@ -65,7 +65,10 @@ const FootballSession = () => {
     });
     if (infoSession.current) {
       setCurrentSesionInfo({...infoSession.current,playerSelected:'default'});
-      getPlaysInfo(infoSession.current.playsFromDb);
+      if(infoSession.current.playsFromDb){
+      getPlaysInfo(infoSession.current.playsFromDb);}else{
+        getPlays();
+      }
       setPlaysFromDbLoaded(false);
     } else {
       infoSession.current = {

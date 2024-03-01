@@ -962,7 +962,7 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
-              {loading && (
+              {loading &&(
                 <svg
                   width="40"
                   height="40"
@@ -983,14 +983,15 @@ const AnalizeSession = () => {
                 </svg>
               )}
               <ReactPlayer
-                playing={playingVideo}
-                ref={(videoRef) => (videoRefs.current[0] = videoRef)}
-                id="VideoPlayers"
-                width={"90%"}
-                height={"100%"}
-                url={videoSession}
-                playdelay={-66}
+              playing={playingVideo}
+              ref={(videoRef) => (videoRefs.current[0] = videoRef)}
+              id="VideoPlayers"
+              width={"90%"}
+              height={"100%"}
+              url={videoSession}
+              playdelay={-66}
               />
+
             </div>
 
             <div className="AnalizeSessionVideoFrame">
