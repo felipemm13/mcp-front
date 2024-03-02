@@ -1,21 +1,65 @@
 .OtherSessionsContainer {
-    width: 100%;
-    height: 100%;
+    justify-self: center;
+    align-self: center;
+    width: calc(100% - 1em);
+    margin:0.5em;
+    height: calc(100% - 1em);
     display: flex;
     flex-direction: column;
-    align-items: center;
     color: white;
 }
 
-.OtherSessionsFilters{
+.OtherSessionsBackButton {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: 0px;
+    border: 0px;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    text-decoration: none;
+    font-size: 1rem;
+    line-height: 0.75;
+    text-transform: uppercase;
+    margin: 0px;
+    padding: 0.25em;
+    border-radius: 4px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+    width: 100% ;
+    color: rgb(255, 255, 255);
+    background-color: rgb(218, 37, 153);
+    gap: 0.5em;
+    fill: #fff;
+}
+
+.OtherSessionsFiltersContainer {
     width: 100%;
+    height: 10%;
+    display: flex-start;
+    align-items: center;
+}
+
+.filtersTitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+.OtherSessionsFilters {
+    width: 100% - 1em;
     height: 10%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
-    gap: 1rem;
 }
+
 .OtherSessionsLoading {
     width: 100vw;
     height: 100vh;
@@ -31,15 +75,17 @@
     text-align: center;
     gap: 1rem;
 }
-.OtherSessionsControlSessionButtons{
+
+.OtherSessionsControlSessionButtons {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding:0.5em;
+    padding: 0.5em;
     gap: 1rem;
 
 }
-.OtherSessionsButtons{
+
+.OtherSessionsButtons {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -70,6 +116,7 @@
     fill: #fff;
     overflow: hidden;
 }
+
 .OtherSessionsButtons:hover:enabled {
     background-color: rgb(218, 37, 153, 0.75);
     cursor: pointer;
@@ -109,7 +156,36 @@
     }
 }
 
-.selected-row{
-    background : rgb(255, 255, 255, 0.75);
+.selected-row {
+    background: rgb(255, 255, 255, 0.75);
     color: #000;
+}
+
+.OtherSessionsLabelInput {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+
+}
+
+
+.OtherSessionsRow{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap:1em;
+    padding-top: 0.5em;
+}
+.OtherSessionsInfo{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    margin-top: 0.5em;
+    gap: 0.5em;
+}
+.OtherSessionsSelectTitle{
+    font-size: 1.5rem;
+    margin-bottom: 0.5em;
 }

@@ -19,29 +19,59 @@ const OtherSessions = () => {
   const [sessions, setSessions] = useState([]);
   const sessionsRef = useRef(null);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [isCharged, setIsCharged] = useState(false);
   const [isSorted, setIsSorted] = useState(false);
   const navigate = useNavigate();
+  const [sessionType, setSessionType] = useState("all");
+  const [group, setGroup] = useState("all");
+  const [user, setUser] = useState("all");
 
   const getSessions = async () => {
-    sessionsRef.current = [];
-    setIsCharged(false);
     if (listOfPlayers.current.length) {
-      listOfPlayers.current.forEach(async (player) => {
-        await CrudApi.get(`player/${player.playerId}/sessions`)
-          .then((res) => {
-            if (sessionsRef.current) {
-              sessionsRef.current = [...sessionsRef.current, res.Sessions];
-            } else {
-              sessionsRef.current = [res.Sessions];
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+      sessionsRef.current = [];
+      let players = [];
+      let groups = [];
+      let types = [];
+
+      try {
+        const requests = listOfPlayers.current.map(async (player) => {
+          const res = await CrudApi.get(`player/${player.playerId}/sessions`);
+          if (res.Sessions.length) {
+            players.push(player.Name + " " + player.Surname);
+            groups.push(player.SportGroup);
+            sessionsRef.current.push(res.Sessions);
+          }
+        });
+
+        await Promise.all(requests);
+
+        sessionsRef.current = sessionsRef.current.flat();
+        types = [
+          ...new Set(sessionsRef.current.map((session) => session.sessionType)),
+        ];
+
+        if (sessionsRef.current.length) {
+          sessionsRef.current.sort((a, b) => {
+            const extractDateAndTime = (url) => {
+              const [, datePart, timePart] = url.match(
+                /(\d{4}-\d{2}-\d{2})\/(\d{2}_\d{2}_\d{2})/
+              );
+              return `${datePart} ${timePart.replace(/_/g, ":")}`;
+            };
+            const dateA = new Date(extractDateAndTime(a.videoURL));
+            const dateB = new Date(extractDateAndTime(b.videoURL));
+
+            return dateB - dateA;
           });
-        setSessions([[].concat(...sessionsRef.current)]);
-      });
-      setIsCharged(true);
+
+          setSessions(sessionsRef.current);
+          setGroup([...new Set(groups)]);
+          setUser([...new Set(players)]);
+          setSessionType([...types]);
+          setIsSorted(true);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } else {
       navigate("/football-session");
     }
@@ -49,34 +79,6 @@ const OtherSessions = () => {
   useEffect(() => {
     getSessions();
   }, []);
-
-  useEffect(() => {
-    setIsSorted(false);
-    if (sessions.length && isCharged) {
-      sessions[0].sort((a, b) => {
-        const extractDateAndTime = (url) => {
-          const [, datePart, timePart] = url.match(
-            /(\d{4}-\d{2}-\d{2})\/(\d{2}_\d{2}_\d{2})/
-          );
-          return `${datePart} ${timePart.replace(/_/g, ":")}`;
-        };
-
-        const dateA = new Date(extractDateAndTime(a.videoURL));
-        const dateB = new Date(extractDateAndTime(b.videoURL));
-
-        if (dateA > dateB) {
-          return -1;
-        }
-        if (dateA < dateB) {
-          return 1;
-        }
-        return 0;
-      });
-      setTimeout(() => {
-        setIsSorted(true);
-      }, 100);
-    }
-  }, [sessions]);
 
   const handleToAnalizeSession = () => {
     currentSession.current = selectedSession;
@@ -98,9 +100,6 @@ const OtherSessions = () => {
     return age;
   };
 
-  const handleChangeSessionTypeFiter = useCallback((e) => {});
-  const handleChangeUserFiter = useCallback((e) => {});
-  const handleChangeGroupFilter = useCallback((e) => {});
   const handleFilterSelectedPlayerSessions = useCallback(() => {});
   const deleteSelectedSession = () => {
     Swal.fire({
@@ -151,11 +150,53 @@ const OtherSessions = () => {
       }
     });
   };
+  const [sessionTypeFilter, setSessionTypeFilter] = useState("all");
+  const [groupFilter, setGroupFilter] = useState("all");
+  const [userFilter, setUserFilter] = useState("all");
+
+  const handleChangeSessionTypeFiter = (event) => {
+    setSessionTypeFilter(event.target.value);
+  };
+
+  const handleChangeGroupFilter = (event) => {
+    setGroupFilter(event.target.value);
+  };
+
+  const handleChangeUserFiter = (event) => {
+    setUserFilter(event.target.value);
+  };
+
+  const filteredSessions = sessions.filter((session) => {
+    if (
+      sessionTypeFilter !== "all" &&
+      session.sessionType !== sessionTypeFilter
+    ) {
+      return false;
+    }
+    if (groupFilter !== "all") {
+      const currentPlayer = listOfPlayers.current.find(
+        (player) => player.playerId === session.playerId
+      );
+      if (currentPlayer.SportGroup !== groupFilter) {
+        return false;
+      }
+    }
+    if (userFilter !== "all") {
+      const currentPlayer = listOfPlayers.current.find(
+        (player) => player.playerId === session.playerId
+      );
+      const playerName = currentPlayer.Name + " " + currentPlayer.Surname;
+      if (playerName !== userFilter) {
+        return false;
+      }
+    }
+    return true;
+  });
   {
     return sessions.length ? (
       <div className="OtherSessionsContainer">
         <button
-          className="AnalizeSessionBackButton"
+          className="OtherSessionsBackButton"
           onClick={() => navigate("/football-session")}
         >
           <svg
@@ -168,71 +209,57 @@ const OtherSessions = () => {
           </svg>
           Volver
         </button>
-        <div className="OtherSessionsFilters">
+        <div className="OtherSessionsFiltersContainer">
           <div className="filtersTitle">
-            <h3>
-              <b>Filtros</b>
-            </h3>
+            <b>Filtros</b>
           </div>
           <div className="OtherSessionsFilters">
-            <div
-              className="px-5"
-              style={{ width: "100%", display: "flex", flexDirection: "row" }}
-            >
-              <div className="" style={{ width: "30%" }}>
-                <b>Tipo de sesion: </b>
-              </div>
-              <div className="" style={{ width: "70%" }}>
-                <select
-                  onChange={handleChangeSessionTypeFiter}
-                  className="form-select"
-                >
-                  <option value="all" selected>
-                    Todas
-                  </option>
-                </select>
-              </div>
+            <div className="OtherSessionsLabelInput">
+              <b>Tipo de sesion: </b>
+
+              <select
+                onChange={handleChangeSessionTypeFiter}
+                className="form-select"
+              >
+                <option value="all" selected>
+                  Todas
+                </option>
+                {sessionType.map((type) => (
+                  <option value={type}>{type}</option>
+                ))}
+              </select>
             </div>
-            <div
-              className="px-5"
-              style={{ width: "100%", display: "flex", flexDirection: "row" }}
-            >
-              <div className="" style={{ width: "30%" }}>
-                <b>Grupo: </b>
-              </div>
-              <div className="" style={{ width: "70%" }}>
-                <select
-                  onChange={handleChangeGroupFilter}
-                  className="form-select"
-                >
-                  <option value="all" selected>
-                    Todos
-                  </option>
-                </select>
-              </div>
+            <div className="OtherSessionsLabelInput">
+              <b>Grupo: </b>
+
+              <select
+                onChange={handleChangeGroupFilter}
+                className="form-select"
+              >
+                <option value="all" selected>
+                  Todos
+                </option>
+                {group.map((group) => (
+                  <option value={group}>{group}</option>
+                ))}
+              </select>
             </div>
-            <div
-              className="px-5"
-              style={{ width: "100%", display: "flex", flexDirection: "row" }}
-            >
-              <div className="" style={{ width: "15%" }}>
-                <b>Nombre: </b>
-              </div>
-              <div className="" style={{ width: "85%" }}>
-                <select
-                  onChange={handleChangeUserFiter}
-                  className="form-select"
-                >
-                  <option value="all" selected>
-                    Todos
-                  </option>
-                </select>
-              </div>
+            <div className="OtherSessionsLabelInput">
+              <b>Nombre: </b>
+
+              <select onChange={handleChangeUserFiter} className="form-select">
+                <option value="all" selected>
+                  Todos
+                </option>
+                {user.map((user) => (
+                  <option value={user}>{user}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
         <div className="OtherSessionsTable">
-          Seleccionar una sesion
+          <b className="OtherSessionsSelectTitle">Seleccionar una sesion</b>
           <table className="custom-table">
             <thead className="">
               <tr>
@@ -253,7 +280,7 @@ const OtherSessions = () => {
             <table className="custom-table">
               <tbody>
                 {isSorted ? (
-                  sessions[0].map((session) => {
+                  filteredSessions.map((session) => {
                     let currentPlayer = listOfPlayers.current.find(
                       (player) => player.playerId === session.playerId
                     );
@@ -332,327 +359,233 @@ const OtherSessions = () => {
             </table>
           </div>
         </div>
-        <div className="" style={{ width: "100%" }}>
-          <div className="">
-            <div className="">
-              <h4>
-                <b>Jugador sesion seleccionada</b>
-              </h4>
+
+        <div className="OtherSessionsInfo">
+          <b>Jugador sesion seleccionada</b>
+          <div>
+            <div className="OtherSessionsRow">
+              <div className="OtherSessionsLabelInput">
+                <b>Tipo de sesion: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  value={selectedSession ? selectedSession[0].sessionType : ""}
+                  readOnly={true}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Sesion: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  value={
+                    selectedSession
+                      ? selectedSession[0].timestamp.split("T")[0]
+                      : ""
+                  }
+                  readOnly={true}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Nombre: </b>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Name : ""}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Apellido: </b>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Surname : ""}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Grupo: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  value={selectedSession ? selectedSession[1].SportGroup : ""}
+                  readOnly={true}
+                ></input>
+              </div>
             </div>
-            <div className="">
-              <div className="selectedSesionInfoLeft p-2">
-                <div
-                  className=""
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Tipo de sesion: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      value={
-                        selectedSession ? selectedSession[0].sessionType : ""
-                      }
-                      readOnly={true}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Sesion: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      value={
-                        selectedSession
-                          ? selectedSession[0].timestamp.split("T")[0]
-                          : ""
-                      }
-                      readOnly={true}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Grupo: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      value={
-                        selectedSession ? selectedSession[1].SportGroup : ""
-                      }
-                      readOnly={true}
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Edad: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      value={
-                        selectedSession
-                          ? calculateAge(selectedSession[1].Birthday)
-                          : ""
-                      }
-                      readOnly={true}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Categoria: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Category : ""}
-                    ></input>
-                  </div>
+            <div className="OtherSessionsRow">
+              <div className="OtherSessionsLabelInput">
+                <b>Genero: </b>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Gender : ""}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Edad: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  value={
+                    selectedSession
+                      ? calculateAge(selectedSession[1].Birthday)
+                      : ""
+                  }
+                  readOnly={true}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Peso: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Weight : ""}
+                ></input>
+              </div>
+
+              <div className="OtherSessionsLabelInput">
+                <b>Altura: </b>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Height : ""}
+                ></input>
+              </div>
+            </div>
+            <div className="OtherSessionsRow">
+              <div className="OtherSessionsLabelInput">
+                <b>Tiempo entre jugadas: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={
+                    selectedSession ? selectedSession[0].timeBetweenPlays : ""
+                  }
+                ></input>
+              </div>
+
+              <div className="OtherSessionsLabelInput">
+                <b>Numero de jugadas: </b>
+
+                <div className="" style={{ width: "50%" }}>
+                  <input
+                    className="form-control form-control-sm"
+                    id="sessionType"
+                    type="text"
+                    readOnly={true}
+                    value={selectedSession ? selectedSession[0].numPlays : ""}
+                  ></input>
                 </div>
               </div>
-              <div className="selectedSesionInfoCenter p-2">
-                <div
-                  className=""
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Tiempo entre jugadas: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={
-                        selectedSession
-                          ? selectedSession[0].timeBetweenPlays
-                          : ""
-                      }
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Numero de jugadas: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[0].numPlays : ""}
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Nombre: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Name : ""}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Genero: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Gender : ""}
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Peso: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Weight : ""}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Tiempo transicion: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={
-                        selectedSession ? selectedSession[0].transitionTime : ""
-                      }
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-3"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Apellido: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Surname : ""}
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Experiencia: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={
-                        selectedSession ? selectedSession[1].Experience : ""
-                      }
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Altura: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={selectedSession ? selectedSession[1].Height : ""}
-                    ></input>
-                  </div>
-                </div>
-                <div
-                  className="mt-2"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Extremidad habil: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={
-                        selectedSession ? selectedSession[1].SkillfulLeg : ""
-                      }
-                    ></input>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <b>Posicion: </b>
-                  </div>
-                  <div className="" style={{ width: "50%" }}>
-                    <input
-                      className="form-control form-control-sm"
-                      id="sessionType"
-                      type="text"
-                      readOnly={true}
-                      value={
-                        selectedSession ? selectedSession[1].FieldPosition : ""
-                      }
-                    ></input>
-                  </div>
-                </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Tiempo transicion: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={
+                    selectedSession ? selectedSession[0].transitionTime : ""
+                  }
+                ></input>
+              </div>
+            </div>
+            <div className="OtherSessionsRow">
+              <div className="OtherSessionsLabelInput">
+                <b>Categoria: </b>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Category : ""}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Experiencia: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].Experience : ""}
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Posicion: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={
+                    selectedSession ? selectedSession[1].FieldPosition : ""
+                  }
+                ></input>
+              </div>
+              <div className="OtherSessionsLabelInput">
+                <b>Extremidad habil: </b>
+
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[1].SkillfulLeg : ""}
+                ></input>
               </div>
             </div>
           </div>
-          <div className="OtherSessionsControlSessionButtons">
-            <button
-              className="OtherSessionsButtons"
-              disabled={!selectedSession}
-            >
-              Copiar parámetros de sesion
-            </button>
-            <button
-              className="OtherSessionsButtons"
-              onClick={deleteSelectedSession}
-              disabled={!selectedSession}
-            >
-              Eliminar sesion
-            </button>
-            <button
-              className="OtherSessionsButtons"
-              onClick={handleFilterSelectedPlayerSessions}
-            >
-              Filtrar sesiones del jugador
-            </button>
-            <button
-              className="OtherSessionsButtons"
-              onClick={handleToAnalizeSession}
-              disabled={!selectedSession}
-            >
-              Abrir sesion
-            </button>
-          </div>
+        </div>
+        <div className="OtherSessionsControlSessionButtons">
+          <button className="OtherSessionsButtons" disabled={!selectedSession}>
+            Copiar parámetros de sesion
+          </button>
+          <button
+            className="OtherSessionsButtons"
+            onClick={deleteSelectedSession}
+            disabled={!selectedSession}
+          >
+            Eliminar sesion
+          </button>
+          <button
+            className="OtherSessionsButtons"
+            onClick={handleFilterSelectedPlayerSessions}
+          >
+            Filtrar sesiones del jugador
+          </button>
+          <button
+            className="OtherSessionsButtons"
+            onClick={handleToAnalizeSession}
+            disabled={!selectedSession}
+          >
+            Abrir sesion
+          </button>
         </div>
       </div>
     ) : (

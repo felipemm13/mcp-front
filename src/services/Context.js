@@ -48,7 +48,6 @@ const ProviderContext = ({ children }) => {
   useEffect(() => {
     preloadImages(listOfImages);
   }, []);
-  useEffect(()=>console.log(infoSession.current),[infoSession.current])
 
   return (
     <Context.Provider

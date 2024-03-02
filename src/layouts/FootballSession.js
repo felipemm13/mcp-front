@@ -377,6 +377,7 @@ const FootballSession = () => {
       await CrudApi.get(`user/${userContext.current.userId}/players`)
         .then((response) => {
           listOfPlayers.current = response.Players;
+          console.log(response.Players);
           setPlayersList(response.Players);
         })
         .catch((error) => {
