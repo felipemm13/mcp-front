@@ -197,7 +197,7 @@ const AnalizeSession = () => {
     infoSession.current.stimulusTime.sort((a, b) => a - b);
     setTableData(
       Array.from(
-        { length: infoSession.current.infoSession.sequenceOfPlays.length },
+        { length: infoSession.current.sequenceOfPlays.length },
         (element, index) => ({
           sequence: index + 1,
           playID: infoSession.current.sequenceOfPlays[index],
