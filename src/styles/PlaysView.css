@@ -91,7 +91,7 @@
 
 .PlaysViewPlayPlayersContainer {
     position: relative;
-    display: flex;
+    display: flex-start;
     justify-content: start;
     align-items: start;
     color: #FF0000;
@@ -102,7 +102,7 @@
 }
 
 .PlaysViewHandlePlays {
-    display: flex;
+    display: flex-start;
     width: calc(50% - 0.25em);
     justify-content: center;
 }

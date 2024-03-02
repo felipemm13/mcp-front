@@ -4,7 +4,7 @@ import FootballSessionView from "../components/FootballSessionView";
 import WebCam from "../components/WebCam";
 import { useEffect, useState, useRef, useContext } from "react";
 import WindowPortal from "../components/WindowPortal";
-import { n_rand, rand } from "../utility/math_functions";
+import { n_rand } from "../utility/math_functions";
 import FormPlayer from "../components/FormPlayer";
 import { Context } from "../services/Context";
 import Swal from "sweetalert2";
@@ -64,9 +64,13 @@ const FootballSession = () => {
       navigate("/");
     });
     if (infoSession.current) {
-      setCurrentSesionInfo({...infoSession.current,playerSelected:'default'});
-      if(infoSession.current.playsFromDb){
-      getPlaysInfo(infoSession.current.playsFromDb);}else{
+      setCurrentSesionInfo({
+        ...infoSession.current,
+        playerSelected: "default",
+      });
+      if (infoSession.current.playsFromDb) {
+        getPlaysInfo(infoSession.current.playsFromDb);
+      } else {
         getPlays();
       }
       setPlaysFromDbLoaded(false);
@@ -80,8 +84,9 @@ const FootballSession = () => {
         secondsToNextPlay: 2,
         secondsForPlayTransition: 0,
         sequenceOfPlays: [],
-        playerSelected:'default'
+        playerSelected: "default",
       };
+      setCurrentSesionInfo({...infoSession.current})
       getPlays();
     }
     listOfPLayers.current = [];
@@ -632,7 +637,7 @@ const FootballSession = () => {
                 </b>
               </label>
               {(currentSesionInfo?.typeOfSession === "applied" ||
-                currentSesionInfo?.typeOfSession == "evaluative") && (
+                currentSesionInfo?.typeOfSession === "evaluative") && (
                 <div className="distractorsSelect">
                   <label id="distractorsLabel" htmlFor="distractors">
                     <b>
@@ -946,9 +951,7 @@ const FootballSession = () => {
                       playerSelected: e.target.value,
                     });
                   }}
-                  defaultValue={
-                   currentSesionInfo?.playerSelected
-                  }
+                  defaultValue={currentSesionInfo?.playerSelected}
                 >
                   {playersList.length ? (
                     <option selected value="default" disabled="disabled">

@@ -136,7 +136,7 @@ const AnalizeSession = () => {
 
       setTableData(
         Array.from(
-          { length: infoSession.current.sequenceOfPlays.length},
+          { length: infoSession.current.sequenceOfPlays.length },
           (element, index) => ({
             sequence: index + 1,
             playID: infoSession.current.sequenceOfPlays[index],
@@ -833,11 +833,14 @@ const AnalizeSession = () => {
     <div className="AnalizeSessionContainer">
       <button
         className="AnalizeSessionBackButton"
-        onClick={() =>
-          session === "current"
-            ? navigate("/football-session")
-            : navigate("/other-sessions")
-        }
+        onClick={() => {
+          if (session === "current") {
+            navigate("/football-session");
+          } else {
+            infoSession.current = null;
+            navigate("/other-sessions");
+          }
+        }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -962,7 +965,7 @@ const AnalizeSession = () => {
                   />
                 </div>
               </div>
-              {loading &&(
+              {loading && (
                 <svg
                   width="40"
                   height="40"
@@ -983,15 +986,14 @@ const AnalizeSession = () => {
                 </svg>
               )}
               <ReactPlayer
-              playing={playingVideo}
-              ref={(videoRef) => (videoRefs.current[0] = videoRef)}
-              id="VideoPlayers"
-              width={"90%"}
-              height={"100%"}
-              url={videoSession}
-              playdelay={-66}
+                playing={playingVideo}
+                ref={(videoRef) => (videoRefs.current[0] = videoRef)}
+                id="VideoPlayers"
+                width={"90%"}
+                height={"100%"}
+                url={videoSession}
+                playdelay={-66}
               />
-
             </div>
 
             <div className="AnalizeSessionVideoFrame">
