@@ -25,14 +25,6 @@ const ProviderContext = ({ children }) => {
     "assets/calibrations/calibration-mark-4.png",
     "assets/calibrations/calibration-mark-5.png",
     "assets/calibrations/calibration-mark-6.png",
-    "assets/reactions/reaction-black.jpg",
-    "assets/reactions/reaction-blue.jpg",
-    "assets/reactions/reaction-brown.jpg",
-    "assets/reactions/reaction-gray.jpg",
-    "assets/reactions/reaction-green.jpg",
-    "assets/reactions/reaction-red.jpg",
-    "assets/reactions/reaction-white.jpg",
-    "assets/reactions/reaction-yellow.jpg",
   ];
   const preloadImage = (src) => {
     return new Promise((resolve, reject) => {
@@ -56,6 +48,7 @@ const ProviderContext = ({ children }) => {
   useEffect(() => {
     preloadImages(listOfImages);
   }, []);
+  useEffect(()=>console.log(infoSession.current),[infoSession.current])
 
   return (
     <Context.Provider

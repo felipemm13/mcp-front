@@ -815,7 +815,7 @@ const AnalizeSession = () => {
     return 1;
   };
 
-  if (!infoSession.current.stimulusTime) {
+  if (!infoSession?.current?.stimulusTime) {
     if (session !== "current") {
       if (currentSession.current === null) {
         navigate("/other-sessions");
@@ -1597,7 +1597,7 @@ const AnalizeSession = () => {
               <div style={{ display: "flex", gap: "1em" }}>
                 <div>
                   Tiempo [ms]:{" "}
-                  {infoSession.current.stimulusTime[currentStimulus]}
+                  {infoSession?.current.stimulusTime[currentStimulus]}
                 </div>
                 <div>Jugada: {currentStimulus + 1}</div>
               </div>
