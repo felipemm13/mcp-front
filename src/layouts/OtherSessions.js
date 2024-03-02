@@ -489,15 +489,13 @@ const OtherSessions = () => {
               <div className="OtherSessionsLabelInput">
                 <b>Numero de jugadas: </b>
 
-                <div className="" style={{ width: "50%" }}>
-                  <input
-                    className="form-control form-control-sm"
-                    id="sessionType"
-                    type="text"
-                    readOnly={true}
-                    value={selectedSession ? selectedSession[0].numPlays : ""}
-                  ></input>
-                </div>
+                <input
+                  className="form-control form-control-sm"
+                  id="sessionType"
+                  type="text"
+                  readOnly={true}
+                  value={selectedSession ? selectedSession[0].numPlays : ""}
+                ></input>
               </div>
               <div className="OtherSessionsLabelInput">
                 <b>Tiempo transicion: </b>
