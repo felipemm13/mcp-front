@@ -86,7 +86,7 @@ const FootballSession = () => {
         sequenceOfPlays: [],
         playerSelected: "default",
       };
-      setCurrentSesionInfo({...infoSession.current})
+      setCurrentSesionInfo({ ...infoSession.current });
       getPlays();
     }
     listOfPLayers.current = [];
@@ -339,11 +339,17 @@ const FootballSession = () => {
     }
     if (strSequence.length === 0) {
       strSequence = ["No se genero ninguna secuencia, vuelva a intentar"];
+      setCurrentSesionInfo({
+        ...currentSesionInfo,
+        sequenceOfPlays: strSequence,
+      });
+    } else {
+      setCurrentSesionInfo({
+        ...currentSesionInfo,
+        sequenceOfPlays: strSequence,
+        numberOfPlays: strSequence.length,
+      });
     }
-    setCurrentSesionInfo({
-      ...currentSesionInfo,
-      sequenceOfPlays: strSequence,
-    });
   };
 
   const getPlays = async () => {
@@ -625,10 +631,17 @@ const FootballSession = () => {
                   currentSesionInfo?.typeOfSession === "evaluative"
                 }
                 onClick={(e) => {
-                  setCurrentSesionInfo({
-                    ...currentSesionInfo,
-                    typeOfSession: e.target.value,
-                  });
+                  if (appliedMode === "evaluative") {
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      typeOfSession: "evaluative",
+                    });
+                  } else {
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      typeOfSession: e.target.value,
+                    });
+                  }
                 }}
               />
               <label className="" htmlFor="applied">

@@ -91,7 +91,6 @@ const WebCam = (props) => {
       }
     );
     var images = infoSession.current.imageSequences.map((image) => {
-      console.log(image);
       const byteCharacters = atob(image.split(",")[1]);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {

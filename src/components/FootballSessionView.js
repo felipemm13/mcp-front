@@ -227,10 +227,7 @@ const FootballSessionView = ({ view }) => {
       onResolve: () => handleFinishAnimation(),
       onStart: () => {
         if (view === "coach") {
-          if (
-            sequenceIndex <
-            infoSession.current.sequenceOfPlays.length - 1
-          ) {
+          if (sequenceIndex < infoSession.current.sequenceOfPlays.length - 1) {
             stimulusTimeSequence.current.push(new Date().getTime() - time);
             setTimeout(() => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
@@ -270,115 +267,106 @@ const FootballSessionView = ({ view }) => {
     setShowAnimation("discriminative");
     setNumberOfDistractors(infoSession.current.numOfDistractors + 1);
     let distractorsMoves = [[], [], [], [], [], [], [], []];
-    infoSession.current.sequenceOfPlays.forEach(
-      (sequence, iteracion) => {
-        colors = [
-          "black",
-          "blue",
-          "cyan",
-          "gray",
-          "green",
-          "red",
-          "white",
-          "yellow",
-        ];
-        positions = [
-          {
-            cx: containerWidth.current * (1 / 6),
-            cy: containerHeight.current * (1 / 6),
-          },
-          {
-            cx: containerWidth.current * (3 / 6),
-            cy: containerHeight.current * (1 / 6),
-          },
-          {
-            cx: containerWidth.current * (5 / 6),
-            cy: containerHeight.current * (1 / 6),
-          },
-          {
-            cx: containerWidth.current * (1 / 6),
-            cy: containerHeight.current * (3 / 6),
-          },
-          {
-            cx: containerWidth.current * (5 / 6),
-            cy: containerHeight.current * (3 / 6),
-          },
-          {
-            cx: containerWidth.current * (1 / 6),
-            cy: containerHeight.current * (5 / 6),
-          },
-          {
-            cx: containerWidth.current * (3 / 6),
-            cy: containerHeight.current * (5 / 6),
-          },
-          {
-            cx: containerWidth.current * (5 / 6),
-            cy: containerHeight.current * (5 / 6),
-          },
-        ];
-        let indexColor;
-        let indexPosition;
-        for (
-          let i = 0;
-          i <= infoSession.current.numOfDistractors;
-          i++
-        ) {
-          if (colors.length - 1 > 0) {
-            indexColor = rand(
+    infoSession.current.sequenceOfPlays.forEach((sequence, iteracion) => {
+      colors = [
+        "black",
+        "blue",
+        "cyan",
+        "gray",
+        "green",
+        "red",
+        "white",
+        "yellow",
+      ];
+      positions = [
+        {
+          cx: containerWidth.current * (1 / 6),
+          cy: containerHeight.current * (1 / 6),
+        },
+        {
+          cx: containerWidth.current * (3 / 6),
+          cy: containerHeight.current * (1 / 6),
+        },
+        {
+          cx: containerWidth.current * (5 / 6),
+          cy: containerHeight.current * (1 / 6),
+        },
+        {
+          cx: containerWidth.current * (1 / 6),
+          cy: containerHeight.current * (3 / 6),
+        },
+        {
+          cx: containerWidth.current * (5 / 6),
+          cy: containerHeight.current * (3 / 6),
+        },
+        {
+          cx: containerWidth.current * (1 / 6),
+          cy: containerHeight.current * (5 / 6),
+        },
+        {
+          cx: containerWidth.current * (3 / 6),
+          cy: containerHeight.current * (5 / 6),
+        },
+        {
+          cx: containerWidth.current * (5 / 6),
+          cy: containerHeight.current * (5 / 6),
+        },
+      ];
+      let indexColor;
+      let indexPosition;
+      for (let i = 0; i <= infoSession.current.numOfDistractors; i++) {
+        if (colors.length - 1 > 0) {
+          indexColor = rand(
+            0,
+            colors.length - 1,
+            seed * (iteracion + 1) * sequence
+          );
+        } else {
+          indexColor = 0;
+        }
+        if (i === 0) {
+          if (infoSession.current.sequenceOfPlays[iteracion] > 4) {
+            indexPosition = infoSession.current.sequenceOfPlays[iteracion] - 2;
+          } else {
+            indexPosition = infoSession.current.sequenceOfPlays[iteracion] - 1;
+          }
+        } else {
+          if (positions.length - 1 > 0) {
+            indexPosition = rand(
               0,
-              colors.length - 1,
+              positions.length - 1,
               seed * (iteracion + 1) * sequence
             );
           } else {
-            indexColor = 0;
+            indexPosition = 0;
           }
-          if (i === 0) {
-            if (infoSession.current.sequenceOfPlays[iteracion] > 4) {
-              indexPosition =
-                infoSession.current.sequenceOfPlays[iteracion] - 2;
-            } else {
-              indexPosition =
-                infoSession.current.sequenceOfPlays[iteracion] - 1;
-            }
-          } else {
-            if (positions.length - 1 > 0) {
-              indexPosition = rand(
-                0,
-                positions.length - 1,
-                seed * (iteracion + 1) * sequence
-              );
-            } else {
-              indexPosition = 0;
-            }
-          }
-          if (
-            distractorsMoves[i][iteracion - 1] &&
-            positions[indexPosition].cx ===
-              distractorsMoves[i][iteracion - 1].cx &&
-            positions[indexPosition].cy ===
-              distractorsMoves[i][iteracion - 1].cy
-          ) {
-            distractorsMoves[i][iteracion] = {
-              cx: positions[indexPosition].cx + 0.1,
-              cy: positions[indexPosition].cy,
-              opacity: 1,
-              fill: colors[indexColor],
-              delay: infoSession.current.secondsToNextPlay * 1000,
-            };
-          } else {
-            distractorsMoves[i][iteracion] = {
-              cx: positions[indexPosition].cx,
-              cy: positions[indexPosition].cy,
-              opacity: 1,
-              fill: colors[indexColor],
-              delay: infoSession.current.secondsToNextPlay * 1000,
-            };
-          }
-          colors.splice(indexColor, 1);
-          positions.splice(indexPosition, 1);
         }
+        if (
+          distractorsMoves[i][iteracion - 1] &&
+          positions[indexPosition].cx ===
+            distractorsMoves[i][iteracion - 1].cx &&
+          positions[indexPosition].cy === distractorsMoves[i][iteracion - 1].cy
+        ) {
+          distractorsMoves[i][iteracion] = {
+            cx: positions[indexPosition].cx + 0.1,
+            cy: positions[indexPosition].cy,
+            opacity: 1,
+            fill: colors[indexColor],
+            delay: infoSession.current.secondsToNextPlay * 1000,
+          };
+        } else {
+          distractorsMoves[i][iteracion] = {
+            cx: positions[indexPosition].cx,
+            cy: positions[indexPosition].cy,
+            opacity: 1,
+            fill: colors[indexColor],
+            delay: infoSession.current.secondsToNextPlay * 1000,
+          };
+        }
+        colors.splice(indexColor, 1);
+        positions.splice(indexPosition, 1);
       }
-    );
+    });
     let sequenceIndex = 0;
 
     apiDiscriminativeAnimation.update((i) => {
@@ -389,9 +377,7 @@ const FootballSessionView = ({ view }) => {
             distractorsInitialPosition && distractorsInitialPosition.fill;
           teamRef.current.style.fill = color;
           //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
-          if (
-            indexSequence < infoSession.current.sequenceOfPlays.length
-          ) {
+          if (indexSequence < infoSession.current.sequenceOfPlays.length) {
             setTimeout(() => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
                 imageSequences.current.push(dataUrl);
@@ -415,18 +401,14 @@ const FootballSessionView = ({ view }) => {
             },
           ],
           config: {
-            duration:
-              infoSession.current.secondsForPlayTransition * 1000,
+            duration: infoSession.current.secondsForPlayTransition * 1000,
           },
           onStart: () => {
             if (i === 0 && distractorsMoves[i][sequenceIndex]) {
               let color = distractorsMoves[i][sequenceIndex++].fill;
               //imgRef.current.src = `assets/reactions/reaction-${color}.jpg`;
               teamRef.current.style.fill = color;
-              if (
-                indexSequence <
-                infoSession.current.sequenceOfPlays.length
-              ) {
+              if (indexSequence < infoSession.current.sequenceOfPlays.length) {
                 stimulusTimeSequence.current.push(new Date().getTime() - time);
                 setTimeout(() => {
                   htmlToImage
@@ -464,14 +446,12 @@ const FootballSessionView = ({ view }) => {
     stimulusTimeSequence.current = [];
     imageSequences.current = [];
     let sequenceIndex = 0;
-    const plays = infoSession.current.sequenceOfPlays.map(
-      (sequence) => {
-        let play = infoSession.current.playsFromDb.find(
-          (play) => play.playsId === sequence
-        );
-        return play;
-      }
-    );
+    const plays = infoSession.current.sequenceOfPlays.map((sequence) => {
+      let play = infoSession.current.playsFromDb.find(
+        (play) => play.playsId === sequence
+      );
+      return play;
+    });
     let maxPlayersInPlayRed = 0;
     let maxPlayersInPlayYellow = 0;
 
@@ -502,7 +482,7 @@ const FootballSessionView = ({ view }) => {
       red: maxPlayersInPlay,
       yellow: maxPlayersInPlay,
     });
-
+    setShowAnimation("applied");
     let playerTeams = plays.map((play) => play.Team);
 
     //Red players
@@ -632,8 +612,7 @@ const FootballSessionView = ({ view }) => {
         return move;
       }
     );
-    setShowAnimation("applied");
-    //console.log(animationYellowPlayersMoves);
+
     //Actualizar animaciones red players
     apiRedPlayersAnimation.update((i) => {
       return {
@@ -693,9 +672,7 @@ const FootballSessionView = ({ view }) => {
             playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
         }
         if (view === "coach") {
-          if (
-            sequenceIndex < infoSession.current.sequenceOfPlays.length
-          ) {
+          if (sequenceIndex < infoSession.current.sequenceOfPlays.length) {
             stimulusTimeSequence.current.push(new Date().getTime() - time);
             setTimeout(() => {
               htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
@@ -703,7 +680,7 @@ const FootballSessionView = ({ view }) => {
               });
             }, [
               infoSession.current.secondsToNextPlay * 250 +
-              infoSession.current.secondsForPlayTransition * 1000,
+                infoSession.current.secondsForPlayTransition * 1000,
             ]);
             sequenceIndex++;
           }
@@ -718,9 +695,7 @@ const FootballSessionView = ({ view }) => {
       teamRef.current.style.fill =
         playerTeams[teamIndex++] === "Red" ? "#FF0000" : "#FFFF00";
       if (view === "coach") {
-        if (
-          sequenceIndex < infoSession.current.sequenceOfPlays.length
-        ) {
+        if (sequenceIndex < infoSession.current.sequenceOfPlays.length) {
           setTimeout(() => {
             htmlToImage.toJpeg(sessionContainer.current).then((dataUrl) => {
               imageSequences.current.push(dataUrl);
@@ -754,34 +729,21 @@ const FootballSessionView = ({ view }) => {
         .getElementById("webcamContainer")
         .dispatchEvent(new Event("startRecord"));
     }
-    const animateAll = async () => {
-      const promises = [
-        apiRedPlayersAnimation.start(),
-        apiYellowPlayersAnimation.start(),
-        idealPlayerAnimationRef.start(),
-        ballAnimationRef.start(),
-      ];
 
-      await Promise.all(promises);
-    };
     let time = new Date().getTime();
     stimulusTimeSequence.current.push(0);
-
-    if (!animationStarted.current) {
-      animationStarted.current = true;
-      animateAll();
-    }
-    /*
-    idealPlayerAnimationRef.start();
-    apiRedPlayersAnimation.start();
-    ballAnimationRef.start();
-    apiYellowPlayersAnimation.start();*/
+    idealPlayerAnimationRef.start()
+    apiRedPlayersAnimation.start()
+    apiYellowPlayersAnimation.start()
+    ballAnimationRef.start()
   };
 
   const handleStartSesion = () => {
-    setCount(3);
-    setShowFinalMessage(false);
-    setShowAnimation("");
+    setTimeout(() => {
+      setCount(3);
+      setShowAnimation("");
+      setShowFinalMessage(false);
+    }, 0);
     if (sessionContainer.current) {
       sessionContainer.current.style.border = "none";
     }
@@ -957,7 +919,6 @@ const FootballSessionView = ({ view }) => {
                   cy={containerHeight.current * 0.5}
                   key={index}
                   style={player}
-                  opacity={0}
                   r={view === "player" ? "7vmin" : "5vmin"}
                   fill="red"
                 />
@@ -968,7 +929,6 @@ const FootballSessionView = ({ view }) => {
                   cy={containerHeight.current * 0.5}
                   key={index}
                   style={player}
-                  opacity={0}
                   r={view === "player" ? "7vmin" : "5vmin"}
                   fill="yellow"
                 />
@@ -977,7 +937,6 @@ const FootballSessionView = ({ view }) => {
                 <animated.circle
                   cx={containerWidth.current * 0.5}
                   cy={containerHeight.current * 0.5}
-                  opacity={0}
                   r={view === "player" ? "6.9vmin" : "4.9vmin"}
                   fill="green"
                   style={idealPlayerAnimation}
@@ -990,7 +949,6 @@ const FootballSessionView = ({ view }) => {
                 width: 0,
                 height: 0,
                 marginLeft: "-100%",
-                opacity: 1,
                 ...ballAnimation,
               }}
             >
