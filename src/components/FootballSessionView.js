@@ -119,6 +119,8 @@ const FootballSessionView = ({ view }) => {
       };
       document.getElementById("SaveCaptureVideo").removeAttribute("disabled");
       document.getElementById("OpenAnalizerView").removeAttribute("disabled");
+      document.getElementById("OpenOtherSessions").removeAttribute("disabled");
+      document.getElementById("BackToHome").removeAttribute("disabled");
     }
     setShowAnimation("");
     setShowFinalMessage(true);
@@ -732,10 +734,10 @@ const FootballSessionView = ({ view }) => {
 
     let time = new Date().getTime();
     stimulusTimeSequence.current.push(0);
-    idealPlayerAnimationRef.start()
-    apiRedPlayersAnimation.start()
-    apiYellowPlayersAnimation.start()
-    ballAnimationRef.start()
+    idealPlayerAnimationRef.start();
+    apiRedPlayersAnimation.start();
+    apiYellowPlayersAnimation.start();
+    ballAnimationRef.start();
   };
 
   const handleStartSesion = () => {
@@ -756,6 +758,10 @@ const FootballSessionView = ({ view }) => {
     document
       .getElementById("OpenAnalizerView")
       .setAttribute("disabled", "true");
+    document
+      .getElementById("OpenOtherSessions")
+      .setAttribute("disabled", "true");
+    document.getElementById("BackToHome").setAttribute("disabled", true);
   };
 
   useEffect(() => {

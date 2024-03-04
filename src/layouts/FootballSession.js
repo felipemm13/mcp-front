@@ -16,6 +16,7 @@ const FootballSession = () => {
     userContext,
     infoSession,
     videoCurrentSession,
+    isSaveCurrentSession,
     CrudApi,
     listOfPlayers,
   } = useContext(Context);
@@ -60,14 +61,35 @@ const FootballSession = () => {
       .getElementById("OpenAnalizerView")
       .addEventListener("click", openAnalizerView);
     document.getElementById("BackToHome").addEventListener("click", () => {
-      console.log(videoCurrentSession.current);
-      navigate("/");
+      if (videoCurrentSession.current && !isSaveCurrentSession.current) {
+        Swal.fire({
+          title: "Existe una sesión actual sin guardar",
+          text: "¿Deseas salir igualmente?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Si, salir!",
+          cancelButtonText: "No, cancelar!",
+          reverseButtons: true,
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            videoCurrentSession.current = null;
+            navigate("/");
+          }
+        });
+      } else {
+        navigate("/");
+      }
     });
     if (infoSession.current) {
-      setCurrentSesionInfo({
-        ...infoSession.current,
-        playerSelected: "default",
-      });
+      if (videoCurrentSession.current) {
+        document.getElementById("OpenAnalizerView").removeAttribute("disabled");
+        if (!isSaveCurrentSession.current) {
+          document
+            .getElementById("SaveCaptureVideo")
+            .removeAttribute("disabled");
+        }
+      }
+      setCurrentSesionInfo(infoSession.current);
       if (infoSession.current.playsFromDb) {
         getPlaysInfo(infoSession.current.playsFromDb);
       } else {
@@ -89,8 +111,11 @@ const FootballSession = () => {
       setCurrentSesionInfo({ ...infoSession.current });
       getPlays();
     }
-    listOfPLayers.current = [];
-    getPlayers();
+    if (listOfPlayers.current.length === 0) {
+      getPlayers();
+    } else {
+      setPlayersList(listOfPlayers.current);
+    }
   }, []);
 
   const getPlaysInfo = (plays) => {
@@ -377,7 +402,6 @@ const FootballSession = () => {
       await CrudApi.get(`user/${userContext.current.userId}/players`)
         .then((response) => {
           listOfPlayers.current = response.Players;
-          console.log(response.Players);
           setPlayersList(response.Players);
         })
         .catch((error) => {
@@ -948,8 +972,8 @@ const FootballSession = () => {
                 className="sessionSequence"
                 placeholder="Secuencia de la sesión"
                 value={
-                  currentSesionInfo?.sequenceOfPlays.length
-                    ? currentSesionInfo?.sequenceOfPlays.join(" → ")
+                  currentSesionInfo?.sequenceOfPlays?.length
+                    ? currentSesionInfo?.sequenceOfPlays?.join(" → ")
                     : ""
                 }
               />
@@ -962,10 +986,10 @@ const FootballSession = () => {
                   onChange={(e) => {
                     setCurrentSesionInfo({
                       ...currentSesionInfo,
-                      playerSelected: e.target.value,
+                      playerSelected: parseInt(e.target.value),
                     });
                   }}
-                  defaultValue={currentSesionInfo?.playerSelected}
+                  value={currentSesionInfo?.playerSelected}
                 >
                   {playersList.length ? (
                     <option selected value="default" disabled="disabled">
@@ -977,7 +1001,7 @@ const FootballSession = () => {
                     </option>
                   )}
                   {playersList.map((player, key) => (
-                    <option value={player.playerId} key={key}>
+                    <option value={parseInt(player.playerId)} key={key}>
                       {player.Name +
                         " " +
                         player.Surname +

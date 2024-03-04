@@ -8,7 +8,7 @@ const Menu = (props) => {
   useEffect(() => {
     setTimeout(() => {
       const user = JSON.parse(localStorage.getItem("user"));
-    }, [100]);
+    }, [0]);
     if (navigator.mediaDevices?.enumerateDevices) {
       navigator.mediaDevices
         .enumerateDevices()

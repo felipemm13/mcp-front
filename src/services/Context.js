@@ -13,6 +13,8 @@ const ProviderContext = ({ children }) => {
   const listOfPlayers = useRef([]);
   const currentSession = useRef(null);
   const currentPlay = useRef(null)
+  const isSaveCurrentSession = useRef(false)
+  const currentDevice = useRef(null)
   const S3_BUCKET = "mcp-wildsense";
   const REGION = "us-east-2";
   const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
@@ -38,6 +40,20 @@ const ProviderContext = ({ children }) => {
       };
     });
   };
+  const showSessionType = (type) => {
+    switch (type) {
+      case "reactive":
+        return "Reactiva";
+      case "discriminative":
+        return "Discriminativa";
+      case "applied":
+        return "Aplicada";
+      case 'evaluative':
+        return 'Evaluativa'
+      default:
+        return "No type";
+    }
+  }
 
   const preloadImages = (list) => {
     list.forEach((image) => {
@@ -54,8 +70,10 @@ const ProviderContext = ({ children }) => {
       value={{
         userContext,
         videoCurrentSession,
+        isSaveCurrentSession,
         infoSession,
         currentFPS,
+        currentDevice,
         CrudApi,
         listOfPlayers,
         currentSession,
@@ -65,6 +83,7 @@ const ProviderContext = ({ children }) => {
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
         preloadImages,
+        showSessionType,
         tercios,
       }}
     >

@@ -15,6 +15,7 @@ import ReactPlayer from "react-player";
 const AnalizeSession = () => {
   const {
     videoCurrentSession,
+    isSaveCurrentSession,
     listOfPlayers,
     infoSession,
     currentFPS,
@@ -26,6 +27,7 @@ const AnalizeSession = () => {
     S3_BUCKET,
     REGION,
     userContext,
+    showSessionType,
   } = useContext(Context);
   const navigate = useNavigate();
   const session = useParams().session;
@@ -33,7 +35,6 @@ const AnalizeSession = () => {
   const currentPlayer = useRef(null);
   const [videoSession, setVideoSession] = useState(null);
   const [videoState, setVideoState] = useState("Play");
-  const videosPlayersRef = useRef([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -42,8 +43,6 @@ const AnalizeSession = () => {
     currentPlay: null,
     prevPlay: null,
   });
-  const currentPlay = useRef(null);
-  const prevPlay = useRef(null);
   const [currentStimulus, setCurrentStimulus] = useState(0);
   const selectedRowIndex = useRef(0);
   const selectedPlayID = useRef(null);
@@ -195,6 +194,7 @@ const AnalizeSession = () => {
     });
 
     infoSession.current.stimulusTime.sort((a, b) => a - b);
+    currentSession.current[0].SessionMoves.sort((a,b)=>a.stimulus -b.stimulus)
     setTableData(
       Array.from(
         { length: infoSession.current.sequenceOfPlays.length },
@@ -202,7 +202,7 @@ const AnalizeSession = () => {
           sequence: index + 1,
           playID: infoSession.current.sequenceOfPlays[index],
           error: currentSession.current[0].SessionMoves[index].error,
-          estimulo: infoSession.current.stimulusTime[index],
+          estimulo: currentSession.current[0].SessionMoves[index].stimulus,
           decisionMaking:
             currentSession.current[0].SessionMoves[index].decisionMaking,
           arrival: currentSession.current[0].SessionMoves[index].arrival,
@@ -265,10 +265,12 @@ const AnalizeSession = () => {
         videoRefs.current[4]?.seekTo(0);
         setCurrentStimulus(0);
         setTimeout(() => {
-          setImagePlay({
-            currentPlay: infoSession.current.imageSequences[0],
-            prevPlay: infoSession.current.imageSequences[0],
-          });
+          if (infoSession.current.imageSequences) {
+            setImagePlay({
+              currentPlay: infoSession.current.imageSequences[0],
+              prevPlay: infoSession.current.imageSequences[0],
+            });
+          }
         }, 0);
       }
     }
@@ -565,7 +567,7 @@ const AnalizeSession = () => {
       "_" +
       padZero(currentDate.getSeconds());
     var video = new File(
-      [videoSession],
+      [videoCurrentSession.current],
       `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,
       {
         type: "video/webm",
@@ -641,7 +643,7 @@ const AnalizeSession = () => {
     };
     const movesTableRows = document.querySelectorAll(".scrollable-body tr");
     const updatedTableData = Array.from(movesTableRows).map((row, index) => ({
-      playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
+      playID: index + 1,
       error: row.querySelector(`input[type="checkbox"]`).checked,
       estimulo: row.querySelector(`#RowSequenceStimul${index}`).innerText,
       decisionMaking: row.querySelector(`#RowSequenceDecisionMaking${index}`)
@@ -707,6 +709,7 @@ const AnalizeSession = () => {
           document.getElementById("SaveAnalizeSession").innerText = `
           Guardado Exitosamente`;
           document.getElementById("SaveAnalizeSession").disabled = false;
+          isSaveCurrentSession.current = true;
         });
       })
       .catch((err) => {
@@ -715,7 +718,7 @@ const AnalizeSession = () => {
   };
 
   const SaveAnalizeSession = async () => {
-    if (session === "current") {
+    if (session === "current" && !isSaveCurrentSession.current) {
       saveCurrentSession();
     } else {
       const dataAnalytic = {
@@ -742,8 +745,8 @@ const AnalizeSession = () => {
       ).then((response) => {});
       const movesTableRows = document.querySelectorAll(".scrollable-body tr");
       const updatedTableData = Array.from(movesTableRows).map((row, index) => ({
-        playID: row.querySelector(`#RowSequencePlayId${index}`).innerText,
         error: row.querySelector(`input[type="checkbox"]`).checked,
+        playID: index + 1,
         estimulo: row.querySelector(`#RowSequenceStimul${index}`).innerText,
         decisionMaking: row.querySelector(`#RowSequenceDecisionMaking${index}`)
           .innerText,
@@ -765,6 +768,7 @@ const AnalizeSession = () => {
         stimulus: row.estimulo,
         decisionMaking: row.decisionMaking,
       }));
+      console.log(dataMoves)
       currentSession.current[0].SessionMoves.map(async (move, index) => {
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,
@@ -865,9 +869,9 @@ const AnalizeSession = () => {
                 value={
                   session !== "current"
                     ? currentSession.current[0]
-                      ? currentSession.current[0].sessionType
+                      ? showSessionType(currentSession.current[0].sessionType)
                       : ""
-                    : infoSession.current.typeOfSession
+                    : showSessionType(infoSession.current.typeOfSession)
                 }
               ></input>
               <label>Grupo: </label>
@@ -1108,13 +1112,37 @@ const AnalizeSession = () => {
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
                 if (currentStimulus - 1 > 0) {
+                  let toFrame = Math.round(
+                    (infoSession.current.stimulusTime[currentStimulus - 1] /
+                      1000) *
+                      FPS.current
+                  );
                   videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[currentStimulus - 1] / 1000
                   );
-                  setCurrentTime(videoRefs.current[2].getCurrentTime());
+                  if (
+                    Math.round((toFrame / FPS.current) * 1000) <
+                    infoSession.current.stimulusTime[currentStimulus - 1]
+                  ) {
+                    setCurrentFrame(
+                      Math.round(
+                        videoRefs.current[2].getCurrentTime() * FPS.current
+                      ) + 1
+                    );
+                  } else {
+                    setCurrentFrame(
+                      Math.round(
+                        videoRefs.current[2].getCurrentTime() * FPS.current
+                      )
+                    );
+                  }
                 } else {
                   videoRefs.current[2].seekTo(0);
-                  setCurrentTime(videoRefs.current[2].getCurrentTime());
+                  setCurrentFrame(
+                    Math.round(
+                      videoRefs.current[2].getCurrentTime() * FPS.current
+                    )
+                  );
                 }
               }}
             >
@@ -1243,17 +1271,41 @@ const AnalizeSession = () => {
                   currentStimulus + 1 <
                   infoSession.current.stimulusTime.length - 1
                 ) {
+                  let toFrame = Math.round(
+                    (infoSession.current.stimulusTime[currentStimulus + 1] /
+                      1000) *
+                      FPS.current
+                  );
                   videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[currentStimulus + 1] / 1000
                   );
-                  setCurrentTime(videoRefs.current[2].getCurrentTime());
+                  if (
+                    Math.round((toFrame / FPS.current) * 1000) <
+                    infoSession.current.stimulusTime[currentStimulus + 1]
+                  ) {
+                    setCurrentFrame(
+                      Math.round(
+                        videoRefs.current[2].getCurrentTime() * FPS.current
+                      ) + 1
+                    );
+                  } else {
+                    setCurrentFrame(
+                      Math.round(
+                        videoRefs.current[2].getCurrentTime() * FPS.current
+                      )
+                    );
+                  }
                 } else {
                   videoRefs.current[2].seekTo(
                     infoSession.current.stimulusTime[
                       infoSession.current.stimulusTime.length - 1
                     ] / 1000
                   );
-                  setCurrentTime(videoRefs.current[2].getCurrentTime());
+                  setCurrentFrame(
+                    Math.round(
+                      videoRefs.current[2].getCurrentTime() * FPS.current
+                    )
+                  );
                 }
               }}
             >
@@ -1277,7 +1329,17 @@ const AnalizeSession = () => {
                 id="sessionType"
                 type="text"
                 readOnly={true}
+                disabled={true}
                 value={Math.round(videoDuration * FPS.current)}
+              />
+              <label>FPS: </label>
+              <input
+                className="AnalizeSessionInputFrameInfo"
+                id="sessionType"
+                type="text"
+                readOnly={true}
+                disabled={true}
+                value={FPS.current}
               />
             </div>
           </div>
@@ -1371,6 +1433,7 @@ const AnalizeSession = () => {
                     id="sessionType"
                     type="text"
                     readOnly={true}
+                    disabled={true}
                     value={Math.min(
                       Math.round(((currentFrame + 2) / FPS.current) * 1000),
                       Math.round(
@@ -1420,7 +1483,9 @@ const AnalizeSession = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th className="table-header">Secuencia</th>
+                  <th className="table-header" data-tooltip={`Frame Siguiente`}>
+                    Secuencia
+                  </th>
                   <th className="table-header">Error</th>
                   <th className="table-header">Estímulo</th>
                   <th className="table-header">Decision-Making</th>

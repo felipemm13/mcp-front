@@ -11,10 +11,13 @@ const WebCam = (props) => {
   const recorderVideo = useRef([]);
   const {
     videoCurrentSession,
+    isSaveCurrentSession,
+    currentSession,
     currentFPS,
     infoSession,
     userContext,
     CrudApi,
+    currentDevice,
     S3_BUCKET,
     REGION,
     AWS_ACCESS_KEY_ID,
@@ -24,10 +27,11 @@ const WebCam = (props) => {
 
   const [cameraState, setCameraState] = useState(false);
   const [cameraIsAvailable, setCameraIsAvailable] = useState(false);
-  const [deviceId, setDeviceId] = useState({});
+  const [deviceId, setDeviceId] = useState("default");
   const [calibrationModal, setCalibrationModal] = useState(false);
 
   const handleStartCaptureClick = () => {
+    isSaveCurrentSession.current = false;
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
     });
@@ -58,12 +62,10 @@ const WebCam = (props) => {
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
-      document
+    document
       .getElementById("StartCaptureVideo")
       .setAttribute("disabled", "true");
-      document
-      .getElementById("BackToHome")
-      .setAttribute("disabled", "true");
+    document.getElementById("BackToHome").setAttribute("disabled", "true");
     document
       .getElementById("OpenAnalizerView")
       .setAttribute("disabled", "true");
@@ -176,15 +178,36 @@ const WebCam = (props) => {
     );
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
+        currentSession.current = [{ ...res.data }];
         await CrudApi.post(`sessionAnalytics`, {
           ...sessionAnalyticData,
           sessionId: res.data.sessionId,
-        }).then(async () => {});
-        sessionMovesData.forEach(async (move) => {
+        }).then(async (res) => {
+          currentSession.current[0] = {
+            ...currentSession.current[0],
+            SessionAnalytics: [res.data],
+          };
+        });
+        sessionMovesData.forEach(async (move, index) => {
           await CrudApi.post(`sessionMoves`, {
             ...move,
             sessionId: res.data.sessionId,
-          }).then(async () => {});
+          }).then(async (res) => {
+            if (currentSession.current[0].SessionMoves) {
+              currentSession.current[0] = 
+                {
+                  ...currentSession.current[0],
+                  SessionMoves: [
+                    ...currentSession.current[0].SessionMoves,
+                    res.data,
+                  ],
+                }
+            } else {
+              currentSession.current[0] = 
+                { ...currentSession.current[0], SessionMoves: [res.data] }
+              
+            }
+          });
         });
         images.forEach((image, index) => {
           const paramsImage = {
@@ -214,6 +237,7 @@ const WebCam = (props) => {
           .promise();
 
         await upload.then(() => {
+          isSaveCurrentSession.current = true;
           document.getElementById("SaveCaptureVideo").innerText = `
       Guardado Exitosamente`;
         });
@@ -221,21 +245,14 @@ const WebCam = (props) => {
       .catch((err) => {
         console.log(err);
       });
-      document
-      .getElementById("OpenAnalizerView")
-      .removeAttribute("disabled");
-    document
-      .getElementById("OpenOtherSessions")
-      .removeAttribute("disabled");
-      document
-      .getElementById("StartCaptureVideo")
-      .removeAttribute("disabled");
-    document
-      .getElementById("BackToHome")
-      .removeAttribute("disabled");
+    document.getElementById("OpenAnalizerView").removeAttribute("disabled");
+    document.getElementById("OpenOtherSessions").removeAttribute("disabled");
+    document.getElementById("StartCaptureVideo").removeAttribute("disabled");
+    document.getElementById("BackToHome").removeAttribute("disabled");
   };
 
   const handleChangeWebCam = (e) => {
+    currentDevice.current = e.target.value;
     setDeviceId(e.target.value);
   };
 
@@ -251,6 +268,12 @@ const WebCam = (props) => {
         });
     } else {
       console.log("Error al cargar dispositivos de video");
+    }
+    if (infoSession.current) {
+      setTimeout(() => {
+        setDeviceId(currentDevice.current);
+        setCameraState(true);
+      }, 0);
     }
 
     document
@@ -277,8 +300,9 @@ const WebCam = (props) => {
       props.showWindowPortal &&
       cameraIsAvailable &&
       props.infoSession &&
-      props.infoSession.playerSelected!=='default' &&
-      (props.infoSession.sequenceOfPlays.length && typeof props.infoSession.sequenceOfPlays[0] === 'number')
+      props.infoSession.playerSelected !== "default" &&
+      props.infoSession.sequenceOfPlays.length &&
+      typeof props.infoSession.sequenceOfPlays[0] === "number"
     ) {
       document.getElementById("StartCaptureVideo").removeAttribute("disabled");
     } else {
@@ -358,8 +382,8 @@ const WebCam = (props) => {
         </div>
         <label className="WebcamLabel">
           <b>Cámaras disponibles:</b>
-          <select defaultValue={true} onChange={handleChangeWebCam}>
-            <option defaultChecked={false}>Cámara por defecto</option>
+          <select value={deviceId} onChange={handleChangeWebCam}>
+            <option value={"default"}>Cámara por defecto</option>
             {devices.map((device) => (
               <option key={device.deviceId} value={device.deviceId}>
                 {device.label}

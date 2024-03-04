@@ -46,7 +46,7 @@ const Webapp = () => {
       userLocal.current = JSON.parse(localStorage.getItem("user"));
       setUser(userLocal.current ?? null);
       setLoading(false);
-    }, 250);
+    }, 0);
   }, []);
 
   useEffect(() => {
