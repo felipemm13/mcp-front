@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Connect from "../connection/Connect";
 
 const Context = React.createContext();
@@ -16,6 +16,7 @@ const ProviderContext = ({ children }) => {
   const currentPlay = useRef(null)
   const isSaveCurrentSession = useRef(false)
   const currentDevice = useRef(null)
+  const [customsUser,setCustomsUser] = useState(null)
   const S3_BUCKET = "mcp-wildsense";
   const REGION = "us-east-2";
   const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
@@ -79,6 +80,8 @@ const ProviderContext = ({ children }) => {
         listOfPlayers,
         currentSession,
         currentPlay,
+        customsUser,
+        setCustomsUser,
         S3_BUCKET,
         REGION,
         AWS_ACCESS_KEY_ID,

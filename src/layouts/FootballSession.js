@@ -20,6 +20,8 @@ const FootballSession = () => {
     isSaveCurrentSession,
     CrudApi,
     listOfPlayers,
+    customsUser,
+    setCustomsUser,
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
@@ -40,9 +42,45 @@ const FootballSession = () => {
     evaluativeOptions: [],
     evaluativeList: [],
   });
+
   const offensiveRandomPlays = useRef(0);
   const defensiveRandomPlays = useRef(0);
   const lengthEvalSequence = useRef(0);
+
+  const getCustomsUser = async () => {
+    if (
+      !customsUser ||
+      !customsUser.groups ||
+      !customsUser.categories ||
+      !customsUser.positions
+    ) {
+      let groups = [];
+      let categories = [];
+      let positions = [];
+      await CrudApi.get(`user/${userContext.current.userId}/groups`)
+        .then((response) => {
+          groups = response.Groups;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      await CrudApi.get(`user/${userContext.current.userId}/categories`)
+        .then((response) => {
+          categories = response.Categories;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      await CrudApi.get(`user/${userContext.current.userId}/positions`)
+        .then((response) => {
+          positions = response.Position;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      setCustomsUser({groups, categories, positions});
+    }
+  };
 
   useEffect(() => {
     if (!userContext.current) {
@@ -80,6 +118,7 @@ const FootballSession = () => {
         navigate("/");
       }
     });
+    getCustomsUser();
     if (infoSession.current) {
       if (videoCurrentSession.current) {
         document.getElementById("OpenAnalizerView").removeAttribute("disabled");
