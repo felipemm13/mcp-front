@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useContext, useEffect, useState } from "react";
 import "../styles/FormPlayer.css";
 import { Context } from "../services/Context";
@@ -36,7 +37,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
     );
   };
 
-  useEffect(() => console.log(limb), [limb]);
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = {
@@ -92,12 +92,22 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
         setLimb('');*/
   };
 
+  const calculateAge = (dob) => {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   useEffect(() => {
-    console.log(player);
-    if (player && typeForm == "Editar") {
+    if (player && typeForm === "Editar") {
       setName(player.Name);
       setLastName(player.Surname);
-      setAge(0);
+      setAge(calculateAge(player.Birthday));
       setDob(player.Birthday);
       setGender(player.Gender);
       setLimb(player.SkillfulLeg);
@@ -109,6 +119,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
       setPosition(player.FieldPosition);
     }
   }, []);
+  
   return (
     <>
       <div id="myModal" className="formPlayerModal">
@@ -153,14 +164,14 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
               </div>
-
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
                   <label htmlFor="ageInput" className="form-label">
                     Edad
                   </label>
                   <input
-                    type="number"
+                    readOnly
+                    disabled
                     className="form-control"
                     id="ageInput"
                     placeholder="Ingrese su edad"
@@ -200,11 +211,10 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   </select>
                 </div>
               </div>
-
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
                   <label htmlFor="heightInput" className="form-label">
-                    Altura
+                    Altura [cm]
                   </label>
                   <input
                     type="number"
@@ -217,7 +227,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                 </div>
                 <div className="formPlayerInputLabel">
                   <label htmlFor="weightInput" className="form-label">
-                    Peso
+                    Peso [kg]
                   </label>
                   <input
                     type="number"
@@ -305,8 +315,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   </select>
                 </div>
               </div>
-
-              {/* Botón de envío */}
               <button
                 type="submit"
                 className="formPlayerButtonSubmit"

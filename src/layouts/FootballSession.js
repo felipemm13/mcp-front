@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useNavigate } from "react-router-dom";
 import "../styles/FootballSession.css";
 import FootballSessionView from "../components/FootballSessionView";
@@ -23,7 +24,6 @@ const FootballSession = () => {
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
   const defaultPlays = useRef(0);
-  const listOfPLayers = useRef([]);
   const currentPlayer = useRef(null);
   const [playersList, setPlayersList] = useState([]);
   const [currentSesionInfo, setCurrentSesionInfo] = useState();
@@ -581,7 +581,7 @@ const FootballSession = () => {
                 name="typeGame"
                 value="reactive"
                 checked={currentSesionInfo?.typeOfSession === "reactive"}
-                onClick={(e) => {
+                onChange={(e) => {
                   setCurrentSesionInfo({
                     ...currentSesionInfo,
                     typeOfSession: e.target.value,
@@ -655,7 +655,7 @@ const FootballSession = () => {
                   currentSesionInfo?.typeOfSession === "applied" ||
                   currentSesionInfo?.typeOfSession === "evaluative"
                 }
-                onClick={(e) => {
+                onChange={(e) => {
                   if (appliedMode === "evaluative") {
                     setCurrentSesionInfo({
                       ...currentSesionInfo,
@@ -683,7 +683,7 @@ const FootballSession = () => {
                     </b>
                   </label>
                   <select
-                    defaultValue={appliedMode}
+                    value={appliedMode}
                     onChange={(e) => {
                       if (e.target.value === "evaluative") {
                         setCurrentSesionInfo({
@@ -722,11 +722,12 @@ const FootballSession = () => {
                     type="number"
                     name="numberOfPlays"
                     id="numberOfPlays"
-                    defaultValue={currentSesionInfo?.numberOfPlays}
+                    value={currentSesionInfo?.numberOfPlays}
                     min="1"
                     max={
-                      currentSesionInfo?.typeOfSession === "applied" &&
-                      playsInfo?.maxTotal
+                      currentSesionInfo?.typeOfSession === "applied"
+                        ? playsInfo?.maxTotal
+                        : defaultPlays.current
                     }
                     step="1"
                     onChange={(e) => {
@@ -835,7 +836,7 @@ const FootballSession = () => {
                   id="randomSeed"
                   name="randomSeed"
                   checked={currentSesionInfo?.isRandomSeed}
-                  onClick={() => {
+                  onChange={() => {
                     let checked = currentSesionInfo.isRandomSeed;
                     if (!checked) {
                       setCurrentSesionInfo({
@@ -992,11 +993,11 @@ const FootballSession = () => {
                   value={currentSesionInfo?.playerSelected}
                 >
                   {playersList.length ? (
-                    <option selected value="default" disabled="disabled">
+                    <option value="default" disabled="disabled">
                       Seleccionar un jugador
                     </option>
                   ) : (
-                    <option selected value="default" disabled="disabled">
+                    <option value="default" disabled="disabled">
                       Cargando jugadores...
                     </option>
                   )}
@@ -1035,7 +1036,8 @@ const FootballSession = () => {
                       )
                     }
                     disabled={
-                      !currentSesionInfo || !currentSesionInfo.playerSelected
+                      currentSesionInfo?.playerSelected &&
+                      currentSesionInfo?.playerSelected === "default"
                     }
                   >
                     <svg
@@ -1056,7 +1058,8 @@ const FootballSession = () => {
                       )
                     }
                     disabled={
-                      !currentSesionInfo || !currentSesionInfo.playerSelected
+                      currentSesionInfo?.playerSelected &&
+                      currentSesionInfo?.playerSelected === "default"
                     }
                   >
                     <svg

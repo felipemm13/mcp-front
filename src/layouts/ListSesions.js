@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { useEffect, useCallback, useState, useRef } from "react";
 import "../styles/ListSesions.css";

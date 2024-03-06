@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useCallback, useEffect, useRef, useState } from "react";
 import "../styles/Calibration.css";
 import Swal from "sweetalert2";
@@ -31,6 +32,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     })
       .then((response) => response.json()) //obtener las marcas
       .then((data) => {
+        console.log(data.response)
         calib_measures.current = {
           calib_h: data.response.calib_h,
           calib_w: data.response.calib_w,

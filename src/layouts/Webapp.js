@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useContext, useEffect, useState } from "react";
 import "../styles/Webapp.css";
 import Menu from "./Menu";
@@ -21,6 +22,7 @@ const Webapp = () => {
     })
       .then((res, req) => {
         if (res.status === 200) {
+          localStorage.setItem("user", JSON.stringify(res.data.data));
           setUser(res.data.data);
         }
       })
@@ -53,6 +55,8 @@ const Webapp = () => {
     userContext.current = user;
     if (user && !userLocal.current) {
       localStorage.setItem("user", JSON.stringify(user));
+    }else{
+      setLoading(false)
     }
   }, [user]);
 

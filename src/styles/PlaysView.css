@@ -91,9 +91,9 @@
 
 .PlaysViewPlayPlayersContainer {
     position: relative;
-    display: flex-start;
-    justify-content: start;
-    align-items: start;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
     color: #FF0000;
     font-size: "6em";
     width: 100%;
@@ -158,4 +158,13 @@
 
 .PlaysViewSavePlayButton:active:enabled {
     background-color: rgb(218, 37, 153);
+}
+.WarningMessagePlaysView{
+    max-width: 90%;
+    text-align: center;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    border: 0.1em solid #FF0000;
+    background-color: #ff00006b;
+;
 }

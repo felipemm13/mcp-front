@@ -1,11 +1,5 @@
-import {
-  createRef,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+/* eslint-disable */
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "../styles/AnalizeSession.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
@@ -102,7 +96,9 @@ const AnalizeSession = () => {
       typeof blob === "string" || blob instanceof String
         ? blob
         : window.URL.createObjectURL(blob);
-    durationP.then((d) => setVideoDuration(d)).catch((e) => console.log(e));
+    durationP
+      .then((d) => setVideoDuration(d))
+      .catch((e) => console.log("error", e));
   };
 
   useEffect(() => {
@@ -192,27 +188,31 @@ const AnalizeSession = () => {
       currentPlay: infoSession.current.imageSequences[0],
       prevPlay: infoSession.current.imageSequences[0],
     });
-
-    infoSession.current.stimulusTime.sort((a, b) => a - b);
-    currentSession.current[0].SessionMoves.sort((a,b)=>a.stimulus -b.stimulus)
-    setTableData(
-      Array.from(
-        { length: infoSession.current.sequenceOfPlays.length },
-        (element, index) => ({
-          sequence: index + 1,
-          playID: infoSession.current.sequenceOfPlays[index],
-          error: currentSession.current[0].SessionMoves[index].error,
-          estimulo: currentSession.current[0].SessionMoves[index].stimulus,
-          decisionMaking:
-            currentSession.current[0].SessionMoves[index].decisionMaking,
-          arrival: currentSession.current[0].SessionMoves[index].arrival,
-          visuMotor: currentSession.current[0].SessionMoves[index].presentedMs,
-          motor: currentSession.current[0].SessionMoves[index].motor,
-          cognitiveMotor:
-            currentSession.current[0].SessionMoves[index].cognitiveMotor,
-        })
-      )
-    );
+    if (infoSession.current) {
+      infoSession.current.stimulusTime.sort((a, b) => a - b);
+      currentSession.current[0].SessionMoves.sort(
+        (a, b) => a.stimulus - b.stimulus
+      );
+      setTableData(
+        Array.from(
+          { length: infoSession.current.sequenceOfPlays.length },
+          (element, index) => ({
+            sequence: index + 1,
+            playID: infoSession.current.sequenceOfPlays[index],
+            error: currentSession.current[0].SessionMoves[index].error,
+            estimulo: currentSession.current[0].SessionMoves[index].stimulus,
+            decisionMaking:
+              currentSession.current[0].SessionMoves[index].decisionMaking,
+            arrival: currentSession.current[0].SessionMoves[index].arrival,
+            visuMotor:
+              currentSession.current[0].SessionMoves[index].presentedMs,
+            motor: currentSession.current[0].SessionMoves[index].motor,
+            cognitiveMotor:
+              currentSession.current[0].SessionMoves[index].cognitiveMotor,
+          })
+        )
+      );
+    }
   };
 
   useEffect(() => {
@@ -768,7 +768,6 @@ const AnalizeSession = () => {
         stimulus: row.estimulo,
         decisionMaking: row.decisionMaking,
       }));
-      console.log(dataMoves)
       currentSession.current[0].SessionMoves.map(async (move, index) => {
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,

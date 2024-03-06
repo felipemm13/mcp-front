@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Webcam from "react-webcam";
 import React, { useState, useRef, useEffect, useContext } from "react";
 import "../styles/WebCam.css";
@@ -50,10 +51,10 @@ const WebCam = (props) => {
     }
   };
   const handleStopCaptureClick = () => {
+    mediaRecorderRef.current.stop();
     currentFPS.current = mediaRecorderRef.current.stream
       .getVideoTracks()[0]
       .getSettings().frameRate;
-    mediaRecorderRef.current.stop();
   };
   const padZero = (value) => {
     return value < 10 ? "0" + value : value;
@@ -194,18 +195,18 @@ const WebCam = (props) => {
             sessionId: res.data.sessionId,
           }).then(async (res) => {
             if (currentSession.current[0].SessionMoves) {
-              currentSession.current[0] = 
-                {
-                  ...currentSession.current[0],
-                  SessionMoves: [
-                    ...currentSession.current[0].SessionMoves,
-                    res.data,
-                  ],
-                }
+              currentSession.current[0] = {
+                ...currentSession.current[0],
+                SessionMoves: [
+                  ...currentSession.current[0].SessionMoves,
+                  res.data,
+                ],
+              };
             } else {
-              currentSession.current[0] = 
-                { ...currentSession.current[0], SessionMoves: [res.data] }
-              
+              currentSession.current[0] = {
+                ...currentSession.current[0],
+                SessionMoves: [res.data],
+              };
             }
           });
         });
@@ -256,19 +257,69 @@ const WebCam = (props) => {
     setDeviceId(e.target.value);
   };
 
-  useEffect(() => {
-    if (navigator.mediaDevices?.enumerateDevices) {
+  const handleListDevices = () => {
+    const hasCameraPermission = localStorage.getItem("cameraPermission");
+    if (hasCameraPermission === "granted") {
       navigator.mediaDevices
         .enumerateDevices()
         .then((devices) => {
-          setDevices(devices.filter(({ kind }) => kind === "videoinput"));
+          const videoDevices = devices.filter(
+            (device) => device.kind === "videoinput"
+          );
+          const allowedDevices = videoDevices.filter(
+            (device) => device.label !== ""
+          );
+          if (allowedDevices.length === 0) {
+            localStorage.removeItem("cameraPermission");
+            handleListDevices();
+          } else {
+            setDevices(allowedDevices);
+            setDeviceId(allowedDevices[0].deviceId);
+            allowedDevices.forEach((device) => {
+              //getCapabilities(device.deviceId);
+            });
+          }
         })
         .catch((err) => {
-          console.error(`${err.name}: ${err.message}`);
-        });
+          console.error("Error al enumerar dispositivos:", err);
+        })
     } else {
-      console.log("Error al cargar dispositivos de video");
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then((stream) => {
+          localStorage.setItem("cameraPermission", "granted");
+          navigator.mediaDevices
+            .enumerateDevices()
+            .then((devices) => {
+              const videoDevices = devices.filter(
+                (device) => device.kind === "videoinput"
+              );
+              const allowedDevices = videoDevices.filter(
+                (device) => device.label !== ""
+              );
+              setDevices(allowedDevices);
+              setDeviceId(
+                allowedDevices.length > 0 ? allowedDevices[0].deviceId : null
+              );
+              allowedDevices.forEach((device) => {
+                //getCapabilities(device.deviceId);
+              });
+            })
+            .catch((err) => {
+              console.error("Error al enumerar dispositivos:", err);
+            })
+            .finally(() => {
+              stream.getTracks().forEach((track) => track.stop());
+            });
+        })
+        .catch((err) => {
+          console.error("El usuario ha denegado el acceso a la cámara:", err);
+        });
     }
+  };
+
+  useEffect(() => {
+    handleListDevices();
     if (infoSession.current) {
       setTimeout(() => {
         setDeviceId(currentDevice.current);
@@ -285,8 +336,22 @@ const WebCam = (props) => {
     document
       .getElementById("SaveCaptureVideo")
       .addEventListener("click", handleUploadVideo);
-    //document.getElementById("StartCaptureVideo").addEventListener("click", handleStartCaptureClick);
   }, []);
+
+  const getCapabilities = async (deviceId) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId },
+      });
+      const trackSettings = stream
+        .getTracks()
+        .map((track) => track.getSettings());
+      console.log(trackSettings);
+      stream.getTracks().forEach((track) => track.stop());
+    } catch (error) {
+      console.error("Error getting capabilities:", error);
+    }
+  };
 
   useEffect(() => {
     if (
@@ -311,7 +376,6 @@ const WebCam = (props) => {
         .setAttribute("disabled", "true");
     }
   }, [props.showWindowPortal, cameraIsAvailable, props.infoSession]);
-
   return (
     <>
       <div className="WebcamContainer" id="webcamContainer">
@@ -328,9 +392,9 @@ const WebCam = (props) => {
             onCanPlay={() => setCameraIsAvailable(true)}
             videoConstraints={{
               deviceId: deviceId,
-              width: { min: 640, ideal: 1920, max: 1920 },
-              height: { min: 400, ideal: 1080, max: 1080 },
-              frameRate: { min: 15, max: 60 },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { max: 60 },
             }}
           />
         ) : (
@@ -383,7 +447,7 @@ const WebCam = (props) => {
         <label className="WebcamLabel">
           <b>Cámaras disponibles:</b>
           <select value={deviceId} onChange={handleChangeWebCam}>
-            <option value={"default"}>Cámara por defecto</option>
+            <option value="default">Seleccionar Cámara</option>
             {devices.map((device) => (
               <option key={device.deviceId} value={device.deviceId}>
                 {device.label}

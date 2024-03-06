@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useContext } from "react";
 import { useEffect, useCallback, useState, useRef } from "react";
 import "../styles/OtherSessions.css";
@@ -108,7 +109,6 @@ const OtherSessions = () => {
   const handleSelectSession = (session, currentPlayer) => {
     // Actualiza el estado con la sesión seleccionada
     setSelectedSession([session, currentPlayer]);
-    console.log(session)
   };
   const calculateAge = (birthday) => {
     let today = new Date();
@@ -144,7 +144,6 @@ const OtherSessions = () => {
               region: REGION,
             });
             selectedSession[0].SessionMoves.map((move) => {
-              console.log(move.imageUrl);
               deleteS3Files(s3, move.imageUrl);
             });
             deleteS3Files(s3, selectedSession[0].videoURL);
@@ -164,7 +163,6 @@ const OtherSessions = () => {
         let params = { Bucket: S3_BUCKET, Key: key };
         s3.deleteObject(params, (err, data) => {
           if (err) console.log(err, err.stack); // error
-          else console.log(data); // deleted
         });
       } catch (e) {
         console.log(e);

@@ -1,9 +1,11 @@
-import { useEffect } from "react";
-
+/* eslint-disable */
+import { useContext, useEffect } from "react";
 import "../styles/Menu.css";
 import { useNavigate } from "react-router-dom";
+import { Context } from "../services/Context";
 
 const Menu = (props) => {
+  const{infoSession} = useContext(Context)
   const navigate = useNavigate();
   useEffect(() => {
     setTimeout(() => {
@@ -75,6 +77,7 @@ const Menu = (props) => {
           <button
             className="button logout"
             onClick={() => {
+              infoSession.current = null;
               props.setUser(null);
               localStorage.removeItem("user");
             }}

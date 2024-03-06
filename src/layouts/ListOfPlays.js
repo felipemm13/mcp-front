@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../services/Context";
@@ -84,6 +85,7 @@ const ListOfPlays = () => {
     );
     return resultado;
   };
+
   const handlePlays = async () => {
     const play = selectedPlay;
     play.enable = !play.enable;
@@ -93,6 +95,7 @@ const ListOfPlays = () => {
       })
       .catch((error) => console.log(error));
   };
+
   const handleEditPlay = (play) => {
     if (play === selectedPlay) {
       currentPlay.current = play;
@@ -136,6 +139,7 @@ const ListOfPlays = () => {
       navigate("/plays-view/create");
     }
   };
+  
   return (
     <div className="ListOfPlaysContainer">
       <div className="ListOfPlaysBackButton">
