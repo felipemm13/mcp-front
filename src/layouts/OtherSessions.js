@@ -85,7 +85,7 @@ const OtherSessions = () => {
   }, []);
 
   const handleToAnalizeSession = () => {
-    if(videoCurrentSession.current && !isSaveCurrentSession.current){
+    if (videoCurrentSession.current && !isSaveCurrentSession.current) {
       Swal.fire({
         title: "Existe una sesión actual sin guardar",
         text: "Si abres una sesión anterior se perdera la sesion actual sin guardar, ¿Deseas continuar?",
@@ -97,10 +97,11 @@ const OtherSessions = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           videoCurrentSession.current = null;
-          navigate("/");
+          currentSession.current = selectedSession;
+          navigate("/analize-session/" + selectedSession[0].sessionId);
         }
       });
-    }else{
+    } else {
       currentSession.current = selectedSession;
       navigate("/analize-session/" + selectedSession[0].sessionId);
     }
@@ -387,7 +388,11 @@ const OtherSessions = () => {
                 className="form-control form-control-sm"
                 id="sessionType"
                 type="text"
-                value={selectedSession ? showSessionType(selectedSession[0].sessionType) : ""}
+                value={
+                  selectedSession
+                    ? showSessionType(selectedSession[0].sessionType)
+                    : ""
+                }
                 readOnly={true}
               ></input>
             </div>
