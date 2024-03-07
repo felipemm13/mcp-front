@@ -24,7 +24,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
-    console.log(imgTemp);
     await axios
       //.post("http://localhost:3001/calibration_automatic", {
       .post(`${urlVision}calibration_automatic`, {
@@ -77,13 +76,6 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       const mark = circulo.getAttribute("id");
       const cx = circulo.getAttribute("cx") / proportions.width;
       const cy = circulo.getAttribute("cy") / proportions.height;
-      console.log(
-        mark,
-        cx,
-        circulo.getAttribute("cx"),
-        cy,
-        circulo.getAttribute("cy")
-      );
       centros.push({ x: parseFloat(cx), y: parseFloat(cy) });
     });
     await axios

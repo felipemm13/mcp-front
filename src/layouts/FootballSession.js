@@ -1052,6 +1052,7 @@ const FootballSession = () => {
                 </select>
                 <div className="sessionPlayerConfigButtons">
                   <button
+                  disabled={!customsUser}
                     onClick={() => {
                       setFormPlayerModalTitle("Agregar Jugador");
                       setFormPlayerModal(true);
