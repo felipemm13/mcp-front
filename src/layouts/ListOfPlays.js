@@ -22,7 +22,7 @@ const ListOfPlays = () => {
   const getPlays = async () => {
     await CrudApi.get(Routes.playsRoutes.GETPLAYFIGCOORD)
       .then((response) => {
-        response.sort((a, b) => a.playsId - b.playsId);
+        response.sort((a, b) => parseInt(a.playName) - parseInt(b.playName));
         setPlaysFromDb(response);
       })
       .catch((error) => console.log(error));

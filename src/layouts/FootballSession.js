@@ -320,13 +320,13 @@ const FootballSession = () => {
         for (let i = 0; i < offensiveRandomPlays.current; i++) {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * offensivePlays.length) - 1;
-          sequenceGenerated.push(offensivePlays[randomIndex].playsId);
+          sequenceGenerated.push(parseInt(offensivePlays[randomIndex].playName));
           offensivePlays.splice(randomIndex, 1);
         }
         for (let i = 0; i < defensiveRandomPlays.current; i++) {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * defensivePlays.length) - 1;
-          sequenceGenerated.push(defensivePlays[randomIndex].playsId);
+          sequenceGenerated.push(parseInt(defensivePlays[randomIndex].playName));
           defensivePlays.splice(randomIndex, 1);
         }
         sequenceGenerated = sequenceGenerated.sort((a, b) => {
@@ -351,7 +351,7 @@ const FootballSession = () => {
             ? Math.ceil(sr() * sequenceList.length) - 1
             : 0;
         sequenceGenerated = sequenceList[randomIndex].map(
-          (play) => play.playsId
+          (play) => parseInt(play.playName)
         );
         sequenceGenerated = sequenceGenerated.sort((a, b) => {
           const rng = seedrandom(seedSequence + a.toString() + b.toString());
@@ -389,7 +389,7 @@ const FootballSession = () => {
       if (currentSesionInfo?.typeOfSession === "applied") {
         if (appliedMode === "aleatorioTotal") {
           strSequence.push(
-            parseInt(currentSesionInfo.playsFromDb[number - 1].playsId)
+            parseInt(currentSesionInfo.playsFromDb[number - 1].playName)
           );
         } else if (
           appliedMode === "aleatorioTipo" ||

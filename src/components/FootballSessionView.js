@@ -451,7 +451,7 @@ const FootballSessionView = ({ view }) => {
     let sequenceIndex = 0;
     const plays = infoSession.current.sequenceOfPlays.map((sequence) => {
       let play = infoSession.current.playsFromDb.find(
-        (play) => play.playsId === sequence
+        (play) => parseInt(play.playName) === sequence
       );
       return play;
     });
