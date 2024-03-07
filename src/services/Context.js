@@ -5,6 +5,7 @@ import Connect from "../connection/Connect";
 const Context = React.createContext();
 
 const ProviderContext = ({ children }) => {
+  const urlVision = process.env.REACT_APP_VISIONMCP;
   const tercios = [1 / 3, 2 / 3, 3 / 3];
   const userContext = useRef(null);
   const videoCurrentSession = useRef(null);
@@ -70,6 +71,7 @@ const ProviderContext = ({ children }) => {
   return (
     <Context.Provider
       value={{
+        urlVision,
         userContext,
         videoCurrentSession,
         isSaveCurrentSession,

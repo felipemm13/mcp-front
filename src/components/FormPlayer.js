@@ -21,7 +21,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
   const [limb, setLimb] = useState("default");
   const [isCustoms, setIsCustoms] = useState(null);
 
-  // Función para verificar si todos los campos están completos
   const areFieldsComplete = () => {
     return (
       name !== "" &&
@@ -119,6 +118,40 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
     }
   }, []);
 
+  const existCustoms = (type, string) => {
+    if (type === "Institución") {
+      return !!customsUser.groups?.find((group) => group.groupName === string);
+    } else if (type === "Categoria") {
+      const specialCategories = [
+        "En formación",
+        "Universitaria",
+        "Profesional 1ra",
+        "Profesional 2da",
+        "Profesional 3ra",
+      ];
+      return (
+        specialCategories.includes(string) ||
+        !!customsUser.categories?.find(
+          (Category) => Category.categoryName === string
+        )
+      );
+    } else if (type === "Posición") {
+      const specialPositions = [
+        "Guardameta",
+        "Defensor",
+        "Mediocampista",
+        "Atacante",
+      ];
+      return (
+        specialPositions.includes(string) ||
+        !!customsUser.positions?.find(
+          (Position) => Position.positionName === string
+        )
+      );
+    }
+    return false;
+  };
+
   const handleAddCustom = (type) => {
     Swal.fire({
       title: "Ingrese el nombre de la " + type,
@@ -130,36 +163,43 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
       confirmButtonText: "Crear",
       showLoaderOnConfirm: true,
       preConfirm: async (string) => {
-        if (type === "Institución") {
-          await CrudApi.post("group", {
-            groupName: string,
-            userId: userContext.current.userId,
-          }).then((res) => {
-            setCustomsUser({
-              ...customsUser,
-              groups: [...customsUser.groups, res.data],
+        console.log(existCustoms(type, string));
+        if (existCustoms(type, string)) {
+          Swal.showValidationMessage(
+            `El nombre ${string} ya existe. Por favor, ingrese un nuevo nombre.`
+          );
+        } else {
+          if (type === "Institución") {
+            await CrudApi.post("group", {
+              groupName: string,
+              userId: userContext.current.userId,
+            }).then((res) => {
+              setCustomsUser({
+                ...customsUser,
+                groups: [...customsUser.groups, res.data],
+              });
             });
-          });
-        } else if (type === "Categoria") {
-          await CrudApi.post("category", {
-            categoryName: string,
-            userId: userContext.current.userId,
-          }).then((res) => {
-            setCustomsUser({
-              ...customsUser,
-              categories: [...customsUser.categories, res.data],
+          } else if (type === "Categoria") {
+            await CrudApi.post("category", {
+              categoryName: string,
+              userId: userContext.current.userId,
+            }).then((res) => {
+              setCustomsUser({
+                ...customsUser,
+                categories: [...customsUser.categories, res.data],
+              });
             });
-          });
-        } else if (type === "Posición") {
-          await CrudApi.post("position", {
-            positionName: string,
-            userId: userContext.current.userId,
-          }).then((res) => {
-            setCustomsUser({
-              ...customsUser,
-              positions: [...customsUser.positions, res.data],
+          } else if (type === "Posición") {
+            await CrudApi.post("position", {
+              positionName: string,
+              userId: userContext.current.userId,
+            }).then((res) => {
+              setCustomsUser({
+                ...customsUser,
+                positions: [...customsUser.positions, res.data],
+              });
             });
-          });
+          }
         }
       },
       allowOutsideClick: () => !Swal.isLoading(),
@@ -191,73 +231,73 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
           : type === "Categoria"
           ? categoryCustom.categoryName
           : positionCustom.positionName,
-      showCloseButton: true, // Agregado el botón de cerrar
+      showCloseButton: true,
       confirmButtonText: "Editar",
       showLoaderOnConfirm: true,
-      showCancelButton: true, // Mostrar botón de cancelar
-      cancelButtonText: "Cancelar", // Texto del botón de cancelar
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
       showDenyButton: true,
       denyButtonText: `Eliminar`,
       allowOutsideClick: () => !Swal.isLoading(),
       preConfirm: async (string) => {
-        console.log(string);
-        if (type === "Institución") {
-          await CrudApi.update(`group/${groupCustom.groupId}`, {
-            groupName: string,
-          }).then((res) => {
-            // Actualizar customsUser.groups con el nuevo grupo
-            let updatedGroups = customsUser.groups.map((group) =>
-              group.groupName === institution ? res : group
-            );
-            setCustomsUser({
-              ...customsUser,
-              groups: updatedGroups,
+        if (existCustoms(type, string)) {
+          Swal.showValidationMessage(
+            `El nombre ${string} ya existe. Por favor, ingrese un nuevo nombre.`
+          );
+        } else {
+          if (type === "Institución") {
+            await CrudApi.update(`group/${groupCustom.groupId}`, {
+              groupName: string,
+            }).then((res) => {
+              // Actualizar customsUser.groups con el nuevo grupo
+              let updatedGroups = customsUser.groups.map((group) =>
+                group.groupName === institution ? res : group
+              );
+              setCustomsUser({
+                ...customsUser,
+                groups: updatedGroups,
+              });
+              setInstitution(res.groupName);
             });
-            setInstitution(res.groupName);
-          });
-        } else if (type === "Categoria") {
-          await CrudApi.update(`category/${categoryCustom.categoryId}`, {
-            categoryName: string,
-          }).then((res) => {
-            console.log(res);
-            // Actualizar customsUser.categories con la nueva categoría
-            let updatedCategories = customsUser.categories.map((Category) =>
-              Category.categoryName === category ? res : Category
-            );
-            console.log(updatedCategories);
-            setCustomsUser({
-              ...customsUser,
-              categories: updatedCategories,
+          } else if (type === "Categoria") {
+            await CrudApi.update(`category/${categoryCustom.categoryId}`, {
+              categoryName: string,
+            }).then((res) => {
+              console.log(res);
+              let updatedCategories = customsUser.categories.map((Category) =>
+                Category.categoryName === category ? res : Category
+              );
+              console.log(updatedCategories);
+              setCustomsUser({
+                ...customsUser,
+                categories: updatedCategories,
+              });
+              setCategory(res.categoryName);
             });
-            setCategory(res.categoryName);
-          });
-        } else if (type === "Posición") {
-          await CrudApi.post(`position/${positionCustom.positionId}`, {
-            positionName: string,
-          }).then((res) => {
-            // Actualizar customsUser.positions con la nueva posición
-            let updatedPositions = customsUser.positions.map((Position) =>
-              Position.positionName === position ? res : Position
-            );
-            setCustomsUser({
-              ...customsUser,
-              positions: updatedPositions,
+          } else if (type === "Posición") {
+            await CrudApi.post(`position/${positionCustom.positionId}`, {
+              positionName: string,
+            }).then((res) => {
+              let updatedPositions = customsUser.positions.map((Position) =>
+                Position.positionName === position ? res : Position
+              );
+              setCustomsUser({
+                ...customsUser,
+                positions: updatedPositions,
+              });
+              setPosition(res.positionName);
             });
-            setPosition(res.positionName);
-          });
+          }
         }
       },
     }).then((result) => {
-      if (result.isConfirmed) {
-        // Aquí puedes poner acciones adicionales si el usuario confirma
-      } else if (result.isDenied) {
+      if (result.isDenied) {
         Swal.fire({
           title: "Seguro que desea eliminar la " + type + "?",
           confirmButtonText: "No, cancelar",
           showDenyButton: true,
           denyButtonText: `Si, eliminar`,
         }).then(async (result) => {
-          /* Read more about isConfirmed, isDenied below */
           if (result.isDenied) {
             if (type === "Institución") {
               await CrudApi.delete(`group/${groupCustom.groupId}`).then(
@@ -482,7 +522,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   </select>
                 </div>
               </div>
-
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
                   <label htmlFor="institutionInput" className="form-label">
@@ -495,9 +534,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                     value={institution}
                     onChange={(e) => setInstitution(e.target.value)}
                   >
-                    <option value="default">
-                      Seleccione la institución
-                    </option>
+                    <option value="default">Seleccione la institución</option>
                     {customsUser.groups?.map((option) => (
                       <option value={option.groupName}>
                         {option.groupName}
@@ -537,9 +574,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                   >
-                    <option value="default">
-                      Seleccione la categoría
-                    </option>
+                    <option value="default">Seleccione la categoría</option>
                     {customsUser.categories?.map((option) => (
                       <option value={option.categoryName}>
                         {option.categoryName}
@@ -585,9 +620,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
                   >
-                    <option value="default">
-                      Seleccione la posición
-                    </option>
+                    <option value="default">Seleccione la posición</option>
                     {customsUser.positions?.map((option) => (
                       <option value={option.positionName}>
                         {option.positionName}

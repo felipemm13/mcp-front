@@ -1,10 +1,13 @@
 /* eslint-disable */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "../styles/Calibration.css";
 import Swal from "sweetalert2";
 import Draggable from "react-draggable";
+import axios from "axios";
+import { Context } from "../services/Context";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
+  const {urlVision} = useContext(Context)
   const [stains, setStains] = useState(null);
   const [calibrated, setCalibrated] = useState(false);
   const [imgSrc, setImgSrc] = useState(null);
@@ -21,24 +24,19 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   const autoCalibration = async () => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
-    await fetch("http://localhost:3001/calibration_automatic", {
-      method: "POST",
-      mode: "cors",
-      body: JSON.stringify({
+    console.log(imgTemp);
+    await axios
+      //.post("http://localhost:3001/calibration_automatic", {
+      .post(`${urlVision}calibration_automatic`, {
         Screenshot: imgTemp,
-      }),
-      headers: { "Content-Type": "application/json"},
-      //x-www-form-urlencoded
-    })
-      .then((response) => response.json()) //obtener las marcas
-      .then((data) => {
-        console.log(data.response)
+      })
+      .then((response) => {
         calib_measures.current = {
-          calib_h: data.response.calib_h,
-          calib_w: data.response.calib_w,
+          calib_h: response.data.response.calib_h,
+          calib_w: response.data.response.calib_w,
         };
         setCalibrated(true);
-        setTimeout(() => setStains(data.response.points), [0]);
+        setTimeout(() => setStains(response.data.response.points), [0]);
       })
       .catch((err) => {
         console.log(err);
@@ -76,28 +74,28 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     const circulosPequenos = document.querySelectorAll('circle[r="1"]');
     const centros = [];
     circulosPequenos.forEach((circulo) => {
-      const mark = circulo.getAttribute('id')
+      const mark = circulo.getAttribute("id");
       const cx = circulo.getAttribute("cx") / proportions.width;
       const cy = circulo.getAttribute("cy") / proportions.height;
-      console.log(mark,cx,circulo.getAttribute("cx"),cy,circulo.getAttribute("cy"))
-      centros.push({x: parseFloat(cx), y: parseFloat(cy) });
+      console.log(
+        mark,
+        cx,
+        circulo.getAttribute("cx"),
+        cy,
+        circulo.getAttribute("cy")
+      );
+      centros.push({ x: parseFloat(cx), y: parseFloat(cy) });
     });
-    await fetch("http://localhost:3001/calibration_semiautomatic", {
-      method: "POST",
-      mode: "cors",
-      body: JSON.stringify({
+    await axios
+      //.post("http://localhost:3001/calibration_semiautomatic", {
+      .post(`${urlVision}calibration_semiautomatic`, {
         Screenshot: imgSrc,
         marks: centros,
-      }),
-      headers: { "Content-Type": "application/json"},
-      //x-www-form-urlencoded
-    })
-      .then((response) => response.json()) //obtener las marcas
-      .then((data) => {
+      })
+      .then((response) => {
         setCurrentMark(1);
         setCorrectCalibration(true);
-        console.log(data.response.points)
-        setTimeout(() => setStains(data.response.points), [0]);
+        setTimeout(() => setStains(response.data.response.points), [0]);
         setSemiAutoCalibration(false);
       })
       .catch((err) => {
@@ -234,7 +232,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                               </text>
                               <circle
                                 key={`c ${index}`}
-                                id={index+1}
+                                id={index + 1}
                                 cx={stain.x * proportions.width}
                                 cy={stain.y * proportions.height}
                                 r={1} // Tamaño del punto

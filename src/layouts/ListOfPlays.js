@@ -180,7 +180,7 @@ const ListOfPlays = () => {
                 {playsFromDb.map((play, index) => (
                   <tr key={play.playsId} id={"Play" + index}>
                     <td onClick={() => handleSelectRow(play, index)}>
-                      {play.playsId}
+                      {play.playName}
                     </td>
                     <td onClick={() => handleSelectRow(play, index)}>
                       {play.attack ? "Ofensiva" : "Defensiva"}
