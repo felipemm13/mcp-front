@@ -7,7 +7,7 @@ import axios from "axios";
 import { Context } from "../services/Context";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
-  const { urlVision, currentCalibration } = useContext(Context);
+  const { urlVision, currentCalibration,calibrationBackground } = useContext(Context);
   const calibration = useRef(null);
   const [stains, setStains] = useState(null);
   const [calibrated, setCalibrated] = useState(false);
@@ -26,8 +26,8 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
     await axios
-      //.post("http://localhost:3001/calibration_automatic", {
-        .post(`${urlVision}calibration_automatic`, {
+      .post("http://localhost:3001/calibration_automatic", {
+      //  .post(`${urlVision}calibration_automatic`, {
         Screenshot: imgTemp,
       })
       .then((response) => {
@@ -104,6 +104,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       setCurrentMessage("Guardando calibración");
     }, [0]);
     currentCalibration.current = calibration.current;
+    calibrationBackground.current = imgSrc;
     setTimeout(() => {
       document.getElementById("messageState").innerHTML = "Calibración Guardada";
     }, [1000]);

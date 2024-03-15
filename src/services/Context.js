@@ -19,6 +19,7 @@ const ProviderContext = ({ children }) => {
   const currentDevice = useRef(null)
   const [customsUser,setCustomsUser] = useState(null)
   const currentCalibration = useRef(null)
+  const calibrationBackground = useRef(null)
   const S3_BUCKET = "mcp-wildsense";
   const REGION = "us-east-2";
   const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
@@ -85,6 +86,7 @@ const ProviderContext = ({ children }) => {
         currentPlay,
         customsUser,
         currentCalibration,
+        calibrationBackground,
         setCustomsUser,
         S3_BUCKET,
         REGION,

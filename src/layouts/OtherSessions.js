@@ -109,6 +109,7 @@ const OtherSessions = () => {
   };
 
   const handleSelectSession = (session, currentPlayer) => {
+    console.log(session)
     setSelectedSession([session, currentPlayer]);
   };
   const calculateAge = (birthday) => {

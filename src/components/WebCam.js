@@ -24,8 +24,9 @@ const WebCam = (props) => {
     AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY,
     currentCalibration,
+    calibrationBackground,
   } = useContext(Context);
-  const [devices, setDevices] = useState([]); 
+  const [devices, setDevices] = useState([]);
 
   const [cameraState, setCameraState] = useState(false);
   const [cameraIsAvailable, setCameraIsAvailable] = useState(false);
@@ -147,7 +148,7 @@ const WebCam = (props) => {
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
-      calibration : currentCalibration.current
+      calibration: currentCalibration.current,
     };
     const sessionAnalyticData = {
       complete: 0,
@@ -229,6 +230,33 @@ const WebCam = (props) => {
             })
             .promise();
         });
+        const byteCharacters = atob(
+          calibrationBackground.current.split(",")[1]
+        );
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const backCalib = new File([byteArray], `${sessionDate}/calibration.jpg`, {
+          type: "image/jpeg",
+        });
+        const paramsCalibration = {
+          ACL: "public-read",
+          Bucket: S3_BUCKET,
+          Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
+          Body: backCalib,
+          ContentType: backCalib.type,
+        };
+        s3.putObject(paramsCalibration)
+          .on("httpUploadProgress", (evt) => {
+            document.getElementById("SaveCaptureVideo").innerText =
+              "Subiendo Imagen " +
+              parseInt((evt.loaded * 100) / evt.total) +
+              "%";
+          })
+          .promise();
+
         var upload = s3
           .putObject(paramsVideo)
           .on("httpUploadProgress", (evt) => {
