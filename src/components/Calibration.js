@@ -7,7 +7,7 @@ import axios from "axios";
 import { Context } from "../services/Context";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
-  const {urlVision,currentCalibration} = useContext(Context)
+  const { urlVision, currentCalibration } = useContext(Context);
   const calibration = useRef(null);
   const [stains, setStains] = useState(null);
   const [calibrated, setCalibrated] = useState(false);
@@ -27,7 +27,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     setImgSrc(imgTemp);
     await axios
       //.post("http://localhost:3001/calibration_automatic", {
-      .post(`${urlVision}calibration_automatic`, {
+        .post(`${urlVision}calibration_automatic`, {
         Screenshot: imgTemp,
       })
       .then((response) => {
@@ -99,11 +99,15 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
   };
 
   const saveCalibration = () => {
-    setCalibrated(false);
-    setCurrentMessage("Guardando calibración");
+    setTimeout(() => {
+      setCalibrated(false);
+      setCurrentMessage("Guardando calibración");
+    }, [0]);
     currentCalibration.current = calibration.current;
-    document.getElementById("messageState").innerHTML = "Calibración Guardada";
-    setTimeout(() => document.getElementById("myModal").click(), [1500]);
+    setTimeout(() => {
+      document.getElementById("messageState").innerHTML = "Calibración Guardada";
+    }, [1000]);
+    setTimeout(() => document.getElementById("myModal").click(), [2000]);
   };
 
   useEffect(() => {
