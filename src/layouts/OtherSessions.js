@@ -19,6 +19,7 @@ const OtherSessions = () => {
     S3_BUCKET,
     REGION,
     showSessionType,
+    infoSession,
   } = useContext(Context);
   const [sessions, setSessions] = useState([]);
   const sessionsRef = useRef(null);
@@ -108,7 +109,6 @@ const OtherSessions = () => {
   };
 
   const handleSelectSession = (session, currentPlayer) => {
-    // Actualiza el estado con la sesión seleccionada
     setSelectedSession([session, currentPlayer]);
   };
   const calculateAge = (birthday) => {
@@ -122,7 +122,6 @@ const OtherSessions = () => {
     return age;
   };
 
-  const handleFilterSelectedPlayerSessions = useCallback(() => {});
   const deleteSelectedSession = () => {
     Swal.fire({
       title: "¿Estas seguro?",
@@ -213,6 +212,20 @@ const OtherSessions = () => {
     return true;
   });
 
+  const handleCopyParameters = () => {
+    /*
+    infoSession.current = {
+      isRandom: true,
+      playsFromDb:infoSession.current.playsFromDb,
+      numOfDistractors: selectedSession[0].numDistractors,
+      numberOfPlays: selectedSession[0].numPlays,
+      secondsForPlayTransition: selectedSession[0].transitionTime,
+      secondsToNextPlay: selectedSession[0].timeBetweenPlays,
+      seed: selectedSession[0].seed,
+      typeOfSession: selectedSession[0].sessionType,
+      sequenceOfPlays: [],
+    };*/
+  };
   return sessions.length ? (
     <div className="OtherSessionsContainer">
       <button
@@ -578,7 +591,11 @@ const OtherSessions = () => {
         </div>
       </div>
       <div className="OtherSessionsControlSessionButtons">
-        <button className="OtherSessionsButtons" disabled={!selectedSession}>
+        <button
+          className="OtherSessionsButtons"
+          disabled={!selectedSession}
+          onClick={handleCopyParameters}
+        >
           Copiar parámetros de sesion
         </button>
         <button
@@ -587,12 +604,6 @@ const OtherSessions = () => {
           disabled={!selectedSession}
         >
           Eliminar sesion
-        </button>
-        <button
-          className="OtherSessionsButtons"
-          onClick={handleFilterSelectedPlayerSessions}
-        >
-          Filtrar sesiones del jugador
         </button>
         <button
           className="OtherSessionsButtons"
