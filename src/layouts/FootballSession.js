@@ -926,6 +926,9 @@ const FootballSession = () => {
                   step="0.5"
                   value={currentSesionInfo?.secondsToNextPlay}
                   onChange={(e) => {
+                    if(e.target.value < 1){
+                      e.target.value = 1;
+                    }
                     setCurrentSesionInfo({
                       ...currentSesionInfo,
                       secondsToNextPlay: parseFloat(e.target.value),
