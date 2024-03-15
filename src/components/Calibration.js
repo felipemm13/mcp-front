@@ -26,8 +26,8 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     const imgTemp = webcamRef.current.getScreenshot();
     setImgSrc(imgTemp);
     await axios
-      .post("http://localhost:3001/calibration_automatic", {
-      //  .post(`${urlVision}calibration_automatic`, {
+      //.post("http://localhost:3001/calibration_automatic", {
+        .post(`${urlVision}calibration_automatic`, {
         Screenshot: imgTemp,
       })
       .then((response) => {
