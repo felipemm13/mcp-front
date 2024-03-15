@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Context } from "../services/Context";
 import AWS from "aws-sdk";
 import ReactPlayer from "react-player";
+import Swal from "sweetalert2";
 
 const AnalizeSession = () => {
   const {
@@ -22,6 +23,7 @@ const AnalizeSession = () => {
     REGION,
     userContext,
     showSessionType,
+    currentCalibration,
   } = useContext(Context);
   const navigate = useNavigate();
   const session = useParams().session;
@@ -281,7 +283,6 @@ const AnalizeSession = () => {
       `RowSequenceIndex${selectedRowIndex.current}`
     );
     const selectedRow = document.getElementById(`RowSequenceIndex${index}`);
-
     if (previousSelectedRow) {
       previousSelectedRow.style.background = "#1a1a1a";
       previousSelectedRow.style.color = "white";
@@ -305,226 +306,264 @@ const AnalizeSession = () => {
   };
 
   const AddDecisionMakingMark = () => {
-    if (
-      document.getElementById(
-        `RowSequenceDecisionMaking${selectedRowIndex.current}`
-      )
-    ) {
-      document.getElementById(
-        `RowSequenceDecisionMaking${selectedRowIndex.current}`
-      ).innerHTML = Math.round((currentFrame / FPS.current) * 1000);
-      document.getElementById(
-        `RowSequenceVisuMotor${selectedRowIndex.current}`
-      ).innerHTML =
-        document.getElementById(
-          `RowSequenceDecisionMaking${selectedRowIndex.current}`
-        ).innerHTML -
-        document.getElementById(`RowSequenceStimul${selectedRowIndex.current}`)
-          .innerHTML;
-      if (
-        document.getElementById(
-          `RowSequenceVisuMotor${selectedRowIndex.current}`
-        ).innerHTML > 0 &&
-        document.getElementById(`RowSequenceMotor${selectedRowIndex.current}`)
-          .innerHTML > 0
-      ) {
-        document.getElementById(
-          `RowSequenceCognitiveMotor${selectedRowIndex.current}`
-        ).innerHTML =
-          parseInt(
-            document.getElementById(
-              `RowSequenceMotor${selectedRowIndex.current}`
-            ).innerHTML
-          ) +
-          parseInt(
-            document.getElementById(
-              `RowSequenceVisuMotor${selectedRowIndex.current}`
-            ).innerHTML
-          );
+    const decisionMakingRow = document.getElementById(
+      `RowSequenceDecisionMaking${selectedRowIndex.current}`
+    );
+    const visuMotorRow = document.getElementById(
+      `RowSequenceVisuMotor${selectedRowIndex.current}`
+    );
+    const motorRow = document.getElementById(
+      `RowSequenceMotor${selectedRowIndex.current}`
+    );
+    const stimulRow = document.getElementById(
+      `RowSequenceStimul${selectedRowIndex.current}`
+    );
+    const cognitiveMotorRow = document.getElementById(
+      `RowSequenceCognitiveMotor${selectedRowIndex.current}`
+    );
+
+    if (decisionMakingRow) {
+      const newDecisionMakingValue = Math.round(
+        (currentFrame / FPS.current) * 1000
+      );
+      const existingDecisionMakingValue = parseInt(decisionMakingRow.innerHTML);
+
+      if (existingDecisionMakingValue !== 0) {
+        Swal.fire({
+          title: "Valor Existente",
+          text: "Ya existe un valor en la fila de Decision Making. ¿Desea reemplazarlo?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, reemplazar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            updateDecisionMakingValue(newDecisionMakingValue);
+          }
+        });
+      } else {
+        updateDecisionMakingValue(newDecisionMakingValue);
       }
     }
-    updateMetrics();
-  };
 
-  const AddArrivalMark = () => {
-    if (
-      document.getElementById(`RowSequenceArrival${selectedRowIndex.current}`)
-    ) {
-      document.getElementById(
-        `RowSequenceArrival${selectedRowIndex.current}`
-      ).innerHTML = Math.round((currentFrame / FPS.current) * 1000);
+    function updateDecisionMakingValue(newValue) {
+      decisionMakingRow.innerHTML = newValue;
+      visuMotorRow.innerHTML = newValue - parseInt(stimulRow.innerHTML);
+
       if (
-        document.getElementById(
-          `RowSequenceDecisionMaking${selectedRowIndex.current}`
-        ).innerHTML > 0
+        parseInt(visuMotorRow.innerHTML) > 0 &&
+        parseInt(motorRow.innerHTML) > 0
       ) {
-        document.getElementById(
-          `RowSequenceMotor${selectedRowIndex.current}`
-        ).innerHTML =
-          document.getElementById(
-            `RowSequenceArrival${selectedRowIndex.current}`
-          ).innerHTML -
-          document.getElementById(
-            `RowSequenceDecisionMaking${selectedRowIndex.current}`
-          ).innerHTML;
+        cognitiveMotorRow.innerHTML =
+          parseInt(motorRow.innerHTML) + parseInt(visuMotorRow.innerHTML);
       }
-      if (
-        document.getElementById(
-          `RowSequenceVisuMotor${selectedRowIndex.current}`
-        ).innerHTML > 0 &&
-        document.getElementById(`RowSequenceMotor${selectedRowIndex.current}`)
-          .innerHTML > 0
-      ) {
-        document.getElementById(
-          `RowSequenceCognitiveMotor${selectedRowIndex.current}`
-        ).innerHTML =
-          parseInt(
-            document.getElementById(
-              `RowSequenceMotor${selectedRowIndex.current}`
-            ).innerHTML
-          ) +
-          parseInt(
-            document.getElementById(
-              `RowSequenceVisuMotor${selectedRowIndex.current}`
-            ).innerHTML
-          );
-      }
+
       updateMetrics();
     }
   };
 
-  const getTotalMetrics = useCallback(
-    (metric) => {
-      if (
-        session !== "current" &&
-        currentSession.current[0].SessionAnalytics[0] &&
-        currentSession.current[0].SessionAnalytics[0].motorTotal !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].responseTotal !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].visuMotorTotal !== 0
-      ) {
-        switch (metric) {
-          case "Motor":
-            return currentSession.current[0].SessionAnalytics[0].motorTotal;
-          case "CognitiveMotor":
-            return currentSession.current[0].SessionAnalytics[0].responseTotal;
-          case "VisuMotor":
-            return currentSession.current[0].SessionAnalytics[0].visuMotorTotal;
-          default:
-            return 0;
-        }
+  const AddArrivalMark = () => {
+    const currentRowIndex = selectedRowIndex.current;
+
+    const arrivalRow = document.getElementById(
+      `RowSequenceArrival${currentRowIndex}`
+    );
+    const decisionMakingRow = document.getElementById(
+      `RowSequenceDecisionMaking${currentRowIndex}`
+    );
+    const visuMotorRow = document.getElementById(
+      `RowSequenceVisuMotor${currentRowIndex}`
+    );
+    const motorRow = document.getElementById(
+      `RowSequenceMotor${currentRowIndex}`
+    );
+    const cognitiveMotorRow = document.getElementById(
+      `RowSequenceCognitiveMotor${currentRowIndex}`
+    );
+
+    if (arrivalRow) {
+      const newArrivalValue = Math.round((currentFrame / FPS.current) * 1000);
+      const existingArrivalValue = parseInt(arrivalRow.innerHTML);
+
+      if (existingArrivalValue !== 0) {
+        Swal.fire({
+          title: "Valor Existente",
+          text: "Ya existe un valor en la fila de Arrival. ¿Desea reemplazarlo?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, reemplazar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            updateArrivalValue(newArrivalValue);
+          }
+        });
       } else {
-        let total = 0;
+        updateArrivalValue(newArrivalValue);
+      }
+    }
+
+    function updateArrivalValue(newValue) {
+      arrivalRow.innerHTML = newValue;
+      if (parseInt(decisionMakingRow.innerHTML) > 0) {
+        motorRow.innerHTML =
+          parseInt(arrivalRow.innerHTML) -
+          parseInt(decisionMakingRow.innerHTML);
+      }
+      if (
+        parseInt(visuMotorRow.innerHTML) > 0 &&
+        parseInt(motorRow.innerHTML) > 0
+      ) {
+        cognitiveMotorRow.innerHTML =
+          parseInt(motorRow.innerHTML) + parseInt(visuMotorRow.innerHTML);
+      }
+      const currentSelectedRow = document.getElementById(
+        `RowSequenceIndex${currentRowIndex}`
+      );
+      const nextSelectedRow = document.getElementById(
+        `RowSequenceIndex${currentRowIndex + 1}`
+      );
+
+      if (currentSelectedRow) {
+        currentSelectedRow.style.background = "#1a1a1a";
+        currentSelectedRow.style.color = "white";
+      }
+
+      if (nextSelectedRow) {
+        nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+        nextSelectedRow.style.color = "black";
+        selectedRowIndex.current++;
+      }
+    }
+  };
+
+  const getTotalMetrics = (metric) => {
+    if (
+      session !== "current" &&
+      currentSession.current[0].SessionAnalytics[0] &&
+      currentSession.current[0].SessionAnalytics[0].motorTotal !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].responseTotal !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].visuMotorTotal !== 0
+    ) {
+      switch (metric) {
+        case "Motor":
+          return currentSession.current[0].SessionAnalytics[0].motorTotal;
+        case "CognitiveMotor":
+          return currentSession.current[0].SessionAnalytics[0].responseTotal;
+        case "VisuMotor":
+          return currentSession.current[0].SessionAnalytics[0].visuMotorTotal;
+        default:
+          return 0;
+      }
+    } else {
+      let total = 0;
+      for (let i = 0; i < tableData.length; i++) {
+        total +=
+          document.getElementById(`RowSequence${metric}${i}`) &&
+          parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+      }
+      return total;
+    }
+  };
+
+  const getAverageMetrics = (metric) => {
+    if (
+      session !== "current" &&
+      currentSession.current[0].SessionAnalytics[0] &&
+      currentSession.current[0].SessionAnalytics[0].motorMean !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].responseMean !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].visuMotorMean !== 0
+    ) {
+      switch (metric) {
+        case "Motor":
+          return currentSession.current[0].SessionAnalytics[0].motorMean;
+        case "CognitiveMotor":
+          return currentSession.current[0].SessionAnalytics[0].responseMean;
+        case "VisuMotor":
+          return currentSession.current[0].SessionAnalytics[0].visuMotorMean;
+        default:
+          return 0;
+      }
+    } else {
+      let total = 0;
+      let average = 0;
+      if (tableData.length > 0) {
         for (let i = 0; i < tableData.length; i++) {
-          total +=
-            document.getElementById(`RowSequence${metric}${i}`) &&
+          total += parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+        }
+        average = total / tableData.length;
+        return Math.floor(average);
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const getStandardDeviationMetrics = (metric) => {
+    if (
+      session !== "current" &&
+      currentSession.current[0].SessionAnalytics[0] &&
+      currentSession.current[0].SessionAnalytics[0].motorSd !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].responseSd !== 0 &&
+      currentSession.current[0].SessionAnalytics[0].visuMotorSd !== 0
+    ) {
+      switch (metric) {
+        case "Motor":
+          return currentSession.current[0].SessionAnalytics[0].motorSd;
+        case "CognitiveMotor":
+          return currentSession.current[0].SessionAnalytics[0].responseSd;
+        case "VisuMotor":
+          return currentSession.current[0].SessionAnalytics[0].visuMotorSd;
+        default:
+          return 0;
+      }
+    } else {
+      let total = 0;
+      let average = 0;
+      let standardDeviation = 0;
+      if (tableData.length > 0) {
+        for (let i = 0; i < tableData.length; i++) {
+          total += parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+        }
+        average = total / tableData.length;
+        for (let i = 0; i < tableData.length; i++) {
+          standardDeviation += Math.pow(
             parseInt(
               document.getElementById(`RowSequence${metric}${i}`).innerHTML
-            );
-        }
-        return total;
-      }
-    },
-    [selectedRowIndex.current, currentFrame]
-  );
-
-  const getAverageMetrics = useCallback(
-    (metric) => {
-      if (
-        session !== "current" &&
-        currentSession.current[0].SessionAnalytics[0] &&
-        currentSession.current[0].SessionAnalytics[0].motorMean !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].responseMean !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].visuMotorMean !== 0
-      ) {
-        switch (metric) {
-          case "Motor":
-            return currentSession.current[0].SessionAnalytics[0].motorMean;
-          case "CognitiveMotor":
-            return currentSession.current[0].SessionAnalytics[0].responseMean;
-          case "VisuMotor":
-            return currentSession.current[0].SessionAnalytics[0].visuMotorMean;
-          default:
-            return 0;
-        }
-      } else {
-        let total = 0;
-        let average = 0;
-        if (tableData.length > 0) {
-          for (let i = 0; i < tableData.length; i++) {
-            total += parseInt(
-              document.getElementById(`RowSequence${metric}${i}`).innerHTML
-            );
-          }
-          average = total / tableData.length;
-          return Math.floor(average);
-        } else {
-          return 0;
-        }
-      }
-    },
-    [selectedRowIndex.current, currentFrame]
-  );
-
-  const getStandardDeviationMetrics = useCallback(
-    (metric) => {
-      if (
-        session !== "current" &&
-        currentSession.current[0].SessionAnalytics[0] &&
-        currentSession.current[0].SessionAnalytics[0].motorSd !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].responseSd !== 0 &&
-        currentSession.current[0].SessionAnalytics[0].visuMotorSd !== 0
-      ) {
-        switch (metric) {
-          case "Motor":
-            return currentSession.current[0].SessionAnalytics[0].motorSd;
-          case "CognitiveMotor":
-            return currentSession.current[0].SessionAnalytics[0].responseSd;
-          case "VisuMotor":
-            return currentSession.current[0].SessionAnalytics[0].visuMotorSd;
-          default:
-            return 0;
-        }
-      } else {
-        let total = 0;
-        let average = 0;
-        let standardDeviation = 0;
-        if (tableData.length > 0) {
-          for (let i = 0; i < tableData.length; i++) {
-            total += parseInt(
-              document.getElementById(`RowSequence${metric}${i}`).innerHTML
-            );
-          }
-          average = total / tableData.length;
-          for (let i = 0; i < tableData.length; i++) {
-            standardDeviation += Math.pow(
-              parseInt(
-                document.getElementById(`RowSequence${metric}${i}`).innerHTML
-              ) - average,
-              2
-            );
-          }
-          return (
-            Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
-            100
+            ) - average,
+            2
           );
-        } else {
-          return 0;
         }
+        return (
+          Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
+          100
+        );
+      } else {
+        return 0;
       }
-    },
-    [selectedRowIndex.current, currentFrame]
-  );
+    }
+  };
 
-  const getCorrectPercentage = useCallback(() => {
+  const getCorrectPercentage = () => {
     let error = getErrorPercentage();
     if (error) {
       return Math.floor(100 - error);
     } else {
       return 100;
     }
-  }, [selectedRowIndex.current, currentFrame]);
+  };
 
-  const getErrorPercentage = useCallback(() => {
+  const getErrorPercentage = () => {
     let error = 0;
     if (tableData.length > 0) {
       for (let i = 0; i < tableData.length; i++) {
@@ -541,7 +580,7 @@ const AnalizeSession = () => {
     } else {
       return 0;
     }
-  }, [selectedRowIndex.current, currentFrame]);
+  };
 
   const padZero = (value) => {
     return value < 10 ? "0" + value : value;
@@ -626,9 +665,10 @@ const AnalizeSession = () => {
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
+      calibration: currentCalibration.current,
     };
     const sessionAnalyticData = {
-      complete: 0, // Reemplaza con el valor correcto
+      complete: 0,
       correctPercentage: getCorrectPercentage(),
       motorMean: getAverageMetrics("Motor"),
       motorSd: getStandardDeviationMetrics("Motor"),
@@ -658,8 +698,7 @@ const AnalizeSession = () => {
       moveNum: row.playID,
       arrival: row.arrival,
       cognitiveMotor: row.cognitiveMotor,
-      correctResponse: 0,
-      error: row.error ? 1 : 0,
+      error: row.error,
       imageUrl: imagesUrls[index],
       motor: row.motor,
       presentedMs: row.visuMotor,
@@ -739,6 +778,7 @@ const AnalizeSession = () => {
       document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
+      
       await CrudApi.update(
         `sessionAnalytics/${currentSession.current[0].SessionAnalytics[0].sessionAnalyticId}`,
         dataAnalytic
@@ -761,14 +801,15 @@ const AnalizeSession = () => {
         moveNum: row.playID,
         arrival: row.arrival,
         cognitiveMotor: row.cognitiveMotor,
-        correctResponse: 0,
-        error: 0,
+        error: row.error,
         motor: row.motor,
         presentedMs: row.visuMotor,
         stimulus: row.estimulo,
         decisionMaking: row.decisionMaking,
       }));
+      console.log(updatedTableData, dataMoves);
       currentSession.current[0].SessionMoves.map(async (move, index) => {
+        
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,
           dataMoves[index]
@@ -777,6 +818,7 @@ const AnalizeSession = () => {
             "Guardado Exitosamente";
           document.getElementById("SaveAnalizeSession").disabled = false;
         });
+        
       });
     }
   };
@@ -816,6 +858,48 @@ const AnalizeSession = () => {
       }
     }
     return 1;
+  };
+
+  const clearAnalysis = () => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "¿Deseas borrar los valores de Decision Making y Arrival de todas las filas?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, borrar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const rowCount = tableData.length;
+        for (let i = 0; i < rowCount; i++) {
+          const decisionMakingRow = document.getElementById(
+            `RowSequenceDecisionMaking${i}`
+          );
+          const arrivalRow = document.getElementById(`RowSequenceArrival${i}`);
+          const visuMotorRow = document.getElementById(
+            `RowSequenceVisuMotor${i}`
+          );
+          const motorRow = document.getElementById(`RowSequenceMotor${i}`);
+          const cognitiveMotorRow = document.getElementById(
+            `RowSequenceCognitiveMotor${i}`
+          );
+          const errorRow = document.getElementById(`RowSequenceError${i}`);
+          if (decisionMakingRow) decisionMakingRow.innerHTML = "0";
+          if (arrivalRow) arrivalRow.innerHTML = "0";
+          if (visuMotorRow) visuMotorRow.innerHTML = "0";
+          if (motorRow) motorRow.innerHTML = "0";
+          if (cognitiveMotorRow) cognitiveMotorRow.innerHTML = "0";
+          if (errorRow) errorRow.checked = false;
+        }
+        Swal.fire(
+          "¡Borrado!",
+          "Los valores de Análisis han sido borrados exitosamente.",
+          "success"
+        );
+      }
+    });
   };
 
   if (!infoSession?.current?.stimulusTime) {
@@ -1704,7 +1788,7 @@ const AnalizeSession = () => {
             </button>
           </div>
           <div>
-            <button className="AnalizeSessionMarksControlButton" disabled>
+            <button className="AnalizeSessionMarksControlButton" disabled={currentCalibration.current === null}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="16"
@@ -1730,32 +1814,19 @@ const AnalizeSession = () => {
               </svg>
               Guardar Informacion Sesion
             </button>
-            <button className="AnalizeSessionMarksControlButton" disabled>
-              {true ? (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="18"
-                    width="14"
-                    viewBox="0 0 384 512"
-                  >
-                    <path d="M192 0c-41.8 0-77.4 26.7-90.5 64H64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H282.5C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM105.8 229.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L216 328.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V314.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H158.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM160 416a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z" />
-                  </svg>
-                  Marcas No Estan Listas
-                </>
-              ) : (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="18"
-                    width="14"
-                    viewBox="0 0 384 512"
-                  >
-                    <path d="M192 0c-41.8 0-77.4 26.7-90.5 64H64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H282.5C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z" />
-                  </svg>
-                  Guardar Metricas
-                </>
-              )}
+            <button
+              className="AnalizeSessionMarksControlButton"
+              onClick={clearAnalysis}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="20"
+                width="20"
+                viewBox="0 0 512 512"
+              >
+                <path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z" />
+              </svg>
+              Borrar análsis
             </button>
           </div>
         </div>

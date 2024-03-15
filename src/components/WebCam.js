@@ -23,8 +23,9 @@ const WebCam = (props) => {
     REGION,
     AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY,
+    currentCalibration,
   } = useContext(Context);
-  const [devices, setDevices] = useState([]); //list of cameras
+  const [devices, setDevices] = useState([]); 
 
   const [cameraState, setCameraState] = useState(false);
   const [cameraIsAvailable, setCameraIsAvailable] = useState(false);
@@ -146,6 +147,7 @@ const WebCam = (props) => {
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
+      calibration : currentCalibration.current
     };
     const sessionAnalyticData = {
       complete: 0,
@@ -252,12 +254,12 @@ const WebCam = (props) => {
     document.getElementById("BackToHome").removeAttribute("disabled");
   };
 
-  const handleChangeWebCam = (e) => {
+  const handleChangeWebCam = async (e) => {
     currentDevice.current = e.target.value;
     setDeviceId(e.target.value);
   };
 
-  const handleListDevices = () => {
+  const handleListDevices = async () => {
     const hasCameraPermission = localStorage.getItem("cameraPermission");
     if (hasCameraPermission === "granted") {
       navigator.mediaDevices
@@ -275,14 +277,11 @@ const WebCam = (props) => {
           } else {
             setDevices(allowedDevices);
             setDeviceId(allowedDevices[0].deviceId);
-            allowedDevices.forEach((device) => {
-              //getCapabilities(device.deviceId);
-            });
           }
         })
         .catch((err) => {
           console.error("Error al enumerar dispositivos:", err);
-        })
+        });
     } else {
       navigator.mediaDevices
         .getUserMedia({ video: true })
@@ -297,13 +296,11 @@ const WebCam = (props) => {
               const allowedDevices = videoDevices.filter(
                 (device) => device.label !== ""
               );
+
               setDevices(allowedDevices);
               setDeviceId(
                 allowedDevices.length > 0 ? allowedDevices[0].deviceId : null
               );
-              allowedDevices.forEach((device) => {
-                //getCapabilities(device.deviceId);
-              });
             })
             .catch((err) => {
               console.error("Error al enumerar dispositivos:", err);
@@ -336,22 +333,16 @@ const WebCam = (props) => {
     document
       .getElementById("SaveCaptureVideo")
       .addEventListener("click", handleUploadVideo);
-  }, []);
+    navigator.mediaDevices.addEventListener("devicechange", handleListDevices);
 
-  const getCapabilities = async (deviceId) => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId },
-      });
-      const trackSettings = stream
-        .getTracks()
-        .map((track) => track.getSettings());
-      console.log(trackSettings);
-      stream.getTracks().forEach((track) => track.stop());
-    } catch (error) {
-      console.error("Error getting capabilities:", error);
-    }
-  };
+    return () => {
+      // Limpiar los listeners al desmontar el componente
+      navigator.mediaDevices.removeEventListener(
+        "devicechange",
+        handleListDevices
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (

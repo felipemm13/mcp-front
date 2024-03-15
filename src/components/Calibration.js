@@ -7,7 +7,8 @@ import axios from "axios";
 import { Context } from "../services/Context";
 
 const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
-  const {urlVision} = useContext(Context)
+  const {urlVision,currentCalibration} = useContext(Context)
+  const calibration = useRef(null);
   const [stains, setStains] = useState(null);
   const [calibrated, setCalibrated] = useState(false);
   const [imgSrc, setImgSrc] = useState(null);
@@ -35,6 +36,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
           calib_w: response.data.response.calib_w,
         };
         setCalibrated(true);
+        calibration.current = response.data.response;
         setTimeout(() => setStains(response.data.response.points), [0]);
       })
       .catch((err) => {
@@ -87,6 +89,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       .then((response) => {
         setCurrentMark(1);
         setCorrectCalibration(true);
+        calibration.current = response.data.response;
         setTimeout(() => setStains(response.data.response.points), [0]);
         setSemiAutoCalibration(false);
       })
@@ -95,12 +98,13 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       });
   };
 
-  const saveCalibration = useCallback(() => {
+  const saveCalibration = () => {
     setCalibrated(false);
     setCurrentMessage("Guardando calibración");
-    //document.getElementById("messageState").innerHTML = "Calibración Guardada";
+    currentCalibration.current = calibration.current;
+    document.getElementById("messageState").innerHTML = "Calibración Guardada";
     setTimeout(() => document.getElementById("myModal").click(), [1500]);
-  });
+  };
 
   useEffect(() => {
     document.addEventListener("click", (e) => {

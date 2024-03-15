@@ -174,6 +174,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
               groupName: string,
               userId: userContext.current.userId,
             }).then((res) => {
+              console.log(res.data)
               setCustomsUser({
                 ...customsUser,
                 groups: [...customsUser.groups, res.data],
@@ -213,12 +214,15 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
     let groupCustom = customsUser.groups?.find(
       (Group) => Group.groupName === institution
     );
+    console.log(groupCustom)
     let categoryCustom = customsUser.categories?.find(
       (Category) => Category.categoryName === category
     );
+    console.log(categoryCustom)
     let positionCustom = customsUser.positions?.find(
       (Position) => Position.positionName === position
     );
+    console.log(positionCustom)
     Swal.fire({
       title: "Ingrese el nuevo nombre de la " + type,
       input: "text",
@@ -441,7 +445,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                 </div>
                 <div className="formPlayerInputLabel" style={{ width: "20%" }}>
                   <label htmlFor="ageInput" className="form-label">
-                    Edad
+                    Edad [años]
                   </label>
                   <input
                     readOnly
@@ -464,9 +468,9 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                     onChange={(e) => setExperience(e.target.value)}
                   />
                 </div>
-                <div className="formPlayerInputLabel" style={{ width: "20%" }}>
+                <div className="formPlayerInputLabel" style={{ width: "30%" }}>
                   <label htmlFor="calculateExperience" className="form-label">
-                    Experiencia
+                    Experiencia [años]
                   </label>
                   <input
                     readOnly

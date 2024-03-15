@@ -215,19 +215,15 @@ const FootballSessionView = ({ view }) => {
     ]);
     ballAnimationRef.update({
       from: ballAnimationMoves[0],
-      to: [
-        ...ballAnimationMoves.splice(1, ballAnimationMoves.length - 1),
-        {
-          x: containerWidth.current * 0.5,
-          y: containerHeight.current * 0.5,
-          opacity: 0,
-          delay: infoSession.current.secondsToNextPlay * 1000,
-        },
-      ],
+      to: [...ballAnimationMoves.splice(1, ballAnimationMoves.length - 1)],
       config: {
         duration: infoSession.current.secondsForPlayTransition * 1000,
       },
-      onResolve: () => handleFinishAnimation(),
+      onResolve: () =>
+        setTimeout(
+          () => handleFinishAnimation(),
+          [infoSession.current.secondsToNextPlay * 1000 * 2]
+        ),
       onStart: () => {
         if (view === "coach") {
           if (sequenceIndex < infoSession.current.sequenceOfPlays.length - 1) {
@@ -394,15 +390,7 @@ const FootballSessionView = ({ view }) => {
         }
         return {
           from: distractorsInitialPosition,
-          to: [
-            distractorsMoves[i],
-            {
-              cx: containerWidth.current * 0.5,
-              cy: containerHeight.current * 0.5,
-              opacity: 0,
-              delay: infoSession.current.secondsToNextPlay * 1000,
-            },
-          ],
+          to: [distractorsMoves[i]],
           config: {
             duration: infoSession.current.secondsForPlayTransition * 1000,
           },
@@ -429,7 +417,10 @@ const FootballSessionView = ({ view }) => {
           },
           onResolve: () => {
             if (i === 0) {
-              handleFinishAnimation();
+              setTimeout(
+                () => handleFinishAnimation(),
+                [infoSession.current.secondsToNextPlay * 1000 * 2]
+              );
             }
           },
         };
@@ -620,15 +611,7 @@ const FootballSessionView = ({ view }) => {
     apiRedPlayersAnimation.update((i) => {
       return {
         from: animationRedPlayersMoves[i][0],
-        to: [
-          ...animationRedPlayersMoves[i].slice(1),
-          {
-            cx: containerWidth.current * 0.5,
-            cy: containerHeight.current * 0.5,
-            opacity: 0,
-            delay: infoSession.current.secondsToNextPlay * 1000,
-          },
-        ],
+        to: [...animationRedPlayersMoves[i].slice(1)],
         config: {
           duration: infoSession.current.secondsForPlayTransition * 1000,
         },
@@ -639,15 +622,7 @@ const FootballSessionView = ({ view }) => {
     apiYellowPlayersAnimation.update((i) => {
       return {
         from: animationYellowPlayersMoves[i][0],
-        to: [
-          ...animationYellowPlayersMoves[i].slice(1),
-          {
-            cx: containerWidth.current * 0.5,
-            cy: containerHeight.current * 0.5,
-            opacity: 0,
-            delay: infoSession.current.secondsToNextPlay * 1000,
-          },
-        ],
+        to: [...animationYellowPlayersMoves[i].slice(1)],
         config: {
           duration: infoSession.current.secondsForPlayTransition * 1000,
         },
@@ -657,15 +632,7 @@ const FootballSessionView = ({ view }) => {
     //Actualizar animaciones ideal player
     idealPlayerAnimationRef.update({
       from: animationIdealPlayerMoves[0],
-      to: [
-        ...animationIdealPlayerMoves.slice(1),
-        {
-          cx: containerWidth.current * 0.5,
-          cy: containerHeight.current * 0.5,
-          opacity: 0,
-          delay: infoSession.current.secondsToNextPlay * 1000,
-        },
-      ],
+      to: [...animationIdealPlayerMoves.slice(1)],
       config: {
         duration: infoSession.current.secondsForPlayTransition * 1000,
       },
@@ -689,7 +656,11 @@ const FootballSessionView = ({ view }) => {
           }
         }
       },
-      onResolve: () => handleFinishAnimation(),
+      onResolve: () =>
+        setTimeout(
+          () => handleFinishAnimation(),
+          [infoSession.current.secondsToNextPlay * 1000 * 2]
+        ),
     });
 
     //Actualizar animaciones ball
@@ -712,15 +683,7 @@ const FootballSessionView = ({ view }) => {
       }
       return {
         from: animationBallMoves[0],
-        to: [
-          ...animationBallMoves.slice(1),
-          {
-            x: containerWidth.current * 0.5,
-            y: containerHeight.current * 0.5,
-            opacity: 0,
-            delay: infoSession.current.secondsToNextPlay * 1000,
-          },
-        ],
+        to: [...animationBallMoves.slice(1)],
         config: {
           duration: infoSession.current.secondsForPlayTransition * 1000,
         },
