@@ -238,7 +238,7 @@ const WebCam = (props) => {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-        const backCalib = new File([byteArray], `${sessionDate}/calibration.jpg`, {
+        const backCalib = new File([byteArray], `${sessionDate.split('/')[0]}/calibration.jpg`, {
           type: "image/jpeg",
         });
         const paramsCalibration = {
