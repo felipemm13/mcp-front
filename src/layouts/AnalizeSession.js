@@ -46,6 +46,10 @@ const AnalizeSession = () => {
   const selectedPlayID = useRef(null);
   const [playingVideo, setPlayingVideo] = useState(false);
   const videoRefs = useRef([]);
+  const [processing, setProcessing] = useState({
+    value: false,
+    message: "Procesar Pasos",
+  });
   const [metrics, setMetrics] = useState({
     totalVisuMotor: 0,
     averageVisuMotor: 0,
@@ -903,6 +907,44 @@ const AnalizeSession = () => {
   };
 
   const autoAnalysis = async () => {
+    // verificar si hay valores de arrival y decision making en por lo menos una fila
+    const tableRows = document.querySelectorAll(".scrollable-body tr");
+    let hasValues = false;
+    for (let i = 0; i < tableRows.length; i++) {
+      const row = tableRows[i];
+      const decisionMaking = parseInt(
+        row.querySelector(`#RowSequenceDecisionMaking${i}`).textContent
+      );
+      const arrival = parseInt(
+        row.querySelector(`#RowSequenceArrival${i}`).textContent
+      );
+      if (decisionMaking !== 0 || arrival !== 0) {
+        hasValues = true;
+        break;
+      }
+    }
+    if (hasValues) {
+      Swal.fire({
+        title: "¿Estás seguro?",
+        text: "¿Deseas sobreescribir los valores de analisis actuales?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, sobreescribir",
+        cancelButtonText: "Cancelar",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await processingSteps();
+        }
+      });
+    } else {
+      await processingSteps();
+    }
+  };
+  const processingSteps = async () => {
+    document.getElementById("AutoAnalysis").disabled = true;
+    setProcessing({ value: true, message: "Procesando..." });
     console.log(currentSession.current[0]);
     let dataAutoAnalysis = {};
     if (session === "current") {
@@ -925,17 +967,43 @@ const AnalizeSession = () => {
         jsonString: JSON.stringify(marks),
       };
       console.log(dataAutoAnalysis);
+
       await axios
-        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, { timeout: 240000,maxBodyLength:Infinity,maxContentLength:Infinity })
+        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, {
+          timeout: 240000,
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        })
         .then(
           (response) => {
-            console.log(response);
+            setProcessing({ value: false, message: "Procesar Pasos" });
+            document.getElementById("AutoAnalysis").disabled = false;
+            refillAnalysisTable(JSON.parse(response.data.response.output));
           },
           (error) => {
             console.log(error);
           }
         );
     }
+  };
+
+  const refillAnalysisTable = (data) => {
+    //console.log(data);
+    const updatedData = tableData.map((row, index) => {
+      if (index < data.length) {
+        const newRow = data[index];
+        //ver frames totales del video para no excederse
+        return {
+          ...row,
+          arrival: newRow.arrival_frame,
+          decisionMaking: newRow.takeoff_frame
+        };
+      } else {
+        return row;
+      }
+    });
+    setTableData(updatedData);
+    console.log(updatedData)
   };
 
   if (!infoSession?.current?.stimulusTime) {
@@ -1826,22 +1894,50 @@ const AnalizeSession = () => {
           <div>
             <button
               className="AnalizeSessionMarksControlButton"
+              id="AutoAnalysis"
               disabled={
                 (session === "current" &&
                   currentCalibration.current === null) ||
                 !currentSession.current[0].calibration
               }
-              onFocus={() => autoAnalysis()}
+              onClick={autoAnalysis}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="18"
-                viewBox="0 0 576 512"
-              >
-                <path d="M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V352H64V64H512z" />
-              </svg>
-              Procesar Pasos
+              {processing.value ? (
+                <svg
+                  width="24"
+                  height="24"
+                  stroke="#DA2599"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="loading"
+                  style={{
+                    display: "flex",
+                    gap: "0.5em",
+                    padding: "0 0.5em",
+                    margin: "0",
+                  }}
+                >
+                  <g className="spinner_V8m1">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9.5"
+                      fill="none"
+                      strokeWidth="3"
+                    ></circle>
+                  </g>
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="18"
+                  viewBox="0 0 576 512"
+                >
+                  <path d="M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V352H64V64H512z" />
+                </svg>
+              )}
+              {processing.message}
             </button>
             <button
               className="AnalizeSessionMarksControlButton"
