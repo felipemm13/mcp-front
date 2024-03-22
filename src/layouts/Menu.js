@@ -52,7 +52,7 @@ const Menu = (props) => {
             Sesion de futbol
           </button>
 
-          <button className="button" onClick={() => navigate('/dashboard')}>
+          <button className="button" onClick={() => navigate('/dashboard/')}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
