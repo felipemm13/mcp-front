@@ -62,6 +62,7 @@ const WebCam = (props) => {
     return value < 10 ? "0" + value : value;
   };
   const handleUploadVideo = async () => {
+    
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
@@ -135,6 +136,25 @@ const WebCam = (props) => {
       Body: video,
       ContentType: video.type,
     };
+    const byteCharacters = atob(
+      calibrationBackground.current.split(",")[1]
+    );
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const backCalib = new File([byteArray], `${sessionDate.split('/')[0]}/calibration.jpg`, {
+      type: "image/jpeg",
+    });
+    const paramsCalibration = {
+      ACL: "public-read",
+      Bucket: S3_BUCKET,
+      Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
+      Body: backCalib,
+      ContentType: backCalib.type,
+    };
+
     const sessionData = {
       userId: userContext.current.userId,
       playerId: parseInt(infoSession.current.playerSelected),
@@ -149,6 +169,7 @@ const WebCam = (props) => {
       numDistractors: infoSession.current.numOfDistractors,
       fps: currentFPS.current,
       calibration: currentCalibration.current,
+      imageCalibration: paramsCalibration.Key,
     };
     const sessionAnalyticData = {
       complete: 0,
@@ -166,20 +187,29 @@ const WebCam = (props) => {
     };
     const sessionMovesData = infoSession.current.sequenceOfPlays.map(
       (play, index) => {
+        let correctMark;
+        if(infoSession.current.typeOfSession === 'evaluative' || infoSession.current.typeOfSession === 'applied'){
+          let currentPlay = infoSession.current.playsFromDb.filter((play) =>parseInt(play.playName) === infoSession.current.sequenceOfPlays[index])[0];
+          correctMark = currentPlay.responsePosition;
+        }else{
+          correctMark = play;
+        }
         return {
           moveNum: index + 1,
           arrival: 0,
           cognitiveMotor: 0,
-          correctResponse: 0,
+          correctResponse: correctMark,
           error: false,
           imageUrl: imagesUrls[index],
           motor: 0,
           presentedMs: 0,
           stimulus: infoSession.current.stimulusTime[index],
           decisionMaking: 0,
+          autoComplete: false
         };
       }
     );
+    
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
         currentSession.current = [{ ...res.data }];
@@ -230,24 +260,7 @@ const WebCam = (props) => {
             })
             .promise();
         });
-        const byteCharacters = atob(
-          calibrationBackground.current.split(",")[1]
-        );
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const backCalib = new File([byteArray], `${sessionDate.split('/')[0]}/calibration.jpg`, {
-          type: "image/jpeg",
-        });
-        const paramsCalibration = {
-          ACL: "public-read",
-          Bucket: S3_BUCKET,
-          Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
-          Body: backCalib,
-          ContentType: backCalib.type,
-        };
+
         s3.putObject(paramsCalibration)
           .on("httpUploadProgress", (evt) => {
             document.getElementById("SaveCaptureVideo").innerText =

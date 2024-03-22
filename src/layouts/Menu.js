@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../services/Context";
 
 const Menu = (props) => {
-  const{infoSession} = useContext(Context)
+  const { infoSession } = useContext(Context);
   const navigate = useNavigate();
   useEffect(() => {
     setTimeout(() => {
@@ -51,18 +51,18 @@ const Menu = (props) => {
             </svg>
             Sesion de futbol
           </button>
-          {/*
-          <button className="button" onClick={() => navigate("plays-view")}>
+
+          <button className="button" onClick={() => navigate('/dashboard')}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
               height="25"
               width="25"
-              viewBox="0 0 448 512"
             >
-              <path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z" />
+              <path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z" />
             </svg>
-            Crear/Editar Jugadas Futbol
-          </button>*/}
+            Dashboard
+          </button>
           <button className="button" onClick={() => navigate("list-of-plays")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"

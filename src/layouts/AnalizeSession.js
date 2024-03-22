@@ -6,9 +6,11 @@ import { Context } from "../services/Context";
 import AWS from "aws-sdk";
 import ReactPlayer from "react-player";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 const AnalizeSession = () => {
   const {
+    urlVision,
     videoCurrentSession,
     isSaveCurrentSession,
     listOfPlayers,
@@ -24,6 +26,7 @@ const AnalizeSession = () => {
     userContext,
     showSessionType,
     currentCalibration,
+    currentBackground,
   } = useContext(Context);
   const navigate = useNavigate();
   const session = useParams().session;
@@ -31,7 +34,6 @@ const AnalizeSession = () => {
   const currentPlayer = useRef(null);
   const [videoSession, setVideoSession] = useState(null);
   const [videoState, setVideoState] = useState("Play");
-  const [currentTime, setCurrentTime] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -778,7 +780,7 @@ const AnalizeSession = () => {
       document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("SaveAnalizeSession").innerHTML =
         "Guardando información...";
-      
+
       await CrudApi.update(
         `sessionAnalytics/${currentSession.current[0].SessionAnalytics[0].sessionAnalyticId}`,
         dataAnalytic
@@ -809,7 +811,6 @@ const AnalizeSession = () => {
       }));
       console.log(updatedTableData, dataMoves);
       currentSession.current[0].SessionMoves.map(async (move, index) => {
-        
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,
           dataMoves[index]
@@ -818,7 +819,6 @@ const AnalizeSession = () => {
             "Guardado Exitosamente";
           document.getElementById("SaveAnalizeSession").disabled = false;
         });
-        
       });
     }
   };
@@ -900,6 +900,37 @@ const AnalizeSession = () => {
         );
       }
     });
+  };
+
+  const autoAnalysis = async () => {
+    console.log(currentSession.current[0])
+    let dataAutoAnalysis = {};
+    if (session === "current") {
+      console.log("sesion actual");
+    } else {
+      let marks = currentSession.current[0].SessionMoves.map((move) => ({
+        mark_correct: move.correctResponse,
+        frame: Math.round(
+          (move.stimulus * currentSession.current[0].fps) / 1000
+        ),
+      }));
+      dataAutoAnalysis = {
+        contourjson: currentSession.current[0].calibration,
+        videoURL: currentSession.current[0].videoURL,
+        imageUrl: currentSession.current[0].imageCalibration,
+        jsonSting: marks,
+      };
+      console.log(dataAutoAnalysis)
+      /*
+      await axios.post(`${urlVision}/autoAnalysis`, dataAutoAnalysis).then(
+        (response) => {
+          console.log(response);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );*/
+    }
   };
 
   if (!infoSession?.current?.stimulusTime) {
@@ -1788,7 +1819,15 @@ const AnalizeSession = () => {
             </button>
           </div>
           <div>
-            <button className="AnalizeSessionMarksControlButton" disabled={currentCalibration.current === null}>
+            <button
+              className="AnalizeSessionMarksControlButton"
+              disabled={
+                (session === "current" &&
+                  currentCalibration.current === null) ||
+                !currentSession.current[0].calibration
+              }
+              onClick={autoAnalysis}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="16"

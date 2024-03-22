@@ -78,7 +78,7 @@ const FootballSession = () => {
         .catch((error) => {
           console.log(error);
         });
-      setCustomsUser({groups, categories, positions});
+      setCustomsUser({ groups, categories, positions });
     }
   };
 
@@ -320,13 +320,17 @@ const FootballSession = () => {
         for (let i = 0; i < offensiveRandomPlays.current; i++) {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * offensivePlays.length) - 1;
-          sequenceGenerated.push(parseInt(offensivePlays[randomIndex].playName));
+          sequenceGenerated.push(
+            parseInt(offensivePlays[randomIndex].playName)
+          );
           offensivePlays.splice(randomIndex, 1);
         }
         for (let i = 0; i < defensiveRandomPlays.current; i++) {
           let sr = seedrandom(seedSequence * (i + 1));
           let randomIndex = Math.ceil(sr() * defensivePlays.length) - 1;
-          sequenceGenerated.push(parseInt(defensivePlays[randomIndex].playName));
+          sequenceGenerated.push(
+            parseInt(defensivePlays[randomIndex].playName)
+          );
           defensivePlays.splice(randomIndex, 1);
         }
         sequenceGenerated = sequenceGenerated.sort((a, b) => {
@@ -350,8 +354,8 @@ const FootballSession = () => {
           sequenceList.length > 1
             ? Math.ceil(sr() * sequenceList.length) - 1
             : 0;
-        sequenceGenerated = sequenceList[randomIndex].map(
-          (play) => parseInt(play.playName)
+        sequenceGenerated = sequenceList[randomIndex].map((play) =>
+          parseInt(play.playName)
         );
         sequenceGenerated = sequenceGenerated.sort((a, b) => {
           const rng = seedrandom(seedSequence + a.toString() + b.toString());
@@ -926,7 +930,7 @@ const FootballSession = () => {
                   step="0.5"
                   value={currentSesionInfo?.secondsToNextPlay}
                   onChange={(e) => {
-                    if(e.target.value < 1){
+                    if (e.target.value < 1) {
                       e.target.value = 1;
                     }
                     setCurrentSesionInfo({
@@ -1027,10 +1031,32 @@ const FootballSession = () => {
                 <select
                   className="sessionPlayerSelect"
                   onChange={(e) => {
-                    setCurrentSesionInfo({
-                      ...currentSesionInfo,
-                      playerSelected: parseInt(e.target.value),
-                    });
+                    if (
+                      videoCurrentSession.current &&
+                      !isSaveCurrentSession.current
+                    ) {
+                      Swal.fire({
+                        title: "Existe una sesión actual sin guardar",
+                        text: "¿Deseas cambiar el jugador igualmente?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Si, cambiar!",
+                        cancelButtonText: "No, cancelar!",
+                        reverseButtons: true,
+                      }).then(async (result) => {
+                        if (result.isConfirmed) {
+                          setCurrentSesionInfo({
+                            ...currentSesionInfo,
+                            playerSelected: parseInt(e.target.value),
+                          });
+                        }
+                      });
+                    } else {
+                      setCurrentSesionInfo({
+                        ...currentSesionInfo,
+                        playerSelected: parseInt(e.target.value),
+                      });
+                    }
                   }}
                   value={currentSesionInfo?.playerSelected}
                 >
@@ -1055,7 +1081,7 @@ const FootballSession = () => {
                 </select>
                 <div className="sessionPlayerConfigButtons">
                   <button
-                  disabled={!customsUser}
+                    disabled={!customsUser}
                     onClick={() => {
                       setFormPlayerModalTitle("Agregar Jugador");
                       setFormPlayerModal(true);
