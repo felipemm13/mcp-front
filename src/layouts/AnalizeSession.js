@@ -74,6 +74,7 @@ const AnalizeSession = () => {
     visuMotor: 0,
     motor: 0,
     cognitiveMotor: 0,
+    autoComplete: false,
   }));
 
   const [tableData, setTableData] = useState(initialData);
@@ -150,6 +151,7 @@ const AnalizeSession = () => {
             visuMotor: 0,
             motor: 0,
             cognitiveMotor: 0,
+            autoComplete: false,
           })
         )
       );
@@ -217,6 +219,8 @@ const AnalizeSession = () => {
             motor: currentSession.current[0].SessionMoves[index].motor,
             cognitiveMotor:
               currentSession.current[0].SessionMoves[index].cognitiveMotor,
+            autoComplete:
+              currentSession.current[0].SessionMoves[index].autoComplete,
           })
         )
       );
@@ -1000,6 +1004,7 @@ const AnalizeSession = () => {
         }
         return {
           ...row,
+          error: newRow.error,
           arrival: newRow.arrival_frame,
           decisionMaking: newRow.takeoff_frame,
           visuMotor: parseInt(newRow.takeoff_frame) - parseInt(row.estimulo),
@@ -1010,6 +1015,7 @@ const AnalizeSession = () => {
               parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame)
             ) +
             parseInt(parseInt(newRow.takeoff_frame) - parseInt(row.estimulo)),
+          autoComplete: true,
         };
       } else {
         return row;
@@ -1765,6 +1771,11 @@ const AnalizeSession = () => {
                             handleRowClick(index, row.playID);
                           }
                         }}
+                        style={
+                          row.autoComplete
+                            ? { color: "blue" }
+                            : { color: "white" }
+                        }
                       >
                         {row.decisionMaking}
                       </td>
@@ -1792,6 +1803,11 @@ const AnalizeSession = () => {
                             handleRowClick(index, row.playID);
                           }
                         }}
+                        style={
+                          row.autoComplete
+                            ? { color: "blue" }
+                            : { color: "white" }
+                        }
                       >
                         {row.arrival}
                       </td>

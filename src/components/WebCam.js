@@ -35,7 +35,6 @@ const WebCam = (props) => {
   const [calibrationModal, setCalibrationModal] = useState(false);
 
   const handleStartCaptureClick = () => {
-    infoSavedSession.current = infoSession.current;
     document
       .getElementById("StartCaptureVideo")
       .setAttribute("disabled", "true");
@@ -62,6 +61,8 @@ const WebCam = (props) => {
     currentFPS.current = mediaRecorderRef.current.stream
       .getVideoTracks()[0]
       .getSettings().frameRate;
+      console.log(infoSession.current)
+    infoSavedSession.current = infoSession.current;
     document.getElementById("StartCaptureVideo").removeAttribute("disabled");
   };
   const padZero = (value) => {
@@ -179,7 +180,9 @@ const WebCam = (props) => {
       numDistractors: infoSavedSession.current.numOfDistractors,
       fps: parseFloat(currentFPS.current.toFixed(2)),
       calibration: currentCalibration.current,
-      imageCalibration: paramsCalibration.Key,
+      imageCalibration: calibrationBackground.current
+        ? paramsCalibration.Key
+        : "",
     };
     const sessionAnalyticData = {
       complete: 0,

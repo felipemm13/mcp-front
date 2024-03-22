@@ -109,15 +109,15 @@ const FootballSessionView = ({ view }) => {
 
   const handleFinishAnimation = () => {
     if (view === "coach") {
-      document
-        .getElementById("webcamContainer")
-        .dispatchEvent(new Event("stopRecord"));
-
       infoSession.current = {
         ...infoSession.current,
         imageSequences: imageSequences.current,
         stimulusTime: stimulusTimeSequence.current,
       };
+      document
+        .getElementById("webcamContainer")
+        .dispatchEvent(new Event("stopRecord"));
+
       document.getElementById("SaveCaptureVideo").removeAttribute("disabled");
       document.getElementById("OpenAnalizerView").removeAttribute("disabled");
       document.getElementById("OpenOtherSessions").removeAttribute("disabled");
