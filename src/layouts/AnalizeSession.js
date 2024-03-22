@@ -915,10 +915,10 @@ const AnalizeSession = () => {
         ),
       }));
       dataAutoAnalysis = {
-        contourjson: currentSession.current[0].calibration,
+        contourjson: JSON.stringify(currentSession.current[0].calibration),
         videoURL: currentSession.current[0].videoURL,
         imageUrl: currentSession.current[0].imageCalibration,
-        jsonSting: marks,
+        jsonString: JSON.stringify(marks),
       };
       console.log(dataAutoAnalysis)
       /*
