@@ -36,7 +36,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
           calib_w: response.data.response.calib_w,
         };
         setCalibrated(true);
-        calibration.current = response.data.response;
+        calibration.current = response.data;
         setTimeout(() => setStains(response.data.response.points), [0]);
       })
       .catch((err) => {
