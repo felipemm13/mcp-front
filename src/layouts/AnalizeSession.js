@@ -916,7 +916,7 @@ const AnalizeSession = () => {
       }));
       dataAutoAnalysis = {
         contourjson: JSON.stringify(currentSession.current[0].calibration),
-        videoURL:'https://mcp-wildsense.s3.us-east-2.amazonaws.com/'+currentSession.current[0].videoURL,
+        videoUrl:'https://mcp-wildsense.s3.us-east-2.amazonaws.com/'+currentSession.current[0].videoURL,
         imageUrl: 'https://mcp-wildsense.s3.us-east-2.amazonaws.com/'+currentSession.current[0].imageCalibration,
         jsonString: JSON.stringify(marks),
       };
