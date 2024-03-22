@@ -996,17 +996,17 @@ const AnalizeSession = () => {
     const updatedData = tableData.map((row, index) => {
       if (index < data.length) {
         const newRow = data[index];
-        if (newRow.arrival_frame > Math.round(20 * FPS.current)) {
+        if (newRow.arrival_frame > Math.round(videoDuration * FPS.current)) {
           newRow.arrival_frame = tableData[index].arrival;
         }
-        if (newRow.takeoff_frame > Math.round(20 * FPS.current)) {
+        if (newRow.takeoff_frame > Math.round(videoDuration * FPS.current)) {
           newRow.takeoff_frame = tableData[index].decisionMaking;
         }
         return {
           ...row,
           error: newRow.error,
-          arrival: newRow.arrival_frame,
-          decisionMaking: newRow.takeoff_frame,
+          arrival: Math.round(parseInt(newRow.arrival_frame)/FPS.current*1000),
+          decisionMaking: Math.round(parseInt(newRow.takeoff_frame)/FPS.current*1000),
           visuMotor: parseInt(newRow.takeoff_frame) - parseInt(row.estimulo),
           motor:
             parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame),
