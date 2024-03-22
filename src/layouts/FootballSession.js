@@ -1031,32 +1031,10 @@ const FootballSession = () => {
                 <select
                   className="sessionPlayerSelect"
                   onChange={(e) => {
-                    if (
-                      videoCurrentSession.current &&
-                      !isSaveCurrentSession.current
-                    ) {
-                      Swal.fire({
-                        title: "Existe una sesión actual sin guardar",
-                        text: "¿Deseas cambiar el jugador igualmente?",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Si, cambiar!",
-                        cancelButtonText: "No, cancelar!",
-                        reverseButtons: true,
-                      }).then(async (result) => {
-                        if (result.isConfirmed) {
-                          setCurrentSesionInfo({
-                            ...currentSesionInfo,
-                            playerSelected: parseInt(e.target.value),
-                          });
-                        }
-                      });
-                    } else {
-                      setCurrentSesionInfo({
-                        ...currentSesionInfo,
-                        playerSelected: parseInt(e.target.value),
-                      });
-                    }
+                    setCurrentSesionInfo({
+                      ...currentSesionInfo,
+                      playerSelected: parseInt(e.target.value),
+                    });
                   }}
                   value={currentSesionInfo?.playerSelected}
                 >
