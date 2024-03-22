@@ -141,26 +141,29 @@ const WebCam = (props) => {
       Body: video,
       ContentType: video.type,
     };
-    const byteCharacters = atob(calibrationBackground.current.split(",")[1]);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const backCalib = new File(
-      [byteArray],
-      `${sessionDate.split("/")[0]}/calibration.jpg`,
-      {
-        type: "image/jpeg",
+    let paramsCalibration;
+    if (calibrationBackground.current) {
+      const byteCharacters = atob(calibrationBackground.current.split(",")[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
-    );
-    const paramsCalibration = {
-      ACL: "public-read",
-      Bucket: S3_BUCKET,
-      Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
-      Body: backCalib,
-      ContentType: backCalib.type,
-    };
+      const byteArray = new Uint8Array(byteNumbers);
+      const backCalib = new File(
+        [byteArray],
+        `${sessionDate.split("/")[0]}/calibration.jpg`,
+        {
+          type: "image/jpeg",
+        }
+      );
+      paramsCalibration = {
+        ACL: "public-read",
+        Bucket: S3_BUCKET,
+        Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
+        Body: backCalib,
+        ContentType: backCalib.type,
+      };
+    }
 
     const sessionData = {
       userId: userContext.current.userId,
@@ -274,15 +277,16 @@ const WebCam = (props) => {
             })
             .promise();
         });
-
-        s3.putObject(paramsCalibration)
-          .on("httpUploadProgress", (evt) => {
-            document.getElementById("SaveCaptureVideo").innerText =
-              "Subiendo Imagen " +
-              parseInt((evt.loaded * 100) / evt.total) +
-              "%";
-          })
-          .promise();
+        if (calibrationBackground.current) {
+          s3.putObject(paramsCalibration)
+            .on("httpUploadProgress", (evt) => {
+              document.getElementById("SaveCaptureVideo").innerText =
+                "Subiendo Imagen " +
+                parseInt((evt.loaded * 100) / evt.total) +
+                "%";
+            })
+            .promise();
+        }
 
         var upload = s3
           .putObject(paramsVideo)

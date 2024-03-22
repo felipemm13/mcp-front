@@ -992,18 +992,31 @@ const AnalizeSession = () => {
     const updatedData = tableData.map((row, index) => {
       if (index < data.length) {
         const newRow = data[index];
-        //ver frames totales del video para no excederse
+        if (newRow.arrival_frame > Math.round(20 * FPS.current)) {
+          newRow.arrival_frame = tableData[index].arrival;
+        }
+        if (newRow.takeoff_frame > Math.round(20 * FPS.current)) {
+          newRow.takeoff_frame = tableData[index].decisionMaking;
+        }
         return {
           ...row,
           arrival: newRow.arrival_frame,
-          decisionMaking: newRow.takeoff_frame
+          decisionMaking: newRow.takeoff_frame,
+          visuMotor: parseInt(newRow.takeoff_frame) - parseInt(row.estimulo),
+          motor:
+            parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame),
+          cognitiveMotor:
+            parseInt(
+              parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame)
+            ) +
+            parseInt(parseInt(newRow.takeoff_frame) - parseInt(row.estimulo)),
         };
       } else {
         return row;
       }
     });
     setTableData(updatedData);
-    console.log(updatedData)
+    console.log(updatedData);
   };
 
   if (!infoSession?.current?.stimulusTime) {
