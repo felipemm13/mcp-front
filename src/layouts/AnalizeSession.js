@@ -921,7 +921,6 @@ const AnalizeSession = () => {
         jsonString: JSON.stringify(marks),
       };
       console.log(dataAutoAnalysis)
-      /*
       await axios.post(`${urlVision}/autoAnalysis`, dataAutoAnalysis).then(
         (response) => {
           console.log(response);
@@ -929,7 +928,7 @@ const AnalizeSession = () => {
         (error) => {
           console.log(error);
         }
-      );*/
+      );
     }
   };
 
