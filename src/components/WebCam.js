@@ -34,6 +34,9 @@ const WebCam = (props) => {
   const [calibrationModal, setCalibrationModal] = useState(false);
 
   const handleStartCaptureClick = () => {
+    document
+    .getElementById("StartCaptureVideo")
+    .setAttribute("disabled", "true");
     isSaveCurrentSession.current = false;
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
@@ -62,7 +65,6 @@ const WebCam = (props) => {
     return value < 10 ? "0" + value : value;
   };
   const handleUploadVideo = async () => {
-    
     document
       .getElementById("SaveCaptureVideo")
       .setAttribute("disabled", "true");
@@ -136,17 +138,19 @@ const WebCam = (props) => {
       Body: video,
       ContentType: video.type,
     };
-    const byteCharacters = atob(
-      calibrationBackground.current.split(",")[1]
-    );
+    const byteCharacters = atob(calibrationBackground.current.split(",")[1]);
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const backCalib = new File([byteArray], `${sessionDate.split('/')[0]}/calibration.jpg`, {
-      type: "image/jpeg",
-    });
+    const backCalib = new File(
+      [byteArray],
+      `${sessionDate.split("/")[0]}/calibration.jpg`,
+      {
+        type: "image/jpeg",
+      }
+    );
     const paramsCalibration = {
       ACL: "public-read",
       Bucket: S3_BUCKET,
@@ -167,7 +171,7 @@ const WebCam = (props) => {
       transitionTime: infoSession.current.secondsForPlayTransition,
       videoURL: videoURL,
       numDistractors: infoSession.current.numOfDistractors,
-      fps: currentFPS.current,
+      fps: parseFloat(currentFPS.current.toFixed(2)),
       calibration: currentCalibration.current,
       imageCalibration: paramsCalibration.Key,
     };
@@ -188,10 +192,17 @@ const WebCam = (props) => {
     const sessionMovesData = infoSession.current.sequenceOfPlays.map(
       (play, index) => {
         let correctMark;
-        if(infoSession.current.typeOfSession === 'evaluative' || infoSession.current.typeOfSession === 'applied'){
-          let currentPlay = infoSession.current.playsFromDb.filter((play) =>parseInt(play.playName) === infoSession.current.sequenceOfPlays[index])[0];
+        if (
+          infoSession.current.typeOfSession === "evaluative" ||
+          infoSession.current.typeOfSession === "applied"
+        ) {
+          let currentPlay = infoSession.current.playsFromDb.filter(
+            (play) =>
+              parseInt(play.playName) ===
+              infoSession.current.sequenceOfPlays[index]
+          )[0];
           correctMark = currentPlay.responsePosition;
-        }else{
+        } else {
           correctMark = play;
         }
         return {
@@ -205,11 +216,11 @@ const WebCam = (props) => {
           presentedMs: 0,
           stimulus: infoSession.current.stimulusTime[index],
           decisionMaking: 0,
-          autoComplete: false
+          autoComplete: false,
         };
       }
     );
-    
+
     await CrudApi.post("sessions", sessionData)
       .then(async (res) => {
         currentSession.current = [{ ...res.data }];

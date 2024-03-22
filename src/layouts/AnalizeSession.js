@@ -921,7 +921,7 @@ const AnalizeSession = () => {
         jsonString: JSON.stringify(marks),
       };
       console.log(dataAutoAnalysis)
-      await axios.post(`${urlVision}/autoAnalysis`, dataAutoAnalysis).then(
+      await axios.post(`${urlVision}autoAnalysis`, dataAutoAnalysis).then(
         (response) => {
           console.log(response);
         },
