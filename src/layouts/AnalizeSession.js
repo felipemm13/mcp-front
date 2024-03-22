@@ -903,7 +903,7 @@ const AnalizeSession = () => {
   };
 
   const autoAnalysis = async () => {
-    console.log(currentSession.current[0])
+    console.log(currentSession.current[0]);
     let dataAutoAnalysis = {};
     if (session === "current") {
       console.log("sesion actual");
@@ -916,19 +916,25 @@ const AnalizeSession = () => {
       }));
       dataAutoAnalysis = {
         contourjson: JSON.stringify(currentSession.current[0].calibration),
-        videoUrl:'https://mcp-wildsense.s3.us-east-2.amazonaws.com/'+currentSession.current[0].videoURL,
-        imageUrl: 'https://mcp-wildsense.s3.us-east-2.amazonaws.com/'+currentSession.current[0].imageCalibration,
+        videoUrl:
+          "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" +
+          currentSession.current[0].videoURL,
+        imageUrl:
+          "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" +
+          currentSession.current[0].imageCalibration,
         jsonString: JSON.stringify(marks),
       };
-      console.log(dataAutoAnalysis)
-      await axios.post(`${urlVision}autoAnalysis`, dataAutoAnalysis).then(
-        (response) => {
-          console.log(response);
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
+      console.log(dataAutoAnalysis);
+      await axios
+        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, { timeout: 3000 })
+        .then(
+          (response) => {
+            console.log(response);
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
     }
   };
 
@@ -1825,7 +1831,7 @@ const AnalizeSession = () => {
                   currentCalibration.current === null) ||
                 !currentSession.current[0].calibration
               }
-              onFocus={autoAnalysis}
+              onFocus={() => autoAnalysis()}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
