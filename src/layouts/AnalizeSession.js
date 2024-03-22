@@ -926,7 +926,7 @@ const AnalizeSession = () => {
       };
       console.log(dataAutoAnalysis);
       await axios
-        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, { timeout: 240000 })
+        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, { timeout: 240000,maxBodyLength:Infinity,maxContentLength:Infinity })
         .then(
           (response) => {
             console.log(response);
