@@ -1825,7 +1825,7 @@ const AnalizeSession = () => {
                   currentCalibration.current === null) ||
                 !currentSession.current[0].calibration
               }
-              onClick={autoAnalysis}
+              onFocus={autoAnalysis}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
