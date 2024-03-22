@@ -10,6 +10,7 @@ const ProviderContext = ({ children }) => {
   const userContext = useRef(null);
   const videoCurrentSession = useRef(null);
   const infoSession = useRef(null);
+  const infoSavedSession = useRef(null);
   const currentFPS = useRef(null);
   const CrudApi = new Connect();
   const listOfPlayers = useRef([]);
@@ -78,6 +79,7 @@ const ProviderContext = ({ children }) => {
         videoCurrentSession,
         isSaveCurrentSession,
         infoSession,
+        infoSavedSession,
         currentFPS,
         currentDevice,
         CrudApi,

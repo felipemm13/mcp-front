@@ -14,6 +14,7 @@ const WebCam = (props) => {
     videoCurrentSession,
     isSaveCurrentSession,
     currentSession,
+    infoSavedSession,
     currentFPS,
     infoSession,
     userContext,
@@ -34,9 +35,10 @@ const WebCam = (props) => {
   const [calibrationModal, setCalibrationModal] = useState(false);
 
   const handleStartCaptureClick = () => {
+    infoSavedSession.current = infoSession.current;
     document
-    .getElementById("StartCaptureVideo")
-    .setAttribute("disabled", "true");
+      .getElementById("StartCaptureVideo")
+      .setAttribute("disabled", "true");
     isSaveCurrentSession.current = false;
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: "video/webm",
@@ -60,6 +62,7 @@ const WebCam = (props) => {
     currentFPS.current = mediaRecorderRef.current.stream
       .getVideoTracks()[0]
       .getSettings().frameRate;
+    document.getElementById("StartCaptureVideo").removeAttribute("disabled");
   };
   const padZero = (value) => {
     return value < 10 ? "0" + value : value;
@@ -93,12 +96,12 @@ const WebCam = (props) => {
       padZero(currentDate.getSeconds());
     var video = new File(
       [recorderVideo.current],
-      `${sessionDate}-player${infoSession.current.playerSelected}.mp4`,
+      `${sessionDate}-player${infoSavedSession.current.playerSelected}.mp4`,
       {
         type: "video/webm",
       }
     );
-    var images = infoSession.current.imageSequences.map((image) => {
+    var images = infoSavedSession.current.imageSequences.map((image) => {
       const byteCharacters = atob(image.split(",")[1]);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -107,7 +110,7 @@ const WebCam = (props) => {
       const byteArray = new Uint8Array(byteNumbers);
       return new File(
         [byteArray],
-        `${sessionDate}/player${infoSession.current.playerSelected}`,
+        `${sessionDate}/player${infoSavedSession.current.playerSelected}`,
         {
           type: "image/jpeg",
         }
@@ -125,7 +128,7 @@ const WebCam = (props) => {
 
     const videoURL = `videos/${userContext.current.userId}/${video.name}`;
 
-    const imagesUrls = infoSession.current.imageSequences.map(
+    const imagesUrls = infoSavedSession.current.imageSequences.map(
       (image, index) => {
         return `images/${userContext.current.userId}/${images[index].name}-play${index}.jpg`;
       }
@@ -161,16 +164,16 @@ const WebCam = (props) => {
 
     const sessionData = {
       userId: userContext.current.userId,
-      playerId: parseInt(infoSession.current.playerSelected),
+      playerId: parseInt(infoSavedSession.current.playerSelected),
       timestamp: currentDate.toISOString(),
       duration: Math.floor(recorderVideo.current.size / 1000),
-      numPlays: infoSession.current.numberOfPlays,
-      seed: infoSession.current.seed,
-      sessionType: infoSession.current.typeOfSession,
-      timeBetweenPlays: infoSession.current.secondsToNextPlay,
-      transitionTime: infoSession.current.secondsForPlayTransition,
+      numPlays: infoSavedSession.current.numberOfPlays,
+      seed: infoSavedSession.current.seed,
+      sessionType: infoSavedSession.current.typeOfSession,
+      timeBetweenPlays: infoSavedSession.current.secondsToNextPlay,
+      transitionTime: infoSavedSession.current.secondsForPlayTransition,
       videoURL: videoURL,
-      numDistractors: infoSession.current.numOfDistractors,
+      numDistractors: infoSavedSession.current.numOfDistractors,
       fps: parseFloat(currentFPS.current.toFixed(2)),
       calibration: currentCalibration.current,
       imageCalibration: paramsCalibration.Key,
@@ -189,17 +192,17 @@ const WebCam = (props) => {
       visuMotorTotal: 0,
       wrongPercentage: 0,
     };
-    const sessionMovesData = infoSession.current.sequenceOfPlays.map(
+    const sessionMovesData = infoSavedSession.current.sequenceOfPlays.map(
       (play, index) => {
         let correctMark;
         if (
-          infoSession.current.typeOfSession === "evaluative" ||
-          infoSession.current.typeOfSession === "applied"
+          infoSavedSession.current.typeOfSession === "evaluative" ||
+          infoSavedSession.current.typeOfSession === "applied"
         ) {
-          let currentPlay = infoSession.current.playsFromDb.filter(
+          let currentPlay = infoSavedSession.current.playsFromDb.filter(
             (play) =>
               parseInt(play.playName) ===
-              infoSession.current.sequenceOfPlays[index]
+              infoSavedSession.current.sequenceOfPlays[index]
           )[0];
           correctMark = currentPlay.responsePosition;
         } else {
@@ -214,7 +217,7 @@ const WebCam = (props) => {
           imageUrl: imagesUrls[index],
           motor: 0,
           presentedMs: 0,
-          stimulus: infoSession.current.stimulusTime[index],
+          stimulus: infoSavedSession.current.stimulusTime[index],
           decisionMaking: 0,
           autoComplete: false,
         };

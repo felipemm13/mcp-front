@@ -108,7 +108,8 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
     setTimeout(() => {
       document.getElementById("messageState").innerHTML = "Calibración Guardada";
     }, [1000]);
-    setTimeout(() => document.getElementById("myModal").click(), [2000]);
+    document.getElementById("CloseCalibrationModal").setAttribute("disabled", "true");
+    setTimeout(() => document.getElementById("myModal").click(), [1000]);
   };
 
   useEffect(() => {
@@ -126,6 +127,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
         <div className="calibrationModalContent">
           <span
             className="calibrationModalClose"
+            id='CloseCalibrationModal'
             onClick={() => setOpenModal(false)}
           >
             &times;
