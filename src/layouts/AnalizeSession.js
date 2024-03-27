@@ -925,7 +925,7 @@ const AnalizeSession = () => {
   const processingSteps = async () => {
     document.getElementById("AutoAnalysis").disabled = true;
     setProcessing({ value: true, message: "Procesando..." });
-    console.log(currentSession.current[0]);
+    //console.log(currentSession.current[0]);
     let dataAutoAnalysis = {};
     if (session === "current") {
       console.log("sesion actual");
@@ -946,8 +946,7 @@ const AnalizeSession = () => {
           currentSession.current[0].imageCalibration,
         jsonString: JSON.stringify(marks),
       };
-      console.log(dataAutoAnalysis);
-
+      //console.log(dataAutoAnalysis);
       await axios
         .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, {
           timeout: 240000,
@@ -1002,7 +1001,7 @@ const AnalizeSession = () => {
       }
     });
     setTableData(updatedData);
-    console.log(updatedData);
+    //console.log(updatedData);
   };
 
   if (!infoSession?.current?.stimulusTime) {
