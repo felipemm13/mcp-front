@@ -45,7 +45,9 @@ const Webapp = () => {
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
-      userLocal.current = JSON.parse(localStorage.getItem("user"));
+      if (localStorage.getItem("user") !== null) {
+        userLocal.current = JSON.parse(localStorage.getItem("user"));
+      }
       setUser(userLocal.current ?? null);
       setLoading(false);
     }, 0);
@@ -55,8 +57,8 @@ const Webapp = () => {
     userContext.current = user;
     if (user && !userLocal.current) {
       localStorage.setItem("user", JSON.stringify(user));
-    }else{
-      setLoading(false)
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
