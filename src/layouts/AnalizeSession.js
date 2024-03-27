@@ -42,7 +42,7 @@ const AnalizeSession = () => {
     prevPlay: null,
   });
   const [currentStimulus, setCurrentStimulus] = useState(0);
-  const selectedRowIndex = useRef(0);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const selectedPlayID = useRef(null);
   const [playingVideo, setPlayingVideo] = useState(false);
   const videoRefs = useRef([]);
@@ -290,7 +290,7 @@ const AnalizeSession = () => {
 
   const handleRowClick = (index, playID) => {
     const previousSelectedRow = document.getElementById(
-      `RowSequenceIndex${selectedRowIndex.current}`
+      `RowSequenceIndex${selectedRowIndex}`
     );
     const selectedRow = document.getElementById(`RowSequenceIndex${index}`);
     if (previousSelectedRow) {
@@ -298,8 +298,8 @@ const AnalizeSession = () => {
       previousSelectedRow.style.color = "white";
     }
 
-    if (selectedRowIndex.current === index) {
-      selectedRowIndex.current = null;
+    if (selectedRowIndex === index) {
+      setSelectedRowIndex(null);
       selectedPlayID.current = null;
       document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("AddDecisionMakingMark").disabled = true;
@@ -307,7 +307,7 @@ const AnalizeSession = () => {
     } else {
       selectedRow.style.background = "rgb(255, 255, 255, 0.75)";
       selectedRow.style.color = "black";
-      selectedRowIndex.current = index;
+      setSelectedRowIndex(index);
       selectedPlayID.current = playID;
       document.getElementById("SaveAnalizeSession").disabled = false;
       document.getElementById("AddDecisionMakingMark").disabled = false;
@@ -316,20 +316,84 @@ const AnalizeSession = () => {
   };
 
   const AddDecisionMakingMark = () => {
+    const newDecisionMakingValue = Math.round(
+      (currentFrame / FPS.current) * 1000
+    );
+
+    const updatedTableData = tableData.map((row, index) => {
+      if (index === selectedRowIndex) {
+        return {
+          ...row,
+          decisionMaking: newDecisionMakingValue,
+          autoComplete: false,
+          visuMotor: newDecisionMakingValue - row.estimulo,
+          cognitiveMotor:
+            newDecisionMakingValue - row.estimulo !== 0 && row.motor !== 0
+              ? newDecisionMakingValue - row.estimulo + row.motor
+              : 0,
+        };
+      }
+      return row;
+    });
+
+    setTableData(updatedTableData);
+  };
+
+  const AddArrivalMark = () => {
+    const newArrivalValue = Math.round((currentFrame / FPS.current) * 1000);
+
+    const updatedTableData = tableData.map((row, index) => {
+      if (index === selectedRowIndex) {
+        return {
+          ...row,
+          arrival: newArrivalValue,
+          autoComplete: false,
+          motor: newArrivalValue - row.decisionMaking,
+          cognitiveMotor:
+            row.visuMotor !== 0 && newArrivalValue - row.decisionMaking !== 0
+              ? row.visuMotor + (newArrivalValue - row.decisionMaking)
+              : 0,
+        };
+      }
+      return row;
+    });
+    const currentSelectedRow = document.getElementById(
+      `RowSequenceIndex${selectedRowIndex}`
+    );
+    const nextSelectedRow = document.getElementById(
+      `RowSequenceIndex${selectedRowIndex + 1}`
+    );
+
+    if (currentSelectedRow) {
+      currentSelectedRow.style.background = "#1a1a1a";
+      currentSelectedRow.style.color = "white";
+    }
+
+    if (nextSelectedRow) {
+      nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+      nextSelectedRow.style.color = "black";
+      setSelectedRowIndex((prev) => prev + 1);
+    }
+
+    setTableData(updatedTableData);
+  };
+
+  /*  
+  const AddDecisionMakingMark = () => {
     const decisionMakingRow = document.getElementById(
-      `RowSequenceDecisionMaking${selectedRowIndex.current}`
+      `RowSequenceDecisionMaking${selectedRowIndex}`
     );
     const visuMotorRow = document.getElementById(
-      `RowSequenceVisuMotor${selectedRowIndex.current}`
+      `RowSequenceVisuMotor${selectedRowIndex}`
     );
     const motorRow = document.getElementById(
-      `RowSequenceMotor${selectedRowIndex.current}`
+      `RowSequenceMotor${selectedRowIndex}`
     );
     const stimulRow = document.getElementById(
-      `RowSequenceStimul${selectedRowIndex.current}`
+      `RowSequenceStimul${selectedRowIndex}`
     );
     const cognitiveMotorRow = document.getElementById(
-      `RowSequenceCognitiveMotor${selectedRowIndex.current}`
+      `RowSequenceCognitiveMotor${selectedRowIndex}`
     );
 
     if (decisionMakingRow) {
@@ -372,10 +436,10 @@ const AnalizeSession = () => {
 
       updateMetrics();
     }
-  };
-
+  };*/
+  /*
   const AddArrivalMark = () => {
-    const currentRowIndex = selectedRowIndex.current;
+    const currentRowIndex = selectedRowIndex;
 
     const arrivalRow = document.getElementById(
       `RowSequenceArrival${currentRowIndex}`
@@ -446,10 +510,10 @@ const AnalizeSession = () => {
       if (nextSelectedRow) {
         nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
         nextSelectedRow.style.color = "black";
-        selectedRowIndex.current++;
+        setSelectedRowIndex((prev) => prev + 1);
       }
     }
-  };
+  };*/
 
   const getTotalMetrics = (metric) => {
     if (
@@ -1005,8 +1069,12 @@ const AnalizeSession = () => {
         return {
           ...row,
           error: newRow.error,
-          arrival: Math.round(parseInt(newRow.arrival_frame)/FPS.current*1000),
-          decisionMaking: Math.round(parseInt(newRow.takeoff_frame)/FPS.current*1000),
+          arrival: Math.round(
+            (parseInt(newRow.arrival_frame) / FPS.current) * 1000
+          ),
+          decisionMaking: Math.round(
+            (parseInt(newRow.takeoff_frame) / FPS.current) * 1000
+          ),
           visuMotor: parseInt(newRow.takeoff_frame) - parseInt(row.estimulo),
           motor:
             parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame),
@@ -1740,7 +1808,7 @@ const AnalizeSession = () => {
                               (parseInt(row.estimulo) * FPS.current) / 1000
                             )
                           );
-                          if (selectedRowIndex.current !== index) {
+                          if (selectedRowIndex !== index) {
                             handleRowClick(index, row.playID);
                           }
                         }}
@@ -1767,13 +1835,15 @@ const AnalizeSession = () => {
                               Math.round((value * FPS.current) / 1000)
                             );
                           }
-                          if (selectedRowIndex.current !== index) {
+                          if (selectedRowIndex !== index) {
                             handleRowClick(index, row.playID);
                           }
                         }}
                         style={
                           row.autoComplete
                             ? { color: "blue" }
+                            : index === selectedRowIndex
+                            ? { color: "black" }
                             : { color: "white" }
                         }
                       >
@@ -1799,13 +1869,15 @@ const AnalizeSession = () => {
                               Math.round((value * FPS.current) / 1000)
                             );
                           }
-                          if (selectedRowIndex.current !== index) {
+                          if (selectedRowIndex !== index) {
                             handleRowClick(index, row.playID);
                           }
                         }}
                         style={
                           row.autoComplete
                             ? { color: "blue" }
+                            : index === selectedRowIndex
+                            ? { color: "black" }
                             : { color: "white" }
                         }
                       >
