@@ -990,9 +990,7 @@ const AnalizeSession = () => {
         decisionMaking = Math.round(
           (parseInt(newRow.takeoff_frame) / FPS.current) * 1000
         );
-        visuMotor =
-          decisionMaking -
-          parseInt(row.estimulo);
+        visuMotor = decisionMaking - parseInt(row.estimulo);
         motor = arrival - decisionMaking;
         cognitiveMotor = visuMotor + motor;
 
@@ -1763,6 +1761,8 @@ const AnalizeSession = () => {
                         style={
                           row.autoComplete
                             ? { color: "blue" }
+                            : parseInt(row.decisionMaking) === 0
+                            ? { color: "red" }
                             : index === selectedRowIndex
                             ? { color: "black" }
                             : { color: "white" }
@@ -1797,6 +1797,8 @@ const AnalizeSession = () => {
                         style={
                           row.autoComplete
                             ? { color: "blue" }
+                            : parseInt(row.arrival) === 0
+                            ? { color: "red" }
                             : index === selectedRowIndex
                             ? { color: "black" }
                             : { color: "white" }
