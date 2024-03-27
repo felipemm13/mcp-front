@@ -178,7 +178,6 @@ const AnalizeSession = () => {
       preloadImages(infoSession.current.imageSequences);
       getAWSVideo();
     }
-    updateMetrics();
   }, []);
 
   const getAWSVideo = async () => {
@@ -299,17 +298,17 @@ const AnalizeSession = () => {
     }
 
     if (selectedRowIndex === index) {
-      setSelectedRowIndex(null);
       selectedPlayID.current = null;
-      document.getElementById("SaveAnalizeSession").disabled = true;
+      //document.getElementById("SaveAnalizeSession").disabled = true;
       document.getElementById("AddDecisionMakingMark").disabled = true;
       document.getElementById("AddArrivalMark").disabled = true;
+      setSelectedRowIndex(null);
     } else {
-      selectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+      selectedRow.style.background = "rgb(218, 37, 153)";
       selectedRow.style.color = "black";
       setSelectedRowIndex(index);
       selectedPlayID.current = playID;
-      document.getElementById("SaveAnalizeSession").disabled = false;
+      //document.getElementById("SaveAnalizeSession").disabled = false;
       document.getElementById("AddDecisionMakingMark").disabled = false;
       document.getElementById("AddArrivalMark").disabled = false;
     }
@@ -360,6 +359,7 @@ const AnalizeSession = () => {
       });
       setTableData(updatedTableData);
     }
+
   };
 
   const AddArrivalMark = () => {
@@ -416,7 +416,7 @@ const AnalizeSession = () => {
       console.log(currentSelectedRow, nextSelectedRow);
 
       if (nextSelectedRow) {
-        nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
+        nextSelectedRow.style.background = "rgb(218, 37, 153)";
         nextSelectedRow.style.color = "black";
         setSelectedRowIndex((prev) => prev + 1);
       } else {
@@ -793,7 +793,7 @@ const AnalizeSession = () => {
         stimulus: row.estimulo,
         decisionMaking: row.decisionMaking,
       }));
-      console.log(updatedTableData, dataMoves);
+      //console.log(updatedTableData, dataMoves);
       currentSession.current[0].SessionMoves.map(async (move, index) => {
         await CrudApi.update(
           `sessionMoves/${move.sessionMovesId}`,
@@ -806,6 +806,9 @@ const AnalizeSession = () => {
       });
     }
   };
+  useEffect(() => {
+    updateMetrics();
+  }, [tableData]);
 
   const updateMetrics = () => {
     setMetrics({
@@ -890,6 +893,7 @@ const AnalizeSession = () => {
     // verificar si hay valores de arrival y decision making en por lo menos una fila
     const tableRows = document.querySelectorAll(".scrollable-body tr");
     let hasValues = false;
+    console.log(tableRows);
     for (let i = 0; i < tableRows.length; i++) {
       const row = tableRows[i];
       const decisionMaking = parseInt(
@@ -1008,8 +1012,9 @@ const AnalizeSession = () => {
         return row;
       }
     });
-    setTableData(updatedData);
-    console.log(updatedData);
+      setTableData(updatedData);
+
+    //console.log(updatedData);
   };
 
   if (!infoSession?.current?.stimulusTime) {
@@ -1698,7 +1703,7 @@ const AnalizeSession = () => {
                       style={
                         index === 0
                           ? {
-                              background: "rgb(255, 255, 255, 0.75)",
+                              background: "rgb(218, 37, 153)",
                               color: "black",
                             }
                           : {}
@@ -1760,12 +1765,12 @@ const AnalizeSession = () => {
                         }}
                         style={
                           row.autoComplete
-                            ? { color: "blue" }
+                            ? { color: "#00F7FF" }
                             : parseInt(row.decisionMaking) === 0
-                            ? { color: "red" }
-                            : index === selectedRowIndex
-                            ? { color: "black" }
-                            : { color: "white" }
+                            ? { color: "#FFd500" }
+                            : //: index === selectedRowIndex
+                              //? { color: "black",fontWeight: "bold"}
+                              { color: "#00FF00" }
                         }
                       >
                         {row.decisionMaking}
@@ -1796,12 +1801,12 @@ const AnalizeSession = () => {
                         }}
                         style={
                           row.autoComplete
-                            ? { color: "blue" }
+                            ? { color: "#00F7FF" }
                             : parseInt(row.arrival) === 0
-                            ? { color: "red" }
-                            : index === selectedRowIndex
-                            ? { color: "black" }
-                            : { color: "white" }
+                            ? { color: "#FFd500" }
+                            : //: index === selectedRowIndex
+                              //? { color: "black",fontWeight: "bold"}
+                              { color: "#00FF00" }
                         }
                       >
                         {row.arrival}
