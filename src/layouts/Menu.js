@@ -7,6 +7,7 @@ import { Context } from "../services/Context";
 const Menu = (props) => {
   const { infoSession } = useContext(Context);
   const navigate = useNavigate();
+  
   useEffect(() => {
     setTimeout(() => {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -24,6 +25,7 @@ const Menu = (props) => {
       console.log("Error al cargar dispositivos de video");
     }
   }, []);
+
   return (
     <>
       <div className="MenuContainer">

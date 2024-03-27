@@ -20,6 +20,7 @@ const AnalizeSession = () => {
     currentSession,
     AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY,
+    AWS_URL,
     preloadImages,
     S3_BUCKET,
     REGION,
@@ -47,7 +48,7 @@ const AnalizeSession = () => {
   const [playingVideo, setPlayingVideo] = useState(false);
   const videoRefs = useRef([]);
   const [processing, setProcessing] = useState({
-    value: false,
+    value: 1,
     message: "Procesar Pasos",
   });
   const [metrics, setMetrics] = useState({
@@ -359,7 +360,6 @@ const AnalizeSession = () => {
       });
       setTableData(updatedTableData);
     }
-
   };
 
   const AddArrivalMark = () => {
@@ -893,7 +893,6 @@ const AnalizeSession = () => {
     // verificar si hay valores de arrival y decision making en por lo menos una fila
     const tableRows = document.querySelectorAll(".scrollable-body tr");
     let hasValues = false;
-    console.log(tableRows);
     for (let i = 0; i < tableRows.length; i++) {
       const row = tableRows[i];
       const decisionMaking = parseInt(
@@ -928,7 +927,7 @@ const AnalizeSession = () => {
   };
   const processingSteps = async () => {
     document.getElementById("AutoAnalysis").disabled = true;
-    setProcessing({ value: true, message: "Procesando..." });
+    setProcessing({ value: 0, message: "Procesando..." });
     //console.log(currentSession.current[0]);
     let dataAutoAnalysis = {};
     if (session === "current") {
@@ -943,10 +942,10 @@ const AnalizeSession = () => {
       dataAutoAnalysis = {
         contourjson: JSON.stringify(currentSession.current[0].calibration),
         videoUrl:
-          "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" +
+          AWS_URL +
           currentSession.current[0].videoURL,
         imageUrl:
-          "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" +
+          AWS_URL +
           currentSession.current[0].imageCalibration,
         jsonString: JSON.stringify(marks),
       };
@@ -957,16 +956,22 @@ const AnalizeSession = () => {
           maxBodyLength: Infinity,
           maxContentLength: Infinity,
         })
-        .then(
-          (response) => {
-            setProcessing({ value: false, message: "Procesar Pasos" });
+        .then((response) => {
+          setProcessing({ value: 1, message: "Procesar Pasos" });
+          document.getElementById("AutoAnalysis").disabled = false;
+          refillAnalysisTable(JSON.parse(response.data.response.output));
+        })
+        .catch((error) => {
+          console.log(error);
+          setProcessing({
+            value: 2,
+            message: "Error procesando",
+          });
+          setTimeout(() => {
             document.getElementById("AutoAnalysis").disabled = false;
-            refillAnalysisTable(JSON.parse(response.data.response.output));
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
+            setProcessing({ value: 1, message: "Procesar Pasos" });
+          }, 2000);
+        });
     }
   };
 
@@ -1012,7 +1017,7 @@ const AnalizeSession = () => {
         return row;
       }
     });
-      setTableData(updatedData);
+    setTableData(updatedData);
 
     //console.log(updatedData);
   };
@@ -1931,7 +1936,7 @@ const AnalizeSession = () => {
               }
               onClick={autoAnalysis}
             >
-              {processing.value ? (
+              {processing.value === 0 ? (
                 <svg
                   width="24"
                   height="24"
@@ -1956,7 +1961,7 @@ const AnalizeSession = () => {
                     ></circle>
                   </g>
                 </svg>
-              ) : (
+              ) : processing.value === 1 ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   height="16"
@@ -1964,6 +1969,15 @@ const AnalizeSession = () => {
                   viewBox="0 0 576 512"
                 >
                   <path d="M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V352H64V64H512z" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="20"
+                  width="20"
+                  viewBox="0 0 384 512"
+                >
+                  <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
                 </svg>
               )}
               {processing.message}

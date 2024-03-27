@@ -25,6 +25,7 @@ const ProviderContext = ({ children }) => {
   const REGION = "us-east-2";
   const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
   const AWS_SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
+  const AWS_URL = process.env.REACT_APP_AWS_URL;
   const listOfImages = [
     "assets/calibrations/calibration-example.png",
     "assets/calibrations/calibration-mark-1.png",
@@ -94,6 +95,7 @@ const ProviderContext = ({ children }) => {
         REGION,
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
+        AWS_URL,
         preloadImages,
         showSessionType,
         tercios,
