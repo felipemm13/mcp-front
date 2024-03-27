@@ -319,201 +319,113 @@ const AnalizeSession = () => {
     const newDecisionMakingValue = Math.round(
       (currentFrame / FPS.current) * 1000
     );
+    const existingDecisionMakingValue = parseInt(
+      document.getElementById(`RowSequenceDecisionMaking${selectedRowIndex}`)
+        .innerHTML
+    );
+    if (existingDecisionMakingValue !== 0) {
+      Swal.fire({
+        title: "Valor Existente",
+        text: "Ya existe un valor en la fila de Decision Making. ¿Desea reemplazarlo?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, reemplazar",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          updateDecisionMakingValue(newDecisionMakingValue);
+        }
+      });
+    } else {
+      updateDecisionMakingValue(newDecisionMakingValue);
+    }
 
-    const updatedTableData = tableData.map((row, index) => {
-      if (index === selectedRowIndex) {
-        return {
-          ...row,
-          decisionMaking: newDecisionMakingValue,
-          autoComplete: false,
-          visuMotor: newDecisionMakingValue - row.estimulo,
-          cognitiveMotor:
-            newDecisionMakingValue - row.estimulo !== 0 && row.motor !== 0
-              ? newDecisionMakingValue - row.estimulo + row.motor
-              : 0,
-        };
-      }
-      return row;
-    });
-
-    setTableData(updatedTableData);
+    function updateDecisionMakingValue(newDecisionMakingValue) {
+      const updatedTableData = tableData.map((row, index) => {
+        if (index === selectedRowIndex) {
+          return {
+            ...row,
+            decisionMaking: newDecisionMakingValue,
+            autoComplete: false,
+            visuMotor: newDecisionMakingValue - row.estimulo,
+            cognitiveMotor:
+              newDecisionMakingValue - row.estimulo !== 0 && row.motor !== 0
+                ? newDecisionMakingValue - row.estimulo + row.motor
+                : 0,
+          };
+        }
+        return row;
+      });
+      setTableData(updatedTableData);
+    }
   };
 
   const AddArrivalMark = () => {
     const newArrivalValue = Math.round((currentFrame / FPS.current) * 1000);
-
-    const updatedTableData = tableData.map((row, index) => {
-      if (index === selectedRowIndex) {
-        return {
-          ...row,
-          arrival: newArrivalValue,
-          autoComplete: false,
-          motor: newArrivalValue - row.decisionMaking,
-          cognitiveMotor:
-            row.visuMotor !== 0 && newArrivalValue - row.decisionMaking !== 0
-              ? row.visuMotor + (newArrivalValue - row.decisionMaking)
-              : 0,
-        };
-      }
-      return row;
-    });
-    const currentSelectedRow = document.getElementById(
-      `RowSequenceIndex${selectedRowIndex}`
+    const existingArrivalValue = parseInt(
+      document.getElementById(`RowSequenceArrival${selectedRowIndex}`).innerHTML
     );
-    const nextSelectedRow = document.getElementById(
-      `RowSequenceIndex${selectedRowIndex + 1}`
-    );
-
-    if (currentSelectedRow) {
-      currentSelectedRow.style.background = "#1a1a1a";
-      currentSelectedRow.style.color = "white";
+    if (existingArrivalValue !== 0) {
+      Swal.fire({
+        title: "Valor Existente",
+        text: "Ya existe un valor en la fila de Arrival. ¿Desea reemplazarlo?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, reemplazar",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          updateArrivalValue(newArrivalValue);
+        }
+      });
+    } else {
+      updateArrivalValue(newArrivalValue);
     }
 
-    if (nextSelectedRow) {
-      nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
-      nextSelectedRow.style.color = "black";
-      setSelectedRowIndex((prev) => prev + 1);
-    }
-
-    setTableData(updatedTableData);
-  };
-
-  /*  
-  const AddDecisionMakingMark = () => {
-    const decisionMakingRow = document.getElementById(
-      `RowSequenceDecisionMaking${selectedRowIndex}`
-    );
-    const visuMotorRow = document.getElementById(
-      `RowSequenceVisuMotor${selectedRowIndex}`
-    );
-    const motorRow = document.getElementById(
-      `RowSequenceMotor${selectedRowIndex}`
-    );
-    const stimulRow = document.getElementById(
-      `RowSequenceStimul${selectedRowIndex}`
-    );
-    const cognitiveMotorRow = document.getElementById(
-      `RowSequenceCognitiveMotor${selectedRowIndex}`
-    );
-
-    if (decisionMakingRow) {
-      const newDecisionMakingValue = Math.round(
-        (currentFrame / FPS.current) * 1000
-      );
-      const existingDecisionMakingValue = parseInt(decisionMakingRow.innerHTML);
-
-      if (existingDecisionMakingValue !== 0) {
-        Swal.fire({
-          title: "Valor Existente",
-          text: "Ya existe un valor en la fila de Decision Making. ¿Desea reemplazarlo?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, reemplazar",
-          cancelButtonText: "Cancelar",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            updateDecisionMakingValue(newDecisionMakingValue);
-          }
-        });
-      } else {
-        updateDecisionMakingValue(newDecisionMakingValue);
-      }
-    }
-
-    function updateDecisionMakingValue(newValue) {
-      decisionMakingRow.innerHTML = newValue;
-      visuMotorRow.innerHTML = newValue - parseInt(stimulRow.innerHTML);
-
-      if (
-        parseInt(visuMotorRow.innerHTML) > 0 &&
-        parseInt(motorRow.innerHTML) > 0
-      ) {
-        cognitiveMotorRow.innerHTML =
-          parseInt(motorRow.innerHTML) + parseInt(visuMotorRow.innerHTML);
-      }
-
-      updateMetrics();
-    }
-  };*/
-  /*
-  const AddArrivalMark = () => {
-    const currentRowIndex = selectedRowIndex;
-
-    const arrivalRow = document.getElementById(
-      `RowSequenceArrival${currentRowIndex}`
-    );
-    const decisionMakingRow = document.getElementById(
-      `RowSequenceDecisionMaking${currentRowIndex}`
-    );
-    const visuMotorRow = document.getElementById(
-      `RowSequenceVisuMotor${currentRowIndex}`
-    );
-    const motorRow = document.getElementById(
-      `RowSequenceMotor${currentRowIndex}`
-    );
-    const cognitiveMotorRow = document.getElementById(
-      `RowSequenceCognitiveMotor${currentRowIndex}`
-    );
-
-    if (arrivalRow) {
-      const newArrivalValue = Math.round((currentFrame / FPS.current) * 1000);
-      const existingArrivalValue = parseInt(arrivalRow.innerHTML);
-
-      if (existingArrivalValue !== 0) {
-        Swal.fire({
-          title: "Valor Existente",
-          text: "Ya existe un valor en la fila de Arrival. ¿Desea reemplazarlo?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, reemplazar",
-          cancelButtonText: "Cancelar",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            updateArrivalValue(newArrivalValue);
-          }
-        });
-      } else {
-        updateArrivalValue(newArrivalValue);
-      }
-    }
-
-    function updateArrivalValue(newValue) {
-      arrivalRow.innerHTML = newValue;
-      if (parseInt(decisionMakingRow.innerHTML) > 0) {
-        motorRow.innerHTML =
-          parseInt(arrivalRow.innerHTML) -
-          parseInt(decisionMakingRow.innerHTML);
-      }
-      if (
-        parseInt(visuMotorRow.innerHTML) > 0 &&
-        parseInt(motorRow.innerHTML) > 0
-      ) {
-        cognitiveMotorRow.innerHTML =
-          parseInt(motorRow.innerHTML) + parseInt(visuMotorRow.innerHTML);
-      }
+    function updateArrivalValue(newArrivalValue) {
+      const updatedTableData = tableData.map((row, index) => {
+        if (index === selectedRowIndex) {
+          return {
+            ...row,
+            arrival: newArrivalValue,
+            autoComplete: false,
+            motor: newArrivalValue - row.decisionMaking,
+            cognitiveMotor:
+              row.visuMotor !== 0 && newArrivalValue - row.decisionMaking !== 0
+                ? row.visuMotor + (newArrivalValue - row.decisionMaking)
+                : 0,
+          };
+        }
+        return row;
+      });
       const currentSelectedRow = document.getElementById(
-        `RowSequenceIndex${currentRowIndex}`
+        `RowSequenceIndex${selectedRowIndex}`
       );
       const nextSelectedRow = document.getElementById(
-        `RowSequenceIndex${currentRowIndex + 1}`
+        `RowSequenceIndex${selectedRowIndex + 1}`
       );
-
+      console.log(currentSelectedRow, nextSelectedRow);
       if (currentSelectedRow) {
         currentSelectedRow.style.background = "#1a1a1a";
         currentSelectedRow.style.color = "white";
       }
+      console.log(currentSelectedRow, nextSelectedRow);
 
       if (nextSelectedRow) {
         nextSelectedRow.style.background = "rgb(255, 255, 255, 0.75)";
         nextSelectedRow.style.color = "black";
         setSelectedRowIndex((prev) => prev + 1);
+      } else {
+        setSelectedRowIndex(null);
       }
+
+      setTableData(updatedTableData);
     }
-  };*/
+  };
 
   const getTotalMetrics = (metric) => {
     if (
