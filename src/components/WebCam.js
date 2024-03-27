@@ -99,7 +99,7 @@ const WebCam = (props) => {
       [recorderVideo.current],
       `${sessionDate}-player${infoSavedSession.current.playerSelected}.mp4`,
       {
-        type: "video/webm",
+        type: "video/webm;codecs=vp9",
       }
     );
     var images = infoSavedSession.current.imageSequences.map((image) => {

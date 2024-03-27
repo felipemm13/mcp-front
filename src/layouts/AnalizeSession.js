@@ -967,9 +967,15 @@ const AnalizeSession = () => {
   };
 
   const refillAnalysisTable = (data) => {
-    //console.log(data);
+    console.log(data);
     const updatedData = tableData.map((row, index) => {
       if (index < data.length) {
+        let error = false;
+        let arrival = 0;
+        let decisionMaking = 0;
+        let visuMotor = 0;
+        let motor = 0;
+        let cognitiveMotor = 0;
         const newRow = data[index];
         if (newRow.arrival_frame > Math.round(videoDuration * FPS.current)) {
           newRow.arrival_frame = tableData[index].arrival;
@@ -977,23 +983,27 @@ const AnalizeSession = () => {
         if (newRow.takeoff_frame > Math.round(videoDuration * FPS.current)) {
           newRow.takeoff_frame = tableData[index].decisionMaking;
         }
+        error = newRow.error;
+        arrival = Math.round(
+          (parseInt(newRow.arrival_frame) / FPS.current) * 1000
+        );
+        decisionMaking = Math.round(
+          (parseInt(newRow.takeoff_frame) / FPS.current) * 1000
+        );
+        visuMotor =
+          decisionMaking -
+          parseInt(row.estimulo);
+        motor = arrival - decisionMaking;
+        cognitiveMotor = visuMotor + motor;
+
         return {
           ...row,
-          error: newRow.error,
-          arrival: Math.round(
-            (parseInt(newRow.arrival_frame) / FPS.current) * 1000
-          ),
-          decisionMaking: Math.round(
-            (parseInt(newRow.takeoff_frame) / FPS.current) * 1000
-          ),
-          visuMotor: parseInt(newRow.takeoff_frame) - parseInt(row.estimulo),
-          motor:
-            parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame),
-          cognitiveMotor:
-            parseInt(
-              parseInt(newRow.arrival_frame) - parseInt(newRow.takeoff_frame)
-            ) +
-            parseInt(parseInt(newRow.takeoff_frame) - parseInt(row.estimulo)),
+          error: error,
+          arrival: arrival,
+          decisionMaking: decisionMaking,
+          visuMotor: visuMotor,
+          motor: motor,
+          cognitiveMotor: cognitiveMotor,
           autoComplete: true,
         };
       } else {
@@ -1001,7 +1011,7 @@ const AnalizeSession = () => {
       }
     });
     setTableData(updatedData);
-    //console.log(updatedData);
+    console.log(updatedData);
   };
 
   if (!infoSession?.current?.stimulusTime) {
