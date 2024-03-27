@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run","build","&&","serve","-s","build"]
+CMD ["npm", "run","build" "&&","serve","-s","build","-l","3000"]
