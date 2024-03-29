@@ -109,7 +109,7 @@ const OtherSessions = () => {
   };
 
   const handleSelectSession = (session, currentPlayer) => {
-    console.log(session)
+    //console.log(session);
     setSelectedSession([session, currentPlayer]);
   };
   const calculateAge = (birthday) => {
@@ -174,7 +174,7 @@ const OtherSessions = () => {
   const [groupFilter, setGroupFilter] = useState("all");
   const [userFilter, setUserFilter] = useState("all");
 
-  const handleChangeSessionTypeFiter = (event) => {
+  const handleChangeSessionTypeFilter = (event) => {
     setSessionTypeFilter(event.target.value);
   };
 
@@ -182,7 +182,7 @@ const OtherSessions = () => {
     setGroupFilter(event.target.value);
   };
 
-  const handleChangeUserFiter = (event) => {
+  const handleChangeUserFilter = (event) => {
     setUserFilter(event.target.value);
   };
 
@@ -214,18 +214,16 @@ const OtherSessions = () => {
   });
 
   const handleCopyParameters = () => {
-    /*
     infoSession.current = {
-      isRandom: true,
-      playsFromDb:infoSession.current.playsFromDb,
+      ...infoSession.current,
       numOfDistractors: selectedSession[0].numDistractors,
       numberOfPlays: selectedSession[0].numPlays,
-      secondsForPlayTransition: selectedSession[0].transitionTime,
+      playerSelected: selectedSession[1].playerId,
       secondsToNextPlay: selectedSession[0].timeBetweenPlays,
+      secondsForPlayTransition: selectedSession[0].transitionTime,
       seed: selectedSession[0].seed,
       typeOfSession: selectedSession[0].sessionType,
-      sequenceOfPlays: [],
-    };*/
+    };
   };
   return sessions.length ? (
     <div className="OtherSessionsContainer">
@@ -252,7 +250,7 @@ const OtherSessions = () => {
             <b>Tipo de sesion: </b>
 
             <select
-              onChange={handleChangeSessionTypeFiter}
+              onChange={handleChangeSessionTypeFilter}
               className="form-select"
             >
               <option value="all" selected>
@@ -278,7 +276,7 @@ const OtherSessions = () => {
           <div className="OtherSessionsLabelInput">
             <b>Nombre: </b>
 
-            <select onChange={handleChangeUserFiter} className="form-select">
+            <select onChange={handleChangeUserFilter} className="form-select">
               <option value="all" selected>
                 Todos
               </option>

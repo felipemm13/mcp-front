@@ -123,7 +123,7 @@ const Webapp = () => {
                 <button className="button" onClick={() => loginUser()}>
                   Ingresar
                 </button>
-                <button className="button">Registrarse</button>
+                
               </div>
             )}
           </div>

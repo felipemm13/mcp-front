@@ -955,9 +955,7 @@ const FootballSession = () => {
                   id="secondsForPlayTransition"
                   min="0"
                   step="0.05"
-                  defaultValue={
-                    currentSesionInfo?.secondsForPlayTransition || 0
-                  }
+                  value={currentSesionInfo?.secondsForPlayTransition}
                   onChange={(e) => {
                     setCurrentSesionInfo({
                       ...currentSesionInfo,

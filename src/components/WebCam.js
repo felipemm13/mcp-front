@@ -61,7 +61,7 @@ const WebCam = (props) => {
     currentFPS.current = mediaRecorderRef.current.stream
       .getVideoTracks()[0]
       .getSettings().frameRate;
-      console.log(infoSession.current)
+      //console.log(infoSession.current)
     infoSavedSession.current = infoSession.current;
     document.getElementById("StartCaptureVideo").removeAttribute("disabled");
   };

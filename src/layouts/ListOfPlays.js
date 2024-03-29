@@ -101,7 +101,7 @@ const ListOfPlays = () => {
       currentPlay.current = play;
       navigate("/plays-view/edit");
     } else if (selectedPlay) {
-      console.log(selectedPlay);
+      //console.log(selectedPlay);
       const numPlayers = countPlayers(selectedPlay.figureCoordinates);
       currentPlay.current = {
         playPositions: {

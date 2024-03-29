@@ -179,6 +179,10 @@ const AnalizeSession = () => {
       preloadImages(infoSession.current.imageSequences);
       getAWSVideo();
     }
+
+    return () => {
+      return;
+    };
   }, []);
 
   const getAWSVideo = async () => {
@@ -293,10 +297,12 @@ const AnalizeSession = () => {
       `RowSequenceIndex${selectedRowIndex}`
     );
     const selectedRow = document.getElementById(`RowSequenceIndex${index}`);
+    /*
     if (previousSelectedRow) {
       previousSelectedRow.style.background = "#1a1a1a";
       previousSelectedRow.style.color = "white";
     }
+    */
 
     if (selectedRowIndex === index) {
       selectedPlayID.current = null;
@@ -305,8 +311,8 @@ const AnalizeSession = () => {
       document.getElementById("AddArrivalMark").disabled = true;
       setSelectedRowIndex(null);
     } else {
-      selectedRow.style.background = "rgb(218, 37, 153)";
-      selectedRow.style.color = "black";
+      //selectedRow.style.background = "rgb(218, 37, 153)";
+      //selectedRow.style.color = "black";
       setSelectedRowIndex(index);
       selectedPlayID.current = playID;
       //document.getElementById("SaveAnalizeSession").disabled = false;
@@ -408,16 +414,12 @@ const AnalizeSession = () => {
       const nextSelectedRow = document.getElementById(
         `RowSequenceIndex${selectedRowIndex + 1}`
       );
-      console.log(currentSelectedRow, nextSelectedRow);
-      if (currentSelectedRow) {
-        currentSelectedRow.style.background = "#1a1a1a";
-        currentSelectedRow.style.color = "white";
-      }
-      console.log(currentSelectedRow, nextSelectedRow);
+      //console.log(currentSelectedRow, nextSelectedRow);
+      //console.log(currentSelectedRow, nextSelectedRow);
 
       if (nextSelectedRow) {
-        nextSelectedRow.style.background = "rgb(218, 37, 153)";
-        nextSelectedRow.style.color = "black";
+       // nextSelectedRow.style.background = "rgb(218, 37, 153)";
+        //nextSelectedRow.style.color = "black";
         setSelectedRowIndex((prev) => prev + 1);
       } else {
         setSelectedRowIndex(null);
@@ -806,7 +808,7 @@ const AnalizeSession = () => {
       });
     }
   };
-  
+
   useEffect(() => {
     updateMetrics();
   }, [tableData]);
@@ -928,57 +930,81 @@ const AnalizeSession = () => {
   };
 
   const processingSteps = async () => {
-    document.getElementById("AutoAnalysis").disabled = true;
-    setProcessing({ value: 0, message: "Procesando..." });
-    //console.log(currentSession.current[0]);
-    let dataAutoAnalysis = {};
-    if (session === "current") {
-      console.log("sesion actual");
-    } else {
-      let marks = currentSession.current[0].SessionMoves.map((move) => ({
-        mark_correct: move.correctResponse,
-        frame: Math.round(
-          (move.stimulus * currentSession.current[0].fps) / 1000
-        ),
-      }));
-      dataAutoAnalysis = {
-        contourjson: JSON.stringify(currentSession.current[0].calibration),
-        videoUrl:
-          AWS_URL +
-          currentSession.current[0].videoURL,
-        imageUrl:
-          AWS_URL +
-          currentSession.current[0].imageCalibration,
-        jsonString: JSON.stringify(marks),
-      };
-      //console.log(dataAutoAnalysis);
-      await axios
-        .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, {
-          timeout: 240000,
-          maxBodyLength: Infinity,
-          maxContentLength: Infinity,
-        })
-        .then((response) => {
-          setProcessing({ value: 1, message: "Procesar Pasos" });
-          document.getElementById("AutoAnalysis").disabled = false;
-          refillAnalysisTable(JSON.parse(response.data.response.output));
-        })
-        .catch((error) => {
-          console.log(error);
-          setProcessing({
-            value: 2,
-            message: "Error procesando",
-          });
-          setTimeout(() => {
-            document.getElementById("AutoAnalysis").disabled = false;
-            setProcessing({ value: 1, message: "Procesar Pasos" });
-          }, 2000);
+    //ventana de confirmacion de procesamiento
+    Swal.fire({
+      title: "Seguro que desea procesar?",
+      text: "Esto puede llegar a tardar varios minutos",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, procesar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Procesando...",
+          text: "Esto tardara unos minutos",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          allowEnterKey: false,
+          showConfirmButton: false,
+          showCancelButton: false,
+          showCloseButton: false,
+          showLoaderOnConfirm: true,
         });
-    }
+        document.getElementById("AutoAnalysis").disabled = true;
+        setProcessing({ value: 0, message: "Procesando..." });
+        //console.log(currentSession.current[0]);
+        let dataAutoAnalysis = {};
+        if (session === "current") {
+          //console.log("sesion actual");
+        } else {
+          let marks = currentSession.current[0].SessionMoves.map((move) => ({
+            mark_correct: move.correctResponse,
+            frame: Math.round(
+              (move.stimulus * currentSession.current[0].fps) / 1000
+            ),
+          }));
+          //console.log(marks)
+          dataAutoAnalysis = {
+            contourjson: JSON.stringify(currentSession.current[0].calibration),
+            videoUrl: AWS_URL + currentSession.current[0].videoURL,
+            imageUrl: AWS_URL + currentSession.current[0].imageCalibration,
+            jsonString: JSON.stringify(marks),
+          };
+          //console.log(dataAutoAnalysis);
+          await axios
+            .post(`${urlVision}autoAnalysis`, dataAutoAnalysis, {
+              timeout: 240000,
+              maxBodyLength: Infinity,
+              maxContentLength: Infinity,
+            })
+            .then((response) => {
+              Swal.close();
+              setProcessing({ value: 1, message: "Procesar Pasos" });
+              document.getElementById("AutoAnalysis").disabled = false;
+              refillAnalysisTable(JSON.parse(response.data.response.output));
+            })
+            .catch((error) => {
+              Swal.close();
+              //console.log(error);
+              setProcessing({
+                value: 2,
+                message: "Error procesando",
+              });
+              setTimeout(() => {
+                document.getElementById("AutoAnalysis").disabled = false;
+                setProcessing({ value: 1, message: "Procesar Pasos" });
+              }, 3000);
+            });
+        }
+      }
+    });
   };
 
   const refillAnalysisTable = (data) => {
-    console.log(data);
+    //console.log(data);
     const updatedData = tableData.map((row, index) => {
       if (index < data.length) {
         let error = false;
@@ -1329,12 +1355,14 @@ const AnalizeSession = () => {
                     Math.round((toFrame / FPS.current) * 1000) <
                     infoSession.current.stimulusTime[currentStimulus - 1]
                   ) {
+                    setSelectedRowIndex(currentStimulus - 1);
                     setCurrentFrame(
                       Math.round(
                         videoRefs.current[2].getCurrentTime() * FPS.current
                       ) + 1
                     );
                   } else {
+                    setSelectedRowIndex(currentStimulus - 1);
                     setCurrentFrame(
                       Math.round(
                         videoRefs.current[2].getCurrentTime() * FPS.current
@@ -1342,6 +1370,7 @@ const AnalizeSession = () => {
                     );
                   }
                 } else {
+                  setSelectedRowIndex(0);
                   videoRefs.current[2].seekTo(0);
                   setCurrentFrame(
                     Math.round(
@@ -1384,19 +1413,6 @@ const AnalizeSession = () => {
               </svg>
             </button>
             <button
-              data-tooltip={`Marca Anterior`}
-              className="AnalizeSessionVideoCentralFrameButton"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24"
-                width="24"
-                viewBox="0 0 512 512"
-              >
-                <path d="M493.6 445c-11.2 5.3-24.5 3.6-34.1-4.4L288 297.7V416c0 12.4-7.2 23.7-18.4 29s-24.5 3.6-34.1-4.4L64 297.7V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V96C0 78.3 14.3 64 32 64s32 14.3 32 32V214.3L235.5 71.4c9.5-7.9 22.8-9.7 34.1-4.4S288 83.6 288 96V214.3L459.5 71.4c9.5-7.9 22.8-9.7 34.1-4.4S512 83.6 512 96V416c0 12.4-7.2 23.7-18.4 29z" />
-              </svg>
-            </button>
-            <button
               data-tooltip={videoState}
               className="AnalizeSessionVideoCentralFrameButton"
               onClick={() => {
@@ -1428,19 +1444,6 @@ const AnalizeSession = () => {
                   <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm224-72V328c0 13.3-10.7 24-24 24s-24-10.7-24-24V184c0-13.3 10.7-24 24-24s24 10.7 24 24zm112 0V328c0 13.3-10.7 24-24 24s-24-10.7-24-24V184c0-13.3 10.7-24 24-24s24 10.7 24 24z" />
                 </svg>
               )}
-            </button>
-            <button
-              data-tooltip={`Marca Siguiente`}
-              className="AnalizeSessionVideoCentralFrameButton"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24"
-                width="24"
-                viewBox="0 0 512 512"
-              >
-                <path d="M18.4 445c11.2 5.3 24.5 3.6 34.1-4.4L224 297.7V416c0 12.4 7.2 23.7 18.4 29s24.5 3.6 34.1-4.4L448 297.7V416c0 17.7 14.3 32 32 32s32-14.3 32-32V96c0-17.7-14.3-32-32-32s-32 14.3-32 32V214.3L276.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S224 83.6 224 96V214.3L52.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S0 83.6 0 96V416c0 12.4 7.2 23.7 18.4 29z" />
-              </svg>
             </button>
             <button
               data-tooltip={`Frame Siguiente`}
@@ -1488,12 +1491,14 @@ const AnalizeSession = () => {
                     Math.round((toFrame / FPS.current) * 1000) <
                     infoSession.current.stimulusTime[currentStimulus + 1]
                   ) {
+                    setSelectedRowIndex(currentStimulus + 1);
                     setCurrentFrame(
                       Math.round(
                         videoRefs.current[2].getCurrentTime() * FPS.current
                       ) + 1
                     );
                   } else {
+                    setSelectedRowIndex(currentStimulus + 1);
                     setCurrentFrame(
                       Math.round(
                         videoRefs.current[2].getCurrentTime() * FPS.current
@@ -1505,6 +1510,9 @@ const AnalizeSession = () => {
                     infoSession.current.stimulusTime[
                       infoSession.current.stimulusTime.length - 1
                     ] / 1000
+                  );
+                  setSelectedRowIndex(
+                    infoSession.current.stimulusTime.length - 1
                   );
                   setCurrentFrame(
                     Math.round(
@@ -1708,12 +1716,12 @@ const AnalizeSession = () => {
                     <tr
                       id={`RowSequenceIndex${index}`}
                       style={
-                        index === 0
+                        index === selectedRowIndex
                           ? {
                               background: "rgb(218, 37, 153)",
-                              color: "black",
+                              color: "white",
                             }
-                          : {}
+                          : { background: "#1a1a1a", color: "white" }
                       }
                       key={index}
                     >
@@ -1775,9 +1783,7 @@ const AnalizeSession = () => {
                             ? { color: "#00F7FF" }
                             : parseInt(row.decisionMaking) === 0
                             ? { color: "#FFd500" }
-                            : //: index === selectedRowIndex
-                              //? { color: "black",fontWeight: "bold"}
-                              { color: "#00FF00" }
+                            : { color: "#00FF00" }
                         }
                       >
                         {row.decisionMaking}
@@ -1811,9 +1817,7 @@ const AnalizeSession = () => {
                             ? { color: "#00F7FF" }
                             : parseInt(row.arrival) === 0
                             ? { color: "#FFd500" }
-                            : //: index === selectedRowIndex
-                              //? { color: "black",fontWeight: "bold"}
-                              { color: "#00FF00" }
+                            : { color: "#00FF00" }
                         }
                       >
                         {row.arrival}
