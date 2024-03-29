@@ -806,6 +806,7 @@ const AnalizeSession = () => {
       });
     }
   };
+  
   useEffect(() => {
     updateMetrics();
   }, [tableData]);
@@ -925,6 +926,7 @@ const AnalizeSession = () => {
       await processingSteps();
     }
   };
+
   const processingSteps = async () => {
     document.getElementById("AutoAnalysis").disabled = true;
     setProcessing({ value: 0, message: "Procesando..." });
