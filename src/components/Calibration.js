@@ -37,7 +37,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
         };
         setCalibrated(true);
         calibration.current = response.data;
-        //console.log(response.data)
+        console.log(response.data)
         setTimeout(() => setStains(response.data.response.points), [0]);
       })
       .catch((err) => {
@@ -90,7 +90,8 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
       .then((response) => {
         setCurrentMark(1);
         setCorrectCalibration(true);
-        calibration.current = response.data.response;
+        calibration.current = response.data;
+        console.log()
         setTimeout(() => setStains(response.data.response.points), [0]);
         setSemiAutoCalibration(false);
       })

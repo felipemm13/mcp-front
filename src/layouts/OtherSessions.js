@@ -83,6 +83,9 @@ const OtherSessions = () => {
   };
   useEffect(() => {
     getSessions();
+    return () => {
+      return;
+    };
   }, []);
 
   const handleToAnalizeSession = () => {
@@ -109,7 +112,7 @@ const OtherSessions = () => {
   };
 
   const handleSelectSession = (session, currentPlayer) => {
-    //console.log(session);
+    console.log(session);
     setSelectedSession([session, currentPlayer]);
   };
   const calculateAge = (birthday) => {
