@@ -447,7 +447,7 @@ const WebCam = (props) => {
               deviceId: deviceId,
               width: { ideal: 1280 },
               height: { ideal: 720 },
-              frameRate: { max: 60 },
+              frameRate: { ideal: 60},
             }}
           />
         ) : (

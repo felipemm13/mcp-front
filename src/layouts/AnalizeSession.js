@@ -972,6 +972,7 @@ const AnalizeSession = () => {
             videoUrl: AWS_URL + currentSession.current[0].videoURL,
             imageUrl: AWS_URL + currentSession.current[0].imageCalibration,
             jsonString: JSON.stringify(marks),
+            frameRate: currentSession.current[0].fps,
           };
           //console.log(dataAutoAnalysis);
           await axios
