@@ -1732,7 +1732,7 @@ const AnalizeSession = () => {
                       >
                         {row.sequence}
                       </td>
-                      <td>
+                      <td style={{}}>
                         <input
                           type="checkbox"
                           checked={row.error}
