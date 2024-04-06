@@ -92,7 +92,7 @@ const OtherSessions = () => {
     if (videoCurrentSession.current && !isSaveCurrentSession.current) {
       Swal.fire({
         title: "Existe una sesión actual sin guardar",
-        text: "Si abres una sesión anterior se perdera la sesion actual sin guardar, ¿Deseas continuar?",
+        text: "Si abres una sesión anterior se perdera la sesión actual sin guardar, ¿Deseas continuar?",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Si, continuar!",
@@ -151,11 +151,11 @@ const OtherSessions = () => {
               deleteS3Files(s3, move.imageUrl);
             });
             deleteS3Files(s3, selectedSession[0].videoURL);
-            Swal.fire("Eliminado", "La sesion ha sido eliminada", "success");
+            Swal.fire("Eliminado", "La sesión ha sido eliminada", "success");
             getSessions();
           })
           .catch((error) => {
-            Swal.fire("Error", "No se pudo eliminar la sesion", "error");
+            Swal.fire("Error", "No se pudo eliminar la sesión", "error");
           });
       }
     });
@@ -250,7 +250,7 @@ const OtherSessions = () => {
         </div>
         <div className="OtherSessionsFilters">
           <div className="OtherSessionsLabelInput">
-            <b>Tipo de sesion: </b>
+            <b>Tipo de sesión: </b>
 
             <select
               onChange={handleChangeSessionTypeFilter}
@@ -291,15 +291,15 @@ const OtherSessions = () => {
         </div>
       </div>
       <div className="OtherSessionsTable">
-        <b className="OtherSessionsSelectTitle">Seleccionar una sesion</b>
+        <b className="OtherSessionsSelectTitle">Seleccionar una sesión</b>
         <table className="custom-table">
           <thead className="">
             <tr>
-              <th>Tipo de sesion</th>
+              <th>Tipo de sesión</th>
               <th>Apellido</th>
               <th>Nombre</th>
               <th>Grupo</th>
-              <th>Sesion</th>
+              <th>Sesión</th>
               <th>Estatus</th>
               <th>Semilla aleatoria</th>
               <th>Promedio Motor-visual</th>
@@ -393,11 +393,11 @@ const OtherSessions = () => {
       </div>
 
       <div className="OtherSessionsInfo">
-        <b>Jugador sesion seleccionada</b>
+        <b>Jugador sesión seleccionada</b>
         <div>
           <div className="OtherSessionsRow">
             <div className="OtherSessionsLabelInput">
-              <b>Tipo de sesion: </b>
+              <b>Tipo de sesión: </b>
 
               <input
                 className="form-control form-control-sm"
@@ -412,7 +412,7 @@ const OtherSessions = () => {
               ></input>
             </div>
             <div className="OtherSessionsLabelInput">
-              <b>Sesion: </b>
+              <b>Sesión: </b>
 
               <input
                 className="form-control form-control-sm"
@@ -598,21 +598,21 @@ const OtherSessions = () => {
           disabled={!selectedSession}
           onClick={handleCopyParameters}
         >
-          Copiar parámetros de sesion
+          Copiar parámetros de sesión
         </button>
         <button
           className="OtherSessionsButtons"
           onClick={deleteSelectedSession}
           disabled={!selectedSession}
         >
-          Eliminar sesion
+          Eliminar sesión
         </button>
         <button
           className="OtherSessionsButtons"
           onClick={handleToAnalizeSession}
           disabled={!selectedSession}
         >
-          Abrir sesion
+          Abrir sesión
         </button>
       </div>
     </div>
