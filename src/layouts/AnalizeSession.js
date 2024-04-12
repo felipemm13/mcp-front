@@ -358,8 +358,10 @@ const AnalizeSession = () => {
             visuMotor: newDecisionMakingValue - row.estimulo,
             motor: row.arrival - newDecisionMakingValue,
             cognitiveMotor:
-              newDecisionMakingValue - row.estimulo !== 0 && row.motor !== 0
-                ? newDecisionMakingValue - row.estimulo + row.motor
+              newDecisionMakingValue - row.estimulo !== 0 &&
+              row.arrival - newDecisionMakingValue !== 0
+                ? (newDecisionMakingValue - row.estimulo) +
+                  (row.arrival - newDecisionMakingValue)
                 : 0,
           };
         }
@@ -401,7 +403,7 @@ const AnalizeSession = () => {
             ...row,
             arrival: newArrivalValue,
             autoComplete: false,
-            visuMotor: row.decisionMaking - newArrivalValue,
+            visuMotor: row.decisionMaking - row.estimulo,
             motor: newArrivalValue - row.decisionMaking,
             cognitiveMotor:
               row.visuMotor !== 0 && newArrivalValue - row.decisionMaking !== 0
@@ -2076,7 +2078,11 @@ const AnalizeSession = () => {
 
             <thead>
               <tr>
-                <th colSpan={2} className="table-header" style={{ width: "200%" }}>
+                <th
+                  colSpan={2}
+                  className="table-header"
+                  style={{ width: "200%" }}
+                >
                   Capacidad de respuesta
                 </th>
               </tr>
