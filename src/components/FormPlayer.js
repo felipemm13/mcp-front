@@ -121,7 +121,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
   const existCustoms = (type, string) => {
     if (type === "Institución") {
       return !!customsUser.groups?.find((group) => group.groupName === string);
-    } else if (type === "Categoria") {
+    } else if (type === "Categoría") {
       const specialCategories = [
         "En formación",
         "Universitaria",
@@ -180,7 +180,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                 groups: [...customsUser.groups, res.data],
               });
             });
-          } else if (type === "Categoria") {
+          } else if (type === "Categoría") {
             await CrudApi.post("category", {
               categoryName: string,
               userId: userContext.current.userId,
@@ -232,7 +232,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
       inputValue:
         type === "Institución"
           ? groupCustom.groupName
-          : type === "Categoria"
+          : type === "Categoría"
           ? categoryCustom.categoryName
           : positionCustom.positionName,
       showCloseButton: true,
@@ -263,7 +263,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
               });
               setInstitution(res.groupName);
             });
-          } else if (type === "Categoria") {
+          } else if (type === "Categoría") {
             await CrudApi.update(`category/${categoryCustom.categoryId}`, {
               categoryName: string,
             }).then((res) => {
@@ -316,7 +316,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   setInstitution("default");
                 }
               );
-            } else if (type === "Categoria") {
+            } else if (type === "Categoría") {
               await CrudApi.delete(
                 `category/${categoryCustom.categoryId}`
               ).then((res) => {
@@ -476,7 +476,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                     readOnly
                     disabled
                     className="form-control"
-                    id="claculateExperience"
+                    id="calculateExperience"
                     value={calculateAge(experience) || ""}
                   />
                 </div>

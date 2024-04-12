@@ -166,9 +166,9 @@ const ListOfPlays = () => {
             <thead>
               <tr>
                 <th>Jugada</th>
-                <th> Tipo de Jugada</th>
+                <th>Tipo de Jugada</th>
                 <th>Modo de Jugada</th>
-                <th>Posicion de Respuesta</th>
+                <th>Posición de Respuesta</th>
                 <th>Habilitada</th>
                 <th>Editar</th>
               </tr>
@@ -186,7 +186,7 @@ const ListOfPlays = () => {
                       {play.attack ? "Ofensiva" : "Defensiva"}
                     </td>
                     <td onClick={() => handleSelectRow(play, index)}>
-                      {play.test ? "Evaluacion" : "Prueba"}
+                      {play.test ? "Evaluación" : "Prueba"}
                     </td>
                     <td onClick={() => handleSelectRow(play, index)}>
                       {play.responsePosition}

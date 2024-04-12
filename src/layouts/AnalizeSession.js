@@ -356,6 +356,7 @@ const AnalizeSession = () => {
             decisionMaking: newDecisionMakingValue,
             autoComplete: false,
             visuMotor: newDecisionMakingValue - row.estimulo,
+            motor: row.arrival - newDecisionMakingValue,
             cognitiveMotor:
               newDecisionMakingValue - row.estimulo !== 0 && row.motor !== 0
                 ? newDecisionMakingValue - row.estimulo + row.motor
@@ -365,6 +366,7 @@ const AnalizeSession = () => {
         return row;
       });
       setTableData(updatedTableData);
+      updateMetrics();
     }
   };
 
@@ -399,6 +401,7 @@ const AnalizeSession = () => {
             ...row,
             arrival: newArrivalValue,
             autoComplete: false,
+            visuMotor: row.decisionMaking - newArrivalValue,
             motor: newArrivalValue - row.decisionMaking,
             cognitiveMotor:
               row.visuMotor !== 0 && newArrivalValue - row.decisionMaking !== 0
@@ -408,24 +411,18 @@ const AnalizeSession = () => {
         }
         return row;
       });
-      const currentSelectedRow = document.getElementById(
-        `RowSequenceIndex${selectedRowIndex}`
-      );
       const nextSelectedRow = document.getElementById(
         `RowSequenceIndex${selectedRowIndex + 1}`
       );
-      //console.log(currentSelectedRow, nextSelectedRow);
-      //console.log(currentSelectedRow, nextSelectedRow);
 
       if (nextSelectedRow) {
-       // nextSelectedRow.style.background = "rgb(218, 37, 153)";
-        //nextSelectedRow.style.color = "black";
         setSelectedRowIndex((prev) => prev + 1);
       } else {
         setSelectedRowIndex(null);
       }
 
       setTableData(updatedTableData);
+      updateMetrics();
     }
   };
 
@@ -1702,11 +1699,28 @@ const AnalizeSession = () => {
                   </th>
                   <th className="table-header">Error</th>
                   <th className="table-header">Estímulo</th>
-                  <th className="table-header">Decision-Making</th>
+                  <th className="table-header" data-tooltip={`Decision-Making`}>
+                    DM
+                  </th>
                   <th className="table-header">Arrival</th>
-                  <th className="table-header">Visu-Motor</th>
-                  <th className="table-header">Motor</th>
-                  <th className="table-header">Cognitive-Motor</th>
+                  <th
+                    className="table-header"
+                    data-tooltip={`Velocidad Cognitiva`}
+                  >
+                    VC
+                  </th>
+                  <th
+                    className="table-header"
+                    data-tooltip={`Velocidad Motriz`}
+                  >
+                    VM
+                  </th>
+                  <th
+                    className="table-header"
+                    data-tooltip={`Velocidad Cognitiva-Motriz`}
+                  >
+                    VCM
+                  </th>
                 </tr>
               </thead>
             </table>
@@ -2002,7 +2016,7 @@ const AnalizeSession = () => {
               >
                 <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
               </svg>
-              Guardar Informacion Sesión
+              Guardar Información Sesión
             </button>
             <button
               className="AnalizeSessionMarksControlButton"
@@ -2024,39 +2038,54 @@ const AnalizeSession = () => {
           <table className="AnalizeSessionMarksControlMetricsTable">
             <thead>
               <tr>
-                <th className="table-header">Metricas</th>
+                <th className="table-header">Métricas</th>
                 <th className="table-header">Total</th>
                 <th className="table-header">Promedio</th>
-                <th className="table-header">Desviacion Estandar</th>
+                <th className="table-header">Desviación Estándar</th>
               </tr>
             </thead>
             <tbody>
               <tr className="table-row">
-                <td>Visu-Motor {"[ms]"}</td>
+                <th
+                  className="table-header"
+                  data-tooltip={`Velocidad Cognitiva`}
+                >
+                  VC {"[ms]"}
+                </th>
                 <td>{metrics.totalVisuMotor}</td>
                 <td>{metrics.averageVisuMotor}</td>
                 <td>{metrics.standardDeviationVisuMotor}</td>
               </tr>
               <tr className="table-row">
-                <td>Motor {"[ms]"}</td>
+                <th className="table-header" data-tooltip={`Velocidad Motriz`}>
+                  VM {"[ms]"}
+                </th>
                 <td>{metrics.totalMotor}</td>
                 <td>{metrics.averageMotor}</td>
                 <td>{metrics.standardDeviationMotor}</td>
               </tr>
               <tr className="table-row">
-                <td>Tiempo Respuesta {"[ms]"}</td>
+                <th className="table-header" data-tooltip={`Velocidad CMotriz`}>
+                  VCM {"[ms]"}
+                </th>
                 <td>{metrics.totalCognitiveMotor}</td>
                 <td>{metrics.averageCognitiveMotor}</td>
                 <td>{metrics.standardDeviationCognitiveMotor}</td>
               </tr>
             </tbody>
+
             <thead>
               <tr>
-                <th className="table-header">Correcto</th>
-                <th className="table-header">Incorrecto</th>
+                <th colSpan={2} className="table-header" style={{ width: "200%" }}>
+                  Capacidad de respuesta
+                </th>
+              </tr>
+              <tr>
+                <th className="table-header">Acierto</th>
+                <td>{metrics.correctPercentage}%</td>
               </tr>
               <tr className="table-row">
-                <td>{metrics.correctPercentage}%</td>
+                <th className="table-header">Error</th>
                 <td>{metrics.errorPercentage}%</td>
               </tr>
             </thead>

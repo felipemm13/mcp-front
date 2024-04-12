@@ -285,7 +285,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                   ) : (
                     <>
                       <p className="calibrationModalQuestion">
-                        Seleccion Manual de las marcas en la imagen
+                        Selección Manual de las marcas en la imagen
                       </p>
                       <img
                         src={`assets/calibrations/calibration-mark-${currentMark}.png`}
@@ -299,7 +299,7 @@ const Calibration = ({ setOpenModal, webcamRef, userEmail }) => {
                       />
                       <div>
                         <p style={{ lineHeight: "0.5em" }}>
-                          En la imagen de la camara, arrastre la ubicacion de la
+                          En la imagen de la cámara, arrastre la ubicación de la
                           marca {currentMark}{" "}
                         </p>
                       </div>

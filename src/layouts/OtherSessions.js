@@ -460,7 +460,7 @@ const OtherSessions = () => {
           </div>
           <div className="OtherSessionsRow">
             <div className="OtherSessionsLabelInput">
-              <b>Genero: </b>
+              <b>Género: </b>
               <input
                 className="form-control form-control-sm"
                 id="sessionType"
@@ -523,7 +523,7 @@ const OtherSessions = () => {
             </div>
 
             <div className="OtherSessionsLabelInput">
-              <b>Numero de jugadas: </b>
+              <b>Número de jugadas: </b>
 
               <input
                 className="form-control form-control-sm"
@@ -534,7 +534,7 @@ const OtherSessions = () => {
               ></input>
             </div>
             <div className="OtherSessionsLabelInput">
-              <b>Tiempo transicion: </b>
+              <b>Tiempo transición: </b>
 
               <input
                 className="form-control form-control-sm"
@@ -547,7 +547,7 @@ const OtherSessions = () => {
           </div>
           <div className="OtherSessionsRow">
             <div className="OtherSessionsLabelInput">
-              <b>Categoria: </b>
+              <b>Categoría: </b>
               <input
                 className="form-control form-control-sm"
                 id="sessionType"
@@ -568,7 +568,7 @@ const OtherSessions = () => {
               ></input>
             </div>
             <div className="OtherSessionsLabelInput">
-              <b>Posicion: </b>
+              <b>Posición: </b>
 
               <input
                 className="form-control form-control-sm"
@@ -579,7 +579,7 @@ const OtherSessions = () => {
               ></input>
             </div>
             <div className="OtherSessionsLabelInput">
-              <b>Extremidad habil: </b>
+              <b>Extremidad hábil: </b>
 
               <input
                 className="form-control form-control-sm"

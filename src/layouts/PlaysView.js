@@ -754,7 +754,7 @@ const PlaysView = () => {
                   }
                   value={gameState.playPositions.test}
                 >
-                  <option value={true}>Evaluacion</option>
+                  <option value={true}>Evaluación</option>
                   <option value={false}>Entrenamiento</option>
                 </select>
               </div>

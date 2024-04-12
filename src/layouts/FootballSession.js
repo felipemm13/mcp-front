@@ -722,7 +722,7 @@ const FootballSession = () => {
                 <div className="distractorsSelect">
                   <label id="distractorsLabel" htmlFor="distractors">
                     <b>
-                      <h5>Modo generacion secuencia</h5>
+                      <h5>Modo generación secuencia</h5>
                     </b>
                   </label>
                   <select
@@ -861,12 +861,12 @@ const FootballSession = () => {
                           })
                         ) : (
                           <option value="0">
-                            No hay posibles secuencias para evaluación
+                            No hay posibles secuencias para la evaluación
                           </option>
                         )
                       ) : (
                         <option value="0">
-                          No hay suficientes jugadas para evaluación
+                          No hay suficientes jugadas para la evaluación
                         </option>
                       )}
                     </select>
