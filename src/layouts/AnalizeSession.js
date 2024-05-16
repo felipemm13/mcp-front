@@ -51,19 +51,7 @@ const AnalizeSession = () => {
     value: 1,
     message: "Procesar Pasos",
   });
-  const [metrics, setMetrics] = useState({
-    totalVisuMotor: 0,
-    averageVisuMotor: 0,
-    standardDeviationVisuMotor: 0,
-    totalMotor: 0,
-    averageMotor: 0,
-    standardDeviationMotor: 0,
-    totalCognitiveMotor: 0,
-    averageCognitiveMotor: 0,
-    standardDeviationCognitiveMotor: 0,
-    correctPercentage: 0,
-    errorPercentage: 0,
-  });
+  const [metrics, setMetrics] = useState(null);
 
   const initialData = Array.from({ length: 0 }, (_, index) => ({
     sequence: index + 1,
@@ -84,7 +72,6 @@ const AnalizeSession = () => {
     const newData = [...tableData];
     newData[index].error = !newData[index].error;
     setTableData(newData);
-    updateMetrics();
   };
 
   const getVideoDuration = (blob) => {
@@ -160,24 +147,26 @@ const AnalizeSession = () => {
       if (currentSession.current === null) {
         navigate("/other-sessions");
         return;
+      } else {
+        FPS.current = currentSession.current[0].fps ?? 30;
+        infoSession.current = {
+          stimulusTime: currentSession.current[0].SessionMoves.map(
+            (move) => move.stimulus
+          ),
+          imageSequences: currentSession.current[0].SessionMoves.map(
+            (move) =>
+              "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" +
+              move.imageUrl
+          ),
+          sequenceOfPlays: currentSession.current[0].SessionMoves.map(
+            (move) => move.moveNum
+          ),
+          numberOfPlays: currentSession.current[0].numPlays,
+        };
+        infoSession.current.imageSequences.sort();
+        preloadImages(infoSession.current.imageSequences);
+        getAWSVideo();
       }
-      FPS.current = currentSession.current[0].fps ?? 30;
-      infoSession.current = {
-        stimulusTime: currentSession.current[0].SessionMoves.map(
-          (move) => move.stimulus
-        ),
-        imageSequences: currentSession.current[0].SessionMoves.map(
-          (move) =>
-            "https://mcp-wildsense.s3.us-east-2.amazonaws.com/" + move.imageUrl
-        ),
-        sequenceOfPlays: currentSession.current[0].SessionMoves.map(
-          (move) => move.moveNum
-        ),
-        numberOfPlays: currentSession.current[0].numPlays,
-      };
-      infoSession.current.imageSequences.sort();
-      preloadImages(infoSession.current.imageSequences);
-      getAWSVideo();
     }
 
     return () => {
@@ -360,7 +349,8 @@ const AnalizeSession = () => {
             cognitiveMotor:
               newDecisionMakingValue - row.estimulo !== 0 &&
               row.arrival - newDecisionMakingValue !== 0
-                ? (newDecisionMakingValue - row.estimulo) +
+                ? newDecisionMakingValue -
+                  row.estimulo +
                   (row.arrival - newDecisionMakingValue)
                 : 0,
           };
@@ -368,7 +358,6 @@ const AnalizeSession = () => {
         return row;
       });
       setTableData(updatedTableData);
-      updateMetrics();
     }
   };
 
@@ -424,7 +413,6 @@ const AnalizeSession = () => {
       }
 
       setTableData(updatedTableData);
-      updateMetrics();
     }
   };
 
@@ -436,15 +424,27 @@ const AnalizeSession = () => {
       currentSession.current[0].SessionAnalytics[0].responseTotal !== 0 &&
       currentSession.current[0].SessionAnalytics[0].visuMotorTotal !== 0
     ) {
-      switch (metric) {
-        case "Motor":
-          return currentSession.current[0].SessionAnalytics[0].motorTotal;
-        case "CognitiveMotor":
-          return currentSession.current[0].SessionAnalytics[0].responseTotal;
-        case "VisuMotor":
-          return currentSession.current[0].SessionAnalytics[0].visuMotorTotal;
-        default:
-          return 0;
+      if (metrics) {
+        let total = 0;
+        for (let i = 0; i < tableData.length; i++) {
+          total +=
+            document.getElementById(`RowSequence${metric}${i}`) &&
+            parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            );
+        }
+        return total;
+      } else {
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorTotal;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseTotal;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorTotal;
+          default:
+            return 0;
+        }
       }
     } else {
       let total = 0;
@@ -467,20 +467,9 @@ const AnalizeSession = () => {
       currentSession.current[0].SessionAnalytics[0].responseMean !== 0 &&
       currentSession.current[0].SessionAnalytics[0].visuMotorMean !== 0
     ) {
-      switch (metric) {
-        case "Motor":
-          return currentSession.current[0].SessionAnalytics[0].motorMean;
-        case "CognitiveMotor":
-          return currentSession.current[0].SessionAnalytics[0].responseMean;
-        case "VisuMotor":
-          return currentSession.current[0].SessionAnalytics[0].visuMotorMean;
-        default:
-          return 0;
-      }
-    } else {
-      let total = 0;
-      let average = 0;
-      if (tableData.length > 0) {
+      if (metrics) {
+        let total = 0;
+        let average = 0;
         for (let i = 0; i < tableData.length; i++) {
           total += parseInt(
             document.getElementById(`RowSequence${metric}${i}`).innerHTML
@@ -489,8 +478,28 @@ const AnalizeSession = () => {
         average = total / tableData.length;
         return Math.floor(average);
       } else {
-        return 0;
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorMean;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseMean;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorMean;
+          default:
+            return 0;
+        }
       }
+    } else {
+      let total = 0;
+      let average = 0;
+
+      for (let i = 0; i < tableData.length; i++) {
+        total += parseInt(
+          document.getElementById(`RowSequence${metric}${i}`).innerHTML
+        );
+      }
+      average = total / tableData.length;
+      return Math.floor(average);
     }
   };
 
@@ -502,15 +511,40 @@ const AnalizeSession = () => {
       currentSession.current[0].SessionAnalytics[0].responseSd !== 0 &&
       currentSession.current[0].SessionAnalytics[0].visuMotorSd !== 0
     ) {
-      switch (metric) {
-        case "Motor":
-          return currentSession.current[0].SessionAnalytics[0].motorSd;
-        case "CognitiveMotor":
-          return currentSession.current[0].SessionAnalytics[0].responseSd;
-        case "VisuMotor":
-          return currentSession.current[0].SessionAnalytics[0].visuMotorSd;
-        default:
-          return 0;
+      if (metrics) {
+        let total = 0;
+        let average = 0;
+        let standardDeviation = 0;
+
+        for (let i = 0; i < tableData.length; i++) {
+          total += parseInt(
+            document.getElementById(`RowSequence${metric}${i}`).innerHTML
+          );
+        }
+        average = total / tableData.length;
+        for (let i = 0; i < tableData.length; i++) {
+          standardDeviation += Math.pow(
+            parseInt(
+              document.getElementById(`RowSequence${metric}${i}`).innerHTML
+            ) - average,
+            2
+          );
+        }
+        return (
+          Math.floor(Math.sqrt(standardDeviation / tableData.length) * 100) /
+          100
+        );
+      } else {
+        switch (metric) {
+          case "Motor":
+            return currentSession.current[0].SessionAnalytics[0].motorSd;
+          case "CognitiveMotor":
+            return currentSession.current[0].SessionAnalytics[0].responseSd;
+          case "VisuMotor":
+            return currentSession.current[0].SessionAnalytics[0].visuMotorSd;
+          default:
+            return 0;
+        }
       }
     } else {
       let total = 0;
@@ -809,7 +843,9 @@ const AnalizeSession = () => {
   };
 
   useEffect(() => {
-    updateMetrics();
+    if (currentSession.current !== null && tableData.length > 0) {
+      updateMetrics();
+    }
   }, [tableData]);
 
   const updateMetrics = () => {
@@ -943,7 +979,7 @@ const AnalizeSession = () => {
       if (result.isConfirmed) {
         Swal.fire({
           title: "Procesando...",
-          text: "Esto tardara unos minutos",
+          text: "Esto tardará unos minutos",
           allowOutsideClick: false,
           allowEscapeKey: false,
           allowEnterKey: false,
@@ -2054,25 +2090,25 @@ const AnalizeSession = () => {
                 >
                   VC {"[ms]"}
                 </th>
-                <td>{metrics.totalVisuMotor}</td>
-                <td>{metrics.averageVisuMotor}</td>
-                <td>{metrics.standardDeviationVisuMotor}</td>
+                <td>{metrics?.totalVisuMotor || "0"}</td>
+                <td>{metrics?.averageVisuMotor || "0"}</td>
+                <td>{metrics?.standardDeviationVisuMotor || "0"}</td>
               </tr>
               <tr className="table-row">
                 <th className="table-header" data-tooltip={`Velocidad Motriz`}>
                   VM {"[ms]"}
                 </th>
-                <td>{metrics.totalMotor}</td>
-                <td>{metrics.averageMotor}</td>
-                <td>{metrics.standardDeviationMotor}</td>
+                <td>{metrics?.totalMotor || "0"}</td>
+                <td>{metrics?.averageMotor || "0"}</td>
+                <td>{metrics?.standardDeviationMotor || "0"}</td>
               </tr>
               <tr className="table-row">
                 <th className="table-header" data-tooltip={`Velocidad CMotriz`}>
                   VCM {"[ms]"}
                 </th>
-                <td>{metrics.totalCognitiveMotor}</td>
-                <td>{metrics.averageCognitiveMotor}</td>
-                <td>{metrics.standardDeviationCognitiveMotor}</td>
+                <td>{metrics?.totalCognitiveMotor || "0"}</td>
+                <td>{metrics?.averageCognitiveMotor || "0"}</td>
+                <td>{metrics?.standardDeviationCognitiveMotor || "0"}</td>
               </tr>
             </tbody>
 
@@ -2088,11 +2124,11 @@ const AnalizeSession = () => {
               </tr>
               <tr>
                 <th className="table-header">Acierto</th>
-                <td>{metrics.correctPercentage}%</td>
+                <td>{metrics?.correctPercentage || "0"}%</td>
               </tr>
               <tr className="table-row">
                 <th className="table-header">Error</th>
-                <td>{metrics.errorPercentage}%</td>
+                <td>{metrics?.errorPercentage || "0"}%</td>
               </tr>
             </thead>
           </table>
