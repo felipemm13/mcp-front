@@ -1795,11 +1795,15 @@ const AnalizeSession = () => {
                       <td
                         id={`RowSequenceStimul${index}`}
                         onClick={() => {
-                          setCurrentFrame(
-                            Math.round(
-                              (parseInt(row.estimulo) * FPS.current) / 1000
-                            )
+                          const estimulusFrame = Math.round(
+                            (parseInt(row.estimulo) * FPS.current) / 1000
                           );
+                          const frameTime = Math.round((estimulusFrame / FPS.current) * 1000);
+                          if(frameTime < row.estimulo){
+                            setCurrentFrame(estimulusFrame + 1);
+                          }else{
+                            setCurrentFrame(estimulusFrame);
+                          }
                           if (selectedRowIndex !== index) {
                             handleRowClick(index, row.playID);
                           }
