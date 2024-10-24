@@ -12,6 +12,15 @@ import { ProviderContext } from "./services/Context";
 import PlaysView from "./layouts/PlaysView";
 import ListOfPlays from "./layouts/ListOfPlays";
 
+// src/index.js
+if (process.env.NODE_ENV === 'production') {
+  if (typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined') {
+    for (let [key, value] of Object.entries(window.__REACT_DEVTOOLS_GLOBAL_HOOK__)) {
+      window.__REACT_DEVTOOLS_GLOBAL_HOOK__[key] = typeof value == "function" ? () => {} : null;
+    }
+  }
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
