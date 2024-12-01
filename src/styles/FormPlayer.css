@@ -19,7 +19,7 @@
     border: 1px solid #88888818;
     border-radius: 0.5em;
     height: 85%;
-    width: 80%;
+    width: 90%;
 }
 
 /* The Close Button */
@@ -39,7 +39,7 @@
 
 .formPlayerModalTitle {
     font-weight: 500;
-    margin :0;
+    margin: 0;
     padding: 0 0 0.1em 0;
     font-size: 1.75em;
     border-bottom: 1px solid #fff;
@@ -52,51 +52,56 @@
     justify-content: center;
     align-items: center;
 }
-.formPlayerForm{
+
+.formPlayerForm {
     width: 100%;
-    height:100% ;
-    margin-top:1.25em;
+    height: 100%;
+    margin-top: 1.25em;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-.formPlayerInputContainer{
+
+.formPlayerInputContainer {
     display: flex;
     width: 100%;
     height: 15%;
     gap: 1.5em;
     margin-bottom: 1.25em;
 }
-.formPlayerInputLabel{
+
+.formPlayerInputLabel {
     display: flex;
     flex-direction: column;
-
     width: 100%;
     height: 100%;
     line-height: 2em;
 }
-.formPlayerInputLabel > input{
+
+.formPlayerInputLabel>input {
     display: flex;
     width: 95%;
     height: 100%;
     border-radius: 0.25em;
     text-align: start;
-    font:1em sans-serif;
+    font: 1em sans-serif;
     border: 1px solid #fff;
     padding: 0.25em;
     background-color: #1a1a1a;
     color: #fff;
 }
-.formPlayerInputLabel > select{
+
+.formPlayerInputLabel>select {
     width: 100%;
     min-height: 60%;
     border-radius: 0.25em;
-    font:1em sans-serif;
+    font: 1em sans-serif;
     border: 1px solid #fff;
     background-color: #1a1a1a;
     color: #fff;
 }
-.formPlayerButtonSubmit{
+
+.formPlayerButtonSubmit {
     display: inline-flex;
     -webkit-box-align: center;
     align-items: center;
@@ -124,19 +129,22 @@
     color: rgb(255, 255, 255);
     background-color: rgb(218, 37, 153);
 }
-.formPlayerButtonSubmit:hover{
+
+.formPlayerButtonSubmit:hover {
     cursor: pointer;
     background-color: rgb(218, 37, 153, 0.75);
 }
-.formPlayerButtonSubmit:disabled{
+
+.formPlayerButtonSubmit:disabled {
     cursor: default;
     background-color: rgb(218, 37, 153, 0.25);
 }
-.formPlayerButtonSubmit:enabled:active{
+
+.formPlayerButtonSubmit:enabled:active {
     background-color: rgb(218, 37, 153);
 }
 
-.formPlayerAddCustoms{
+.formPlayerAddCustoms {
     display: flex;
     width: 5%;
     height: 100%;
@@ -145,4 +153,14 @@
     margin-left: -1.25em;
     margin-right: -0.5em;
     fill: #fff;
+}
+
+.formPlayerAddCustoms svg {
+    cursor: pointer;
+}
+
+.formPlayerLabel {
+    color: #fff;
+    font-size: 1.125rem;
+    margin-bottom: 0.25em;
 }

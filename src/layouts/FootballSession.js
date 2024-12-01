@@ -15,6 +15,7 @@ import seedrandom from "seedrandom";
 const FootballSession = () => {
   const {
     userContext,
+    setUserContext,
     infoSession,
     videoCurrentSession,
     isSaveCurrentSession,
@@ -22,6 +23,7 @@ const FootballSession = () => {
     listOfPlayers,
     customsUser,
     setCustomsUser,
+    translate,
   } = useContext(Context);
   const navigate = useNavigate();
   const [showWindowPortal, setShowWindowPortal] = useState(false);
@@ -47,46 +49,63 @@ const FootballSession = () => {
   const defensiveRandomPlays = useRef(0);
   const lengthEvalSequence = useRef(0);
 
-  const getCustomsUser = async () => {
+  const getCustomsUser = async (maxRetries = 3) => {
+    // Verifica si los datos ya están presentes
     if (
-      !customsUser ||
-      !customsUser.groups ||
-      !customsUser.categories ||
-      !customsUser.positions
+      customsUser &&
+      customsUser.groups &&
+      customsUser.categories &&
+      customsUser.positions
     ) {
-      let groups = [];
-      let categories = [];
-      let positions = [];
-      await CrudApi.get(`user/${userContext.current.userId}/groups`)
-        .then((response) => {
-          groups = response.Groups;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      await CrudApi.get(`user/${userContext.current.userId}/categories`)
-        .then((response) => {
-          categories = response.Categories;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      await CrudApi.get(`user/${userContext.current.userId}/positions`)
-        .then((response) => {
-          positions = response.Position;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      setCustomsUser({ groups, categories, positions });
+      return; // No hacer nada si los datos ya están cargados
+    }
+  
+    let retries = 0;
+    while (retries < maxRetries) {
+      try {
+        // Inicializa arrays vacíos para los datos
+        const groups = [];
+        const categories = [];
+        const positions = [];
+  
+        // Realiza las solicitudes en paralelo para mayor eficiencia
+        const [groupsResponse, categoriesResponse, positionsResponse] = await Promise.all([
+          CrudApi.get(`user/${userContext.userId}/groups`),
+          CrudApi.get(`user/${userContext.userId}/categories`),
+          CrudApi.get(`user/${userContext.userId}/positions`),
+        ]);
+  
+        // Asigna los datos a los arrays correspondientes
+        groups.push(...groupsResponse.Groups);
+        categories.push(...categoriesResponse.Categories);
+        positions.push(...positionsResponse.Positions);
+  
+        // Actualiza el estado con los datos obtenidos
+        setCustomsUser({ groups, categories, positions });
+  
+        // Salir del bucle si todo ha salido bien
+        return;
+      } catch (error) {
+        retries++;
+        console.error(`Error fetching custom data (attempt ${retries}):`, error);
+  
+        if (retries >= maxRetries) {
+          // Mostrar mensaje al usuario después de agotar los intentos
+          Swal.fire({
+            icon: 'error',
+            title: translate('error'),
+            text: translate('errorFetchingData'),
+          });
+        }
+      }
     }
   };
 
   useEffect(() => {
-    if (!userContext.current) {
+    if (!userContext) {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser) {
-        userContext.current = localUser;
+        setUserContext(localUser);
       } else {
         navigate("/");
       }
@@ -441,8 +460,8 @@ const FootballSession = () => {
   };
 
   const getPlayers = async () => {
-    if (userContext.current?.userId) {
-      await CrudApi.get(`user/${userContext.current.userId}/players`)
+    if (userContext?.userId) {
+      await CrudApi.get(`user/${userContext.userId}/players`)
         .then((response) => {
           listOfPlayers.current = response.Players;
           setPlayersList(response.Players);
@@ -1057,7 +1076,14 @@ const FootballSession = () => {
                 </select>
                 <div className="sessionPlayerConfigButtons">
                   <button
-                    disabled={!customsUser}
+                    disabled={
+                      !customsUser ||
+                      ((userContext?.suscription === "team" ||
+                        userContext?.suscription === "coach") &&
+                        listOfPlayers.current.length >= 5) ||
+                      (userContext?.suscription === "club" &&
+                        listOfPlayers.current.length >= 30)
+                    }
                     onClick={() => {
                       setFormPlayerModalTitle("Agregar Jugador");
                       setFormPlayerModal(true);

@@ -20,6 +20,11 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
   const [position, setPosition] = useState("default");
   const [limb, setLimb] = useState("default");
   const [isCustoms, setIsCustoms] = useState(null);
+  const apiPaths = {
+    Institución: ["group", "groups"],
+    Categoría: ["category", "categories"],
+    Posición: ["position", "positions"],
+  };
 
   const areFieldsComplete = () => {
     return (
@@ -40,7 +45,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = {
-      UserId: userContext.current.userId,
+      UserId: userContext.userId,
       Name: name,
       SkillfulLeg: limb,
       SportGroup: institution,
@@ -53,9 +58,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
       Birthday: dob,
       Surname: lastName,
     };
-
-    // Aquí puedes manejar el envío de formData, por ejemplo, llamar a una función que envíe los datos a una API.
-    //console.log("Datos a enviar:", formData);
 
     if (typeForm === "Agregar") {
       await CrudApi.post("player", formData)
@@ -78,17 +80,6 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
           console.log(error);
         });
     }
-    /*
-        setLastName('');
-        setDob('');
-        setGender('');
-        setHeight('');
-        setWeight('');
-        setInstitution('');
-        setCategory('');
-        setExperience('');
-        setPosition('');
-        setLimb('');*/
   };
 
   const calculateAge = (dob) => {
@@ -119,236 +110,198 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
   }, []);
 
   const existCustoms = (type, string) => {
-    if (type === "Institución") {
-      return !!customsUser.groups?.find((group) => group.groupName === string);
-    } else if (type === "Categoría") {
-      const specialCategories = [
+    const [path, pathPlural] = apiPaths[type];
+
+    const collections = {
+      Institución: customsUser.groups,
+      Categoría: customsUser.categories,
+      Posición: customsUser.positions,
+    };
+
+    const predefinedValues = {
+      Categoría: [
         "En formación",
         "Universitaria",
         "Profesional 1ra",
         "Profesional 2da",
         "Profesional 3ra",
-      ];
-      return (
-        specialCategories.includes(string) ||
-        !!customsUser.categories?.find(
-          (Category) => Category.categoryName === string
-        )
-      );
-    } else if (type === "Posición") {
-      const specialPositions = [
-        "Guardameta",
-        "Defensor",
-        "Mediocampista",
-        "Atacante",
-      ];
-      return (
-        specialPositions.includes(string) ||
-        !!customsUser.positions?.find(
-          (Position) => Position.positionName === string
-        )
-      );
-    }
-    return false;
+      ],
+      Posición: ["Guardameta", "Defensor", "Mediocampista", "Atacante"],
+    };
+
+    return (
+      predefinedValues[type]?.includes(string) ||
+      collections[type]?.some((item) => item[`${path}Name`] === string)
+    );
   };
 
-  const handleAddCustom = (type) => {
+  const handleAddCustom = async (type) => {
+    const [path, pathPlural] = apiPaths[type];
+
     Swal.fire({
-      title: "Ingrese el nombre de la " + type,
+      title: `Ingrese el nombre de la ${type}`,
       input: "text",
-      inputAttributes: {
-        autocapitalize: "off",
-      },
       showCancelButton: true,
       confirmButtonText: "Crear",
       showLoaderOnConfirm: true,
       preConfirm: async (string) => {
-        console.log(existCustoms(type, string));
         if (existCustoms(type, string)) {
           Swal.showValidationMessage(
             `El nombre ${string} ya existe. Por favor, ingrese un nuevo nombre.`
           );
-        } else {
-          if (type === "Institución") {
-            await CrudApi.post("group", {
-              groupName: string,
-              userId: userContext.current.userId,
-            }).then((res) => {
-              console.log(res.data)
-              setCustomsUser({
-                ...customsUser,
-                groups: [...customsUser.groups, res.data],
-              });
-            });
-          } else if (type === "Categoría") {
-            await CrudApi.post("category", {
-              categoryName: string,
-              userId: userContext.current.userId,
-            }).then((res) => {
-              setCustomsUser({
-                ...customsUser,
-                categories: [...customsUser.categories, res.data],
-              });
-            });
-          } else if (type === "Posición") {
-            await CrudApi.post("position", {
-              positionName: string,
-              userId: userContext.current.userId,
-            }).then((res) => {
-              setCustomsUser({
-                ...customsUser,
-                positions: [...customsUser.positions, res.data],
-              });
-            });
-          }
+          return;
+        }
+        try {
+          const res = await CrudApi.post(path, {
+            [`${path}Name`]: string,
+            userId: userContext.userId,
+          });
+          setCustomsUser({
+            ...customsUser,
+            [`${pathPlural}`]: [...customsUser[`${pathPlural}`], res.data],
+          });
+          // Actualiza los estados específicos según el tipo
+          if (type === "Institución") setInstitution(string);
+          if (type === "Categoría") setCategory(string);
+          if (type === "Posición") setPosition(string);
+        } catch (error) {
+          console.error("Error adding custom:", error);
         }
       },
       allowOutsideClick: () => !Swal.isLoading(),
-    }).then((result) => {
-      if (result.isConfirmed) {
-      }
     });
   };
 
-  const handleEditCustom = (type) => {
-    let groupCustom = customsUser.groups?.find(
-      (Group) => Group.groupName === institution
-    );
-    console.log(groupCustom)
-    let categoryCustom = customsUser.categories?.find(
-      (Category) => Category.categoryName === category
-    );
-    console.log(categoryCustom)
-    let positionCustom = customsUser.positions?.find(
-      (Position) => Position.positionName === position
-    );
-    console.log(positionCustom)
-    Swal.fire({
-      title: "Ingrese el nuevo nombre de la " + type,
-      input: "text",
-      inputAttributes: {
-        capitalize: "off",
-      },
-      inputValue:
-        type === "Institución"
-          ? groupCustom.groupName
+  const handleEditCustom = async (type) => {
+    const [path, pathPlural] = apiPaths[type];
+
+    // Encuentra el custom actual basándote en el tipo
+    const currentCustom = customsUser[pathPlural]?.find(
+      (item) =>
+        item[`${path}Name`] ===
+        (type === "Institución"
+          ? institution
           : type === "Categoría"
-          ? categoryCustom.categoryName
-          : positionCustom.positionName,
-      showCloseButton: true,
-      confirmButtonText: "Editar",
-      showLoaderOnConfirm: true,
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      showDenyButton: true,
-      denyButtonText: `Eliminar`,
-      allowOutsideClick: () => !Swal.isLoading(),
-      preConfirm: async (string) => {
-        if (existCustoms(type, string)) {
-          Swal.showValidationMessage(
-            `El nombre ${string} ya existe. Por favor, ingrese un nuevo nombre.`
+          ? category
+          : type === "Posición"
+          ? position
+          : "")
+    );
+
+    const currentCustomId = currentCustom?.[`${path}Id`];
+
+    if (!currentCustomId) {
+      console.error("No se encontró el custom actual.");
+      return;
+    }
+
+    try {
+      // Solicita el nuevo nombre al usuario
+      const result = await Swal.fire({
+        title: `Ingrese el nuevo nombre de la ${type}`,
+        input: "text",
+        inputValue: currentCustom[`${path}Name`],
+        showCancelButton: true,
+        showDenyButton: true,
+        denyButtonText: "Eliminar",
+        confirmButtonText: "Editar",
+        showLoaderOnConfirm: true,
+        preConfirm: async (newName) => {
+          if (existCustoms(type, newName)) {
+            Swal.showValidationMessage(
+              `El nombre ${newName} ya existe. Por favor, ingrese un nuevo nombre.`
+            );
+            return;
+          }
+          try {
+            const res = await CrudApi.update(`${path}/${currentCustomId}`, {
+              [`${path}Name`]: newName,
+            });
+            return res.data;
+          } catch (error) {
+            Swal.showValidationMessage("Error al actualizar el custom.");
+            throw error;
+          }
+        },
+      });
+
+      // Si la acción fue confirmada
+      if (result.isConfirmed) {
+        const updatedData = result.value;
+        const updatedCustoms = customsUser[pathPlural].map((item) => {
+          console.log(
+            item,
+            item[`${path}Id`],
+            currentCustomId,
+            item[`${path}Id`] === currentCustomId
+              ? { ...item, [`${path}Name`]: updatedData }
+              : item
           );
-        } else {
-          if (type === "Institución") {
-            await CrudApi.update(`group/${groupCustom.groupId}`, {
-              groupName: string,
-            }).then((res) => {
-              // Actualizar customsUser.groups con el nuevo grupo
-              let updatedGroups = customsUser.groups.map((group) =>
-                group.groupName === institution ? res : group
-              );
-              setCustomsUser({
-                ...customsUser,
-                groups: updatedGroups,
-              });
-              setInstitution(res.groupName);
-            });
-          } else if (type === "Categoría") {
-            await CrudApi.update(`category/${categoryCustom.categoryId}`, {
-              categoryName: string,
-            }).then((res) => {
-              console.log(res);
-              let updatedCategories = customsUser.categories.map((Category) =>
-                Category.categoryName === category ? res : Category
-              );
-              console.log(updatedCategories);
-              setCustomsUser({
-                ...customsUser,
-                categories: updatedCategories,
-              });
-              setCategory(res.categoryName);
-            });
-          } else if (type === "Posición") {
-            await CrudApi.post(`position/${positionCustom.positionId}`, {
-              positionName: string,
-            }).then((res) => {
-              let updatedPositions = customsUser.positions.map((Position) =>
-                Position.positionName === position ? res : Position
-              );
-              setCustomsUser({
-                ...customsUser,
-                positions: updatedPositions,
-              });
-              setPosition(res.positionName);
-            });
-          }
-        }
-      },
-    }).then((result) => {
-      if (result.isDenied) {
-        Swal.fire({
-          title: "Seguro que desea eliminar la " + type + "?",
-          confirmButtonText: "No, cancelar",
-          showDenyButton: true,
-          denyButtonText: `Si, eliminar`,
-        }).then(async (result) => {
-          if (result.isDenied) {
-            if (type === "Institución") {
-              await CrudApi.delete(`group/${groupCustom.groupId}`).then(
-                (res) => {
-                  let updatedGroups = customsUser.groups.filter(
-                    (group) => group.groupName !== institution
-                  );
-                  setCustomsUser({
-                    ...customsUser,
-                    groups: updatedGroups,
-                  });
-                  setInstitution("default");
-                }
-              );
-            } else if (type === "Categoría") {
-              await CrudApi.delete(
-                `category/${categoryCustom.categoryId}`
-              ).then((res) => {
-                // Actualizar customsUser.categories con la nueva categoría
-                let updatedCategories = customsUser.categories.filter(
-                  (Category) => Category.categoryName !== category
-                );
-                setCustomsUser({
-                  ...customsUser,
-                  categories: updatedCategories,
-                });
-                setCategory("default");
-              });
-            } else if (type === "Posición") {
-              await CrudApi.delete(
-                `position/${positionCustom.positionId}`
-              ).then((res) => {
-                let updatedPositions = customsUser.positions.filter(
-                  (Position) => position.positionName !== position
-                );
-                setCustomsUser({
-                  ...customsUser,
-                  positions: updatedPositions,
-                });
-                setPosition("default");
-              });
-            }
-            Swal.fire("Eliminado!", "", "success");
-          }
+          return item[`${path}Id`] === currentCustomId
+            ? { ...item, [`${path}Name`]: updatedData }
+            : item;
         });
+
+        // Actualiza el estado con los datos modificados
+        setCustomsUser({
+          ...customsUser,
+          [pathPlural]: updatedCustoms,
+        });
+
+        // Actualiza los estados específicos según el tipo
+        if (type === "Institución") setInstitution(updatedData);
+        if (type === "Categoría") setCategory(updatedData);
+        if (type === "Posición") setPosition(updatedData);
+      } else if (result.isDenied) {
+        // Si se seleccionó "Eliminar", llama a la función de eliminar
+        await handleDeleteCustom(type, currentCustomId);
       }
+    } catch (error) {
+      console.error("Error handling edit custom:", error);
+    }
+  };
+
+  const handleDeleteCustom = async (type, customId) => {
+    const [path, pathPlural] = apiPaths[type];
+
+    const result = await Swal.fire({
+      title: `¿Estás seguro de que quieres eliminar esta ${type}?`,
+      text: "¡Esta acción no se puede deshacer!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
     });
+
+    if (result.isConfirmed) {
+      try {
+        console.log(customsUser, path, customId);
+        await CrudApi.delete(`${path}/${customId}`);
+        const updatedCustoms = customsUser[`${pathPlural}`].filter(
+          (item) => item[`${path}Id`] !== customId
+        );
+        setCustomsUser({
+          ...customsUser,
+          [`${pathPlural}`]: updatedCustoms,
+        });
+        if (type === "Institución") setInstitution("default");
+        if (type === "Categoría") setCategory("default");
+        if (type === "Posición") setPosition("default");
+        Swal.fire(
+          "Eliminado",
+          "El custom ha sido eliminado exitosamente.",
+          "success"
+        );
+      } catch (error) {
+        Swal.fire(
+          "Error",
+          "No se pudo eliminar el custom. Inténtalo de nuevo más tarde.",
+          "error"
+        );
+      }
+    }
   };
 
   useEffect(() => {
@@ -386,7 +339,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
             <form onSubmit={handleSubmit} className="formPlayerForm">
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="nameInput" className="form-label">
+                  <label htmlFor="nameInput" className="formPlayerLabel">
                     Nombre
                   </label>
                   <input
@@ -399,7 +352,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="lastNameInput" className="form-label">
+                  <label htmlFor="lastNameInput" className="formPlayerLabel">
                     Apellido
                   </label>
                   <input
@@ -412,7 +365,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="genderInput" className="form-label">
+                  <label htmlFor="genderInput" className="formPlayerLabel">
                     Sexo
                   </label>
                   <select
@@ -431,7 +384,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
               </div>
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="dobInput" className="form-label">
+                  <label htmlFor="dobInput" className="formPlayerLabel">
                     Fecha de nacimiento
                   </label>
                   <input
@@ -444,7 +397,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel" style={{ width: "20%" }}>
-                  <label htmlFor="ageInput" className="form-label">
+                  <label htmlFor="ageInput" className="formPlayerLabel">
                     Edad [años]
                   </label>
                   <input
@@ -456,7 +409,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="experienceInput" className="form-label">
+                  <label htmlFor="experienceInput" className="formPlayerLabel">
                     Fecha de inicio de actividad
                   </label>
                   <input
@@ -469,7 +422,10 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel" style={{ width: "30%" }}>
-                  <label htmlFor="calculateExperience" className="form-label">
+                  <label
+                    htmlFor="calculateExperience"
+                    className="formPlayerLabel"
+                  >
                     Experiencia [años]
                   </label>
                   <input
@@ -483,7 +439,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
               </div>
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="heightInput" className="form-label">
+                  <label htmlFor="heightInput" className="formPlayerLabel">
                     Altura [cm]
                   </label>
                   <input
@@ -496,7 +452,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="weightInput" className="form-label">
+                  <label htmlFor="weightInput" className="formPlayerLabel">
                     Peso [kg]
                   </label>
                   <input
@@ -509,7 +465,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   />
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="limbInput" className="form-label">
+                  <label htmlFor="limbInput" className="formPlayerLabel">
                     Extremidad
                   </label>
                   <select
@@ -528,7 +484,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
               </div>
               <div className="formPlayerInputContainer">
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="institutionInput" className="form-label">
+                  <label htmlFor="institutionInput" className="formPlayerLabel">
                     Institución
                   </label>
                   <select
@@ -570,7 +526,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                   )}
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="categoryInput" className="form-label">
+                  <label htmlFor="categoryInput" className="formPlayerLabel">
                     Categoría
                   </label>
                   <select
@@ -598,7 +554,7 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                       height="50"
                       width="25"
                       viewBox="0 0 512 512"
-                      onClick={() => handleAddCustom("Categoria")}
+                      onClick={() => handleAddCustom("Categoría")}
                     >
                       <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM232 344V280H168c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H280v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
                     </svg>
@@ -608,14 +564,14 @@ const FormPlayer = ({ setOpenModal, title, player, updatePlayers }) => {
                       height="50"
                       width="25"
                       viewBox="0 0 512 512"
-                      onClick={() => handleEditCustom("Categoria")}
+                      onClick={() => handleEditCustom("Categoría")}
                     >
                       <path d="M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 168 255.8 302.2c-2.9 2.9-6.5 5-10.4 6.1l-58.5 16.7 16.7-58.5c1.1-3.9 3.2-7.5 6.1-10.4zM373.1 25L175.8 222.2c-8.7 8.7-15 19.4-18.3 31.1l-28.6 100c-2.4 8.4-.1 17.4 6.1 23.6s15.2 8.5 23.6 6.1l100-28.6c11.8-3.4 22.5-9.7 31.1-18.3L487 138.9c28.1-28.1 28.1-73.7 0-101.8L474.9 25C446.8-3.1 401.2-3.1 373.1 25zM88 64C39.4 64 0 103.4 0 152V424c0 48.6 39.4 88 88 88H360c48.6 0 88-39.4 88-88V312c0-13.3-10.7-24-24-24s-24 10.7-24 24V424c0 22.1-17.9 40-40 40H88c-22.1 0-40-17.9-40-40V152c0-22.1 17.9-40 40-40H200c13.3 0 24-10.7 24-24s-10.7-24-24-24H88z" />
                     </svg>
                   )}
                 </div>
                 <div className="formPlayerInputLabel">
-                  <label htmlFor="positionInput" className="form-label">
+                  <label htmlFor="positionInput" className="formPlayerLabel">
                     Posición
                   </label>
                   <select

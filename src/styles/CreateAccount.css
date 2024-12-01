@@ -1,0 +1,398 @@
+.createAccountButtonSubmit {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: 0;
+    border: 0;
+    margin: 0 1em;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    text-decoration: none;
+    font-family: Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 0.5em;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(218, 37, 153);
+}
+
+.createAccountButtonSubmit:hover {
+    cursor: pointer;
+    background-color: rgb(218, 37, 153, 0.75);
+}
+
+.createAccountButtonSubmit:disabled {
+    cursor: default;
+    background-color: rgb(218, 37, 153, 0.25);
+}
+
+.createAccountButtonSubmit:enabled:active {
+    background-color: rgb(218, 37, 153);
+}
+
+.createAccountButtonContainer {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    gap:1em;
+    bottom: 10%;
+    right: 50%;
+    transform: translateX(50%);
+    position: absolute;
+    padding: 1em;
+    box-sizing: border-box;
+
+}
+
+.createAccountModal {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+
+}
+
+/* Modal Content/Box */
+.createAccountModalContent {
+    display: flex;
+    flex-direction: column;
+    background-color: #1a1a1a;
+    color: #fff;
+    margin: 2.5% auto;
+    padding: 1.5em;
+    border: 1px solid #88888818;
+    border-radius: 0.5em;
+    min-height: 85%;
+    height: 85%;
+    max-height: 85%;
+    width: 92.5%;
+}
+
+/* The Close Button */
+.createAccountModalClose {
+    color: #aaa;
+    float: right;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.createAccountModalClose:hover,
+.createAccountModalClose:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.createAccountModalTitle {
+    font-weight: 500;
+    margin: 0;
+    padding: 0 0 .75em 0;
+    font-size: 1.75em;
+    border-bottom: 1px solid #fff;
+}
+
+.createAccountModalContainer {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+.createAccountForm {
+    width: 100%;
+    height: 100%;
+    margin-top: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.createAccountInputContainer {
+    display: flex;
+    width: 100%;
+    height: 15%;
+    gap: 1.5em;
+    margin-bottom: 1.25em;
+}
+
+.createAccountInputLabel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    padding-bottom: 1em;
+}
+
+.createAccountInputLabel>input {
+    display: flex;
+    width: 95%;
+    height: 2.5em;
+    min-height: 2.5em;
+    border-radius: 0.25em;
+    text-align: start;
+    font: 1em sans-serif;
+    border: 1px solid #fff;
+    outline: none;
+    padding: 0.25em 0.5em;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.createAccountInputLabel>div>input {
+    display: flex;
+    width: 95%;
+    height: 2.5em;
+    min-height: 2.5em;
+    border-radius: 0.25em;
+    text-align: start;
+    font: 1em sans-serif;
+    border: 1px solid #fff;
+    outline: none;
+    padding: 0.25em 0.5em;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.createAccountInputLabel>select {
+    width: 100%;
+    min-height: 60%;
+    border-radius: 0.25em;
+    font: 1em sans-serif;
+    border: 1px solid #fff;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.required {
+    color: red;
+    position: relative;
+    cursor: pointer;
+    /* Muestra el puntero como una mano cuando el usuario pasa sobre el span */
+}
+
+.required::after {
+    content: 'Campo obligatorio';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.required:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.plan-selection-container {
+    display: flex;
+    justify-content: space-around;
+    margin: .5em 0;
+}
+
+.plan-card {
+    border: 0.15em solid #ccc;
+    border-radius: 1em;
+    padding: 1em;
+    width: 30%;
+    min-height: 100%;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.3s ease;
+    margin: 0.75em 0.5em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+  }
+
+.plan-card.selected {
+    border-color: rgb(218, 37, 153);
+
+}
+
+.plan-card-icon {
+    font-size: 2.5em;
+    margin-bottom: 0.25em;
+}
+
+.plan-card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+  }
+
+  .plan-card-content h3 {
+    margin: 0;
+    margin-bottom: .25em;
+    font-size: 2em;
+    color: #fff;
+  }
+
+  .plan-card-content p {
+    color: #c0c0c0;
+    font-size: 1em;
+    text-align: left;
+    margin-bottom: .5em;
+    flex-grow: 1;
+  }
+  .plan-card-content .price {
+    margin-top: auto; /* Asegura que el precio se quede al final */
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+
+.error-message {
+    color: red;
+    position: absolute;
+    top: 85%;
+    bottom: 0;
+    left: 0;
+    color: red;
+    font-size: 0.875em;
+    margin-top: 1em;
+}
+
+.strength-message {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    top: 85%;
+    color: red;
+    font-size: 0.875em;
+    margin-top: 1em;
+}
+
+.form-label {
+    color: #fff;
+    font-size: 1.25em;
+    margin-bottom: 0.25em;
+}
+
+.scrollable-container {
+    min-height: 75%;
+    height: auto;
+    max-height: 65vh;
+    /* Ajusta según el tamaño deseado */
+    overflow-y: auto;
+}
+
+
+/* Estilo para la selección de planes */
+.plan-selection-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Estilo para la selección de productos */
+.product-selection-container {
+    margin-top: 0em;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5em 1em;
+    border-bottom: 1px solid #ddd;
+}
+
+.product-item span {
+    flex-grow: 1;
+}
+
+.product-item button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-item button svg {
+    width: 24px;
+    height: 24px;
+    fill: rgb(218, 37, 153);
+}
+
+.product-item button:hover svg {
+    fill: rgb(218, 37, 153, 0.85);
+}
+
+.product-item button:active svg {
+    fill: rgb(218, 37, 153);
+}
+
+.confirmation-message {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .createAccountInputLabel>select {
+    width: 100%;
+    min-height: 60%;
+    border-radius: 0.25em;
+    font: 1em sans-serif;
+    border: 1px solid #fff;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+.createAccountLabel{
+    color: #fff;
+    font-size: 1.125rem;
+    margin-bottom: 0.25em;
+}
+
+  .createAccountAddCustoms {
+    display: flex;
+    width: 5%;
+    justify-content: center;
+    align-items: center;
+    margin-left: -1.25em;
+    margin-right: -0.5em;
+    fill: #fff;
+}
+
+.createAccountAddCustoms svg {
+    cursor: pointer;
+}

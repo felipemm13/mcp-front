@@ -9,7 +9,7 @@ import Draggable from "react-draggable";
 const ListOfPlays = () => {
   const navigate = useNavigate();
 
-  const { tercios, CrudApi, userContext, currentPlay } = useContext(Context);
+  const { tercios, CrudApi, userContext,setUserContext, currentPlay } = useContext(Context);
   const [playsFromDb, setPlaysFromDb] = useState([]);
   const [selectedPlay, setSelectedPlay] = useState(null);
   const playersContainer = useRef(null);
@@ -28,10 +28,10 @@ const ListOfPlays = () => {
       .catch((error) => console.log(error));
   };
   useEffect(() => {
-    if (!userContext.current) {
+    if (!userContext) {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser) {
-        userContext.current = localUser;
+        setUserContext(localUser);
       } else {
         navigate("/");
       }

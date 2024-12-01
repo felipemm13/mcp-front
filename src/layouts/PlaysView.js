@@ -7,7 +7,7 @@ import Routes from "../connection/path";
 import Draggable from "react-draggable";
 
 const PlaysView = () => {
-  const { CrudApi, tercios, userContext, currentPlay } = useContext(Context);
+  const { CrudApi, tercios, userContext,setUserContext, currentPlay } = useContext(Context);
   const isNewPlay = useParams().play === "create";
   const navigate = useNavigate();
   const playersContainer = useRef(null);
@@ -36,7 +36,7 @@ const PlaysView = () => {
     if (!currentPlay.current) {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser && currentPlay.current) {
-        userContext.current = localUser;
+        setUserContext(localUser);
       } else {
         navigate("/list-of-plays");
         return;
@@ -276,7 +276,7 @@ const PlaysView = () => {
       await CrudApi.post(`plays`, {
         ...gameState.playPositions,
         responsePosition: quadrant,
-        UserId: userContext.current.userId,
+        UserId: userContext.userId,
         SnapshotURL: "",
       })
         .then((response) => {

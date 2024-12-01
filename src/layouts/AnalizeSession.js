@@ -658,11 +658,11 @@ const AnalizeSession = () => {
       region: REGION,
     });
 
-    const videoURL = `videos/${userContext.current.userId}/${video.name}`;
+    const videoURL = `videos/${userContext.userId}/${video.name}`;
 
     const imagesUrls = infoSession.current.imageSequences.map(
       (image, index) => {
-        return `images/${userContext.current.userId}/${images[index].name}-play${index}.jpg`;
+        return `images/${userContext.userId}/${images[index].name}-play${index}.jpg`;
       }
     );
 
@@ -674,7 +674,7 @@ const AnalizeSession = () => {
       ContentType: video.type,
     };
     const sessionData = {
-      userId: userContext.current.userId,
+      userId: userContext.userId,
       playerId: parseInt(infoSession.current.playerSelected),
       timestamp: currentDate.toISOString(),
       duration: 0,

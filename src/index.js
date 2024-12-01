@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/index.css";
@@ -11,6 +12,9 @@ import AnalizeSession from "./layouts/AnalizeSession";
 import { ProviderContext } from "./services/Context";
 import PlaysView from "./layouts/PlaysView";
 import ListOfPlays from "./layouts/ListOfPlays";
+import CreateAccount from "./layouts/CreateAccount";
+import ManagementAccount from "./components/ManagementAccount";
+import PaymentHandler from "./components/PaymentHandler";
 
 // src/index.js
 if (process.env.NODE_ENV === 'production') {
@@ -20,7 +24,6 @@ if (process.env.NODE_ENV === 'production') {
     }
   }
 }
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -48,6 +51,18 @@ const router = createBrowserRouter([
     path: "analize-session/:session",
     element: <AnalizeSession />,
   },
+  {
+    path: "create-account",
+    element: <CreateAccount />,
+  },
+  {
+    path: "management-account",
+    element: <ManagementAccount />,
+  },
+  {
+    path:"payment-handler",
+    element: <PaymentHandler />,
+  }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

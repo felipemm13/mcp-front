@@ -1,0 +1,206 @@
+/* Estructura principal del modal */
+.shoppingCartModal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.shoppingCartModalContent {
+    background-color: #1a1a1a;
+    color: #fff;
+    width: 60%;
+    max-width: 60%;
+    min-height: 85%;
+    max-height: 85%;
+    padding: 1.5em;
+    border-radius: 0.5em;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Mantener los botones en la parte inferior */
+}
+
+/* Contenedor del título y el botón de cerrar */
+.shoppingCartModalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1em;
+    border-bottom: 1px solid #fff;
+}
+
+/*Estilo del Icono*/
+.shoppingCartIcon {
+    width: 2.5em;
+    height: 2.5em;
+    fill: white;
+    margin-right: 1em;
+}
+
+/* Estilo del título */
+.shoppingCartModalTitle {
+    flex-grow: 1;
+    font-size: 1.5em;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilo del botón de cerrar */
+.shoppingCartModalClose {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.shoppingCartModalClose:hover,
+.shoppingCartModalClose:focus {
+    color: #fff;
+}
+
+/* Lista de productos scrolleable */
+.shoppingCartProductList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    /* Permite el scroll en la lista */
+    flex-grow: 1;
+    max-height: 75%;
+}
+
+.shoppingCartProductItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .productName {
+    font-weight: bold;
+  }
+  
+  .productPrice {
+    text-align: right;
+  }
+
+.removeProductButton {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    position: relative;
+}
+
+.removeProductButton svg {
+    width: 1em;
+    height: 1.25em;
+    margin: 0;
+    padding: 0 0 0 0.75em;
+}
+
+.removeProductButton::after {
+    content: 'Eliminar';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-5em) translateY(1.3rem);
+    background-color: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.removeProductButton:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.totalAmountContainer {
+    display: flex;
+    justify-content: space-between;
+    padding: 1em;
+    font-weight: bold;
+    color: white;
+}
+.checkoutButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .cartTotal {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    font-weight: bold;
+  }
+
+
+/* Estilo para el monto total */
+.shoppingCartTotal {
+    margin: .5em 0;
+    font-size: 1.25em;
+    color: #fff;
+    text-align: right;
+}
+
+.shoppingCartTotal>h3 {
+    margin: 0;
+}
+
+/* Botones anclados al final */
+.shoppingCartButtonContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 1em;
+    border-top: 1px solid #fff;
+}
+
+/* Mantener el estilo de los botones */
+.shoppingCartButton {
+    padding: 0.75em 1.5em;
+    border-radius: 0.5em;
+    background-color: rgb(218, 37, 153);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    text-transform: uppercase;
+}
+
+.shoppingCartButton:hover {
+    background-color: rgba(218, 37, 153, 0.75);
+}
+
+.shoppingCartButton:active {
+    background-color: rgb(218, 37, 153);
+}
+
+.shoppingCartButton:disabled {
+    background-color: rgba(218, 37, 153, 0.25);
+    cursor: auto;
+}

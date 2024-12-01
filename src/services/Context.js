@@ -1,13 +1,13 @@
 /* eslint-disable */
 import React, { useEffect, useRef, useState } from "react";
 import Connect from "../connection/Connect";
-
+import translations from "./translations.json";
 const Context = React.createContext();
 
 const ProviderContext = ({ children }) => {
   const urlVision = process.env.REACT_APP_VISIONMCP;
   const tercios = [1 / 3, 2 / 3, 3 / 3];
-  const userContext = useRef(null);
+  const [userContext,setUserContext] = useState(null);
   const videoCurrentSession = useRef(null);
   const infoSession = useRef(null);
   const infoSavedSession = useRef(null);
@@ -19,6 +19,7 @@ const ProviderContext = ({ children }) => {
   const isSaveCurrentSession = useRef(false)
   const currentDevice = useRef(null)
   const [customsUser,setCustomsUser] = useState(null)
+  const [language, setLanguage] = useState("es");
   const currentCalibration = useRef(null)
   const calibrationBackground = useRef(null)
   const S3_BUCKET = "mcp-wildsense";
@@ -35,6 +36,10 @@ const ProviderContext = ({ children }) => {
     "assets/calibrations/calibration-mark-5.png",
     "assets/calibrations/calibration-mark-6.png",
   ];
+
+  const translate = (key) => {
+    return translations[language]?.[key] || key;
+  };
   const preloadImage = (src) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -77,6 +82,7 @@ const ProviderContext = ({ children }) => {
       value={{
         urlVision,
         userContext,
+        setUserContext,
         videoCurrentSession,
         isSaveCurrentSession,
         infoSession,
@@ -99,6 +105,9 @@ const ProviderContext = ({ children }) => {
         preloadImages,
         showSessionType,
         tercios,
+        translate,
+        setLanguage,
+        language,
       }}
     >
       {children}

@@ -127,11 +127,11 @@ const WebCam = (props) => {
       region: REGION,
     });
 
-    const videoURL = `videos/${userContext.current.userId}/${video.name}`;
+    const videoURL = `videos/${userContext.userId}/${video.name}`;
 
     const imagesUrls = infoSavedSession.current.imageSequences.map(
       (image, index) => {
-        return `images/${userContext.current.userId}/${images[index].name}-play${index}.jpg`;
+        return `images/${userContext.userId}/${images[index].name}-play${index}.jpg`;
       }
     );
 
@@ -160,14 +160,14 @@ const WebCam = (props) => {
       paramsCalibration = {
         ACL: "public-read",
         Bucket: S3_BUCKET,
-        Key: `images/${userContext.current.userId}/calibration/${backCalib.name}`,
+        Key: `images/${userContext.userId}/calibration/${backCalib.name}`,
         Body: backCalib,
         ContentType: backCalib.type,
       };
     }
 
     const sessionData = {
-      userId: userContext.current.userId,
+      userId: userContext.userId,
       playerId: parseInt(infoSavedSession.current.playerSelected),
       timestamp: currentDate.toISOString(),
       duration: Math.floor(recorderVideo.current.size / 1000),
@@ -528,7 +528,7 @@ const WebCam = (props) => {
       </div>
       {calibrationModal && (
         <Calibration
-          userEmail={userContext.current.email}
+          userEmail={userContext.email}
           webcamRef={webcamRef}
           sate={calibrationModal}
           setOpenModal={setCalibrationModal}
